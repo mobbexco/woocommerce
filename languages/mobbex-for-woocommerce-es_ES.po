@@ -1,0 +1,106 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mobbex for Woocommerce\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-12 16:25+0000\n"
+"PO-Revision-Date: 2018-12-12 16:29+0000\n"
+"Last-Translator: geon.admin <carlos@grupoeon.com.ar>\n"
+"Language-Team: Español\n"
+"Language: es_ES\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.2.0; wp-5.0"
+
+#: gateway.php:10
+msgid "Mobbex"
+msgstr "Mobbex"
+
+#: gateway.php:11
+msgid ""
+"Mobbex Payment Gateway redirects customers to Mobbex to enter their payment "
+"information."
+msgstr ""
+"La Pasarela de Pago de Mobbex redirige clientes a Mobbex para que ingresen "
+"su información de pago."
+
+#: gateway.php:25
+msgid "You need to specify an API Key and an Access Token."
+msgstr "Debes especificar una API Key y un Access Token."
+
+#: gateway.php:47
+msgid "Enable/Disable"
+msgstr "Activar/Desactivar"
+
+#: gateway.php:49
+msgid "Enable checking out with Mobbex."
+msgstr "Habilitar el checkout con Mobbex."
+
+#: gateway.php:56
+msgid "Title"
+msgstr "Título"
+
+#: gateway.php:58
+msgid "This title will be shown on user checkout."
+msgstr "Este título se mostrará en el checkout del usuario."
+
+#: gateway.php:59
+msgid "Pay with Mobbex"
+msgstr "Pagar con Mobbex"
+
+#: gateway.php:66
+msgid "Description"
+msgstr "Descripción"
+
+#: gateway.php:67
+msgid "This description will be shown on user checkout."
+msgstr "Esta descripción se mostrará en el checkout del usuario."
+
+#: gateway.php:75
+msgid "API Key"
+msgstr "Clave de API"
+
+#: gateway.php:76
+msgid "Your Mobbex API key."
+msgstr "Tu clave de API de Mobbex."
+
+#: gateway.php:83
+msgid "Access Token"
+msgstr "Token de Acceso"
+
+#: gateway.php:84
+msgid "Your Mobbex access token."
+msgstr "Tu token de acceso de Mobbex."
+
+#: gateway.php:105
+msgid "Awaiting Mobbex Webhook"
+msgstr "Esperando Webhook de Mobbex"
+
+#: gateway.php:231
+msgid "Awaiting payment"
+msgstr "Esperando pago"
+
+#: gateway.php:235
+msgid "Order failed"
+msgstr "Orden fallida"
+
+#: mobbex-for-woocommerce.php:24
+msgid "WooCommerce needs to be installed and activated."
+msgstr "WooCommerce debe estar instalado y activado."
+
+#: mobbex-for-woocommerce.php:27
+msgid ""
+"Your site needs to be served via HTTPS to comunicate securely with Mobbex."
+msgstr ""
+"Tu sitio necesito estar servido por HTTPS para comunicarse con Mobbex de "
+"forma segura."
+
+#. Name of the plugin
+msgid "Mobbex for Woocommerce"
+msgstr "Mobbex para Woocommerce"
+
+#. Description of the plugin
+msgid "A small plugin that provides Woocommerce <-> Mobbex integration."
+msgstr "Un pequeño plugin que integra Woocommerce <-> Mobbex."
