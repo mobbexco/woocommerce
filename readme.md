@@ -1,23 +1,11 @@
-# WooCommerce Mobbex Gateway
+# Mobbex for Woocommerce
 
-Contributors: etruel, sniuk  
-Tags: payment gateway WooCommerce  
-Requires at least: 4.1  
-Tested up to: 4.8  
-Stable tag: 1.1  
+A small plugin that provides Woocommerce <-> Mobbex integration.
 
-A payment gateway created to get payments by Mobbex with WooCommerce.  
+## TODO:
 
-### Description
-A payment gateway created to get payments by Mobbex with WooCommerce.
-
-### Installation
-
-
-#### Changelog
-
-1.0
-- Initial Release
-
-1.1  
-- Items feature
+- [ ] Comments/Instructions.
+- [x] Error handling. (process order)
+- [x] Localization/Internationalization.
+- [x] HTTPS check, WooCommerce check.
+- [x] Use order items.
