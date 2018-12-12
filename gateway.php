@@ -250,10 +250,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $id = $_REQUEST['mobbex_order_id'];
         $token = $_REQUEST['mobbex_token'];
     
-    // What to do on error?
         if (empty($status) || empty($id) || empty($token)) die('Missing status, id, or token.');
-
-    // What to do on error?
         if (!$this->valid_mobbex_token($token)) die('Invalid mobbex token.');
 
         $order = new WC_Order($id);
