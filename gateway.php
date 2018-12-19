@@ -220,7 +220,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $payment_method = $_POST['data']['payment']['source']['name'];
 
         if(!empty($payment_method))
-            $order->set_payment_method_title($payment_method);
+            $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
 
         switch ($status) {
 
