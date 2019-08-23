@@ -9,7 +9,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->id = 'mobbex';
         $this->method_title = __('Mobbex', 'mobbex-for-woocommerce');
         $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', 'mobbex-for-woocommerce');
-        $this->icon = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.jpg');
+        $this->icon = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
 
         $this->init_form_fields();
         $this->init_settings();
