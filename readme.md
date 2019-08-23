@@ -26,14 +26,6 @@ If you are using WP Cerber for security you must go under WP Cerber settings on 
 
 If you don't do it you won't be able to receive the information about the payment and will be marked in a wrong way.
 
-## TODO:
-
-- [ ] Comments/Instructions.
-- [x] Error handling. (process order)
-- [x] Localization/Internationalization.
-- [x] HTTPS check, WooCommerce check.
-- [x] Use order items.
-
 ## Changelog
 
 ### 2.0.2 :: 2019-08-23
@@ -53,3 +45,12 @@ If you don't do it you won't be able to receive the information about the paymen
 ### 1.0.0
 
 - Initial release.
+
+## TODO:
+
+- [ ] Comments/Instructions.
+- [x] Mobbex Button
+- [x] Error handling. (process order)
+- [x] Localization/Internationalization.
+- [x] HTTPS check, WooCommerce check.
+- [x] Use order items.
