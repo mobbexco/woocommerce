@@ -4,7 +4,7 @@
 
     Plugin Name:  Mobbex for Woocommerce
     Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-    Version:      1.0.1
+    Version:      2.0.2
 
  */
 
@@ -23,7 +23,7 @@ class Mobbex
         if (!class_exists('WooCommerce'))
             self::$errors[] = __('WooCommerce needs to be installed and activated.', 'mobbex-for-woocommerce');
 
-        if (!is_ssl())
+        if (!defined('WP_DEBUG') && !WP_DEBUG && !is_ssl())
             self::$errors[] = __('Your site needs to be served via HTTPS to comunicate securely with Mobbex.', 'mobbex-for-woocommerce');
 
         if (count(self::$errors)) {
