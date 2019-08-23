@@ -27,13 +27,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         if (empty($this->api_key) || empty($this->access_token)) {
 
             $this->error = true;
-            Mobbex::notice('error', __('You need to specify an API Key and an Access Token.', 'mobbex-for-woocommerce'));
+            MobbexGateway::notice('error', __('You need to specify an API Key and an Access Token.', 'mobbex-for-woocommerce'));
 
         }
 
         // Always Required
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
-        add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
 
         // Only if the plugin is enabled
         if (!$this->error && $this->enabled == 'yes') {
@@ -52,18 +51,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log($log);
         }
-    }
-
-    public function add_action_links($links)
-    {
-        if (current_user_can('manage_woocommerce')) {
-            $plugin_links = array(
-                '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex') . '">' . __('Payment Settings', 'mobbex-for-woocommerce') . '</a>',
-            );
-            return array_merge($plugin_links, $links);
-        }
-        
-        return $links;
     }
 
     public function init_form_fields()
