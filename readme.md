@@ -6,7 +6,11 @@ This plugin provides integration between WooCommerce and Mobbex Payment Solution
 
 #### Wordpress
 
-Version 4.4 or greater
+Version 5.0 or greater
+
+#### WooCommerce
+
+Version 3.5.2 or greater
 
 #### Steps
 

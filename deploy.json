@@ -1,0 +1,13 @@
+{
+	"config": {
+		"name": "mobbex",
+		"version": "2.0.2"
+	},
+	"files": [
+        "assets",
+        "languages",
+        "gateway.php",
+		"mobbex-for-woocommerce.php",
+		"icon.png"
+	]
+}

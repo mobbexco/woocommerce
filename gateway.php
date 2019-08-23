@@ -31,11 +31,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         }
 
+        // Always Required
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+
+        // Only if the plugin is enabled
         if (!$this->error && $this->enabled == 'yes') {
             add_action('woocommerce_api_mobbex_webhook', [$this, 'mobbex_webhook']);
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
-
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
 
             add_action('woocommerce_after_checkout_form', [$this, 'display_mobbex_button']);
 
@@ -128,8 +130,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return ['result' => 'error'];
         }
 
-        // $order->reduce_order_stock();
-        // $woocommerce->cart->empty_cart();
         $order->update_status('pending', __('Awaiting Mobbex Webhook', 'mobbex-for-woocommerce'));
 
         if ($this->useButton == 'yes') {
@@ -361,7 +361,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         // let's suppose it is our payment processor JavaScript that allows to obtain a token
-        //wp_enqueue_script('mobbex-button', 'https://res.mobbex.com/js/button/mobbex.0.9.14.js', null, '0.9.14', true);
         wp_enqueue_script('mobbex-button', plugins_url('assets/js/mobbex.0.9.20.js', __FILE__), null, "0.9.20", false);
 
         // Inject our bootstrap JS to intercept the WC button press and invoke standard JS
