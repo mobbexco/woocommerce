@@ -7,6 +7,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
 
         $this->id = 'mobbex';
+
         $this->method_title = __('Mobbex', 'mobbex-for-woocommerce');
         $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', 'mobbex-for-woocommerce');
         $this->icon = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
@@ -361,11 +362,22 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return;
         }
 
+        $order_url = home_url('/mobbex?wc-ajax=checkout');
+
+        $this->debug($order_url);
+
         // let's suppose it is our payment processor JavaScript that allows to obtain a token
         wp_enqueue_script('mobbex-button', plugins_url('assets/js/mobbex.0.9.20.js', __FILE__), null, "0.9.20", false);
 
         // Inject our bootstrap JS to intercept the WC button press and invoke standard JS
-        wp_enqueue_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), "0.9.20", false);
+        wp_register_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), "2.0.3", false);
+
+        $mobbex_data = array(
+			'order_url' => $order_url,
+        );
+        
+        wp_localize_script('mobbex-bootstrap', 'mobbex_data', $mobbex_data);
+        wp_enqueue_script('mobbex-bootstrap');
     }
 
     /**

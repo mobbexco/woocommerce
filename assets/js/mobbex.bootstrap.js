@@ -1,4 +1,5 @@
 jQuery(function ($) {
+    
     // Can submit from either checkout or order review forms
     var form = jQuery('form.checkout, form#order_review');
 
@@ -47,7 +48,7 @@ jQuery(function ($) {
         jQuery.ajax({
             dataType: "json",
             method: "POST",
-            url: '/mobbex?wc-ajax=checkout',
+            url: mobbex_data.order_url,
             data: form.serializeArray(),
             success: function (response) {
                 // WC will send the error contents in a normal request
