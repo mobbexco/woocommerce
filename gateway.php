@@ -123,7 +123,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         global $woocommerce;
-        $order = new WC_Order($order_id);
+        $order = wc_get_order($order_id);
 
         $return_url = $this->get_api_endpoint('mobbex_return_url', $order);
         $checkout_data = $this->get_checkout($order, $return_url);
@@ -275,7 +275,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             die('Invalid mobbex token.');
         }
 
-        $order = new WC_Order($id);
+        $order = wc_get_order($id);
         $payment_method = $_POST['data']['payment']['source']['name'];
 
         if (!empty($payment_method)) {
@@ -313,7 +313,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             die('Invalid mobbex token.');
         }
 
-        $order = new WC_Order($id);
+        $order = wc_get_order($id);
 
         if ($status == 0 || $status >= 400) {
             // Try to restore the cart here
