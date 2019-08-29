@@ -1,11 +1,15 @@
 <?php
-
 /*
-
-Plugin Name:  Mobbex for Woocommerce
-Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      2.0.3
-
+    Plugin Name:    Mobbex for Woocommerce
+    Plugin URI:     https://github.com/mobbexco/woocommerce
+    Description:    A small plugin that provides Woocommerce <-> Mobbex integration.
+    Version:        2.0.3
+	Author:         Mobbex Dev
+	Author URI:     https://mobbex.dev
+    WC tested up to: 3.7.1
+	Copyright: 2019 https://mobbex.com
+	License: GNU General Public License v3.0
+	License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
 const MOBBEX_CHECKOUT = 'https://mobbex.com/p/checkout/create';
