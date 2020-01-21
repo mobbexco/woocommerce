@@ -432,7 +432,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->debug($order_url);
 
         // let's suppose it is our payment processor JavaScript that allows to obtain a token
-        wp_enqueue_script('mobbex-button', plugins_url('assets/js/mobbex.0.9.21.js', __FILE__), null, "0.9.22", false);
+        wp_enqueue_script('mobbex-button', plugins_url('assets/js/mobbex.0.9.22.js', __FILE__), null, "0.9.22", false);
 
         // Inject our bootstrap JS to intercept the WC button press and invoke standard JS
         wp_register_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), "2.1.0", false);
