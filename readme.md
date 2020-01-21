@@ -30,7 +30,21 @@ If you are using WP Cerber for security you must go under WP Cerber settings on 
 
 If you don't do it you won't be able to receive the information about the payment and will be marked in a wrong way.
 
+## Preguntas Frecuentes
+
+#### Error: "No se pudo validar la transacción. Contacte con el administrador de su sitio"
+
+Esto se debe a que tu sitio posee una redirección en el archivo .htaccess o a nivel servidor y no somos capaces de encontrar los parametros necesarios para validar tu transacción. Por favor revisá tu .htaccess o ponete en contacto con el administrador de tu servidor.
+
+#### Error: "Token de seguridad inválido."
+
+Al igual que el error anterior esto se debe a que el parametro de validación se pierde durante la redirección. Revisá la configuración de tu sitio.
+
 ## Changelog
+
+### 2.1.2 :: 2020-01-21
+- Fix for Mobbex Button
+- Some fixes on the new version.
 
 ### 2.1.0 :: 2020-01-21
 

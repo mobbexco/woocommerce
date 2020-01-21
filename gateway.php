@@ -64,7 +64,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
 
             // If button is enabled show it
-            if (false !== $this->use_button) {
+            if ($this->use_button) {
                 $this->debug([], "Adding actions for Button");
 
                 add_action('woocommerce_after_checkout_form', [$this, 'display_mobbex_button']);
@@ -402,7 +402,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function isReady()
     {
-        if ($this->enabled === 'yes') {
+        if ($this->enabled !== 'yes') {
             return false;
         }
 
@@ -417,16 +417,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         // we need JavaScript to process a token only on cart/checkout pages, right?
         if (!is_cart() && !is_checkout() && !isset($_GET['pay_for_order'])) {
+            $this->debug([], "Not checkout page");
             return;
         }
 
         // if our payment gateway is disabled, we do not have to enqueue JS too
         if (!$this->isReady()) {
-            return;
-        }
-
-        // If button is Disabled do not add the button
-        if (false === $this->use_button) {
+            $this->debug([], "Not ready");
             return;
         }
 
