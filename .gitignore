@@ -1,6 +1,7 @@
 .DS_Store
 
 mobbex.*.zip
+wc-mobbex*.zip
 deploy/*
 
 copy.js

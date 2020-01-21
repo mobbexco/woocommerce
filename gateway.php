@@ -21,7 +21,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->init_settings();
 
         // Get variables
-        $this->enabled = ($this->get_option('enabled') === 'yes');
+        $this->enabled = $this->get_option('enabled');
+
+        // Internal Options
         $this->use_button = ($this->get_option('button') === 'yes');
         $this->test_mode = ($this->get_option('test_mode') === 'yes');
 
@@ -55,7 +57,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         ), "Settings");
 
         // Only if the plugin is enabled
-        if (!$this->error && $this->enabled) {
+        if (!$this->error && $this->enabled === 'yes') {
             $this->debug([], "Adding actions");
 
             add_action('woocommerce_api_mobbex_webhook', [$this, 'mobbex_webhook']);
@@ -400,7 +402,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function isReady()
     {
-        if ($this->enabled) {
+        if ($this->enabled === 'yes') {
             return false;
         }
 
