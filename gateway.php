@@ -1,5 +1,7 @@
 <?php
 
+require_once 'utils.php';
+
 class WC_Gateway_Mobbex extends WC_Payment_Gateway
 {
 
@@ -8,16 +10,22 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $this->id = 'mobbex';
 
-        $this->method_title = __('Mobbex', 'mobbex-for-woocommerce');
-        $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', 'mobbex-for-woocommerce');
+        $this->method_title = __('Mobbex', MOBBEX_WC_TEXT_DOMAIN);
+        $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', MOBBEX_WC_TEXT_DOMAIN);
+
+        // Icon
         $this->icon = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
 
+        // Generate admin fields
         $this->init_form_fields();
         $this->init_settings();
 
-        $this->enabled = $this->get_option('enabled');
-        $this->useButton = $this->get_option('button');
+        // Get variables
+        $this->enabled = ($this->get_option('enabled') === 'yes');
+        $this->use_button = ($this->get_option('button') === 'yes');
+        $this->test_mode = ($this->get_option('test_mode') === 'yes');
 
+        // String variables
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
 
@@ -28,30 +36,46 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         if (empty($this->api_key) || empty($this->access_token)) {
 
             $this->error = true;
-            MobbexGateway::notice('error', __('You need to specify an API Key and an Access Token.', 'mobbex-for-woocommerce'));
+            MobbexGateway::notice('error', __('You need to specify an API Key and an Access Token.', MOBBEX_WC_TEXT_DOMAIN));
 
         }
 
         // Always Required
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
 
+        $this->debug(array(
+            "enabled" => $this->enabled,
+            "use_button" => $this->use_button,
+            "test_mode" => $this->test_mode,
+            "title" => $this->title,
+            "description" => $this->description,
+            "api_key" => $this->api_key,
+            "access_token" => $this->access_token,
+            "error" => $this->error,
+        ), "Settings");
+
         // Only if the plugin is enabled
-        if (!$this->error && $this->enabled == 'yes') {
+        if (!$this->error && $this->enabled) {
+            $this->debug([], "Adding actions");
+
             add_action('woocommerce_api_mobbex_webhook', [$this, 'mobbex_webhook']);
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
 
-            add_action('woocommerce_after_checkout_form', [$this, 'display_mobbex_button']);
+            // If button is enabled show it
+            if (false !== $this->use_button) {
+                $this->debug([], "Adding actions for Button");
 
-            add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
+                add_action('woocommerce_after_checkout_form', [$this, 'display_mobbex_button']);
+
+                add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
+            }
         }
 
     }
 
-    public function debug($log)
+    public function debug($log, $message = 'debug')
     {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log($log);
-        }
+        mobbex_debug($message, $log);
     }
 
     public function init_form_fields()
@@ -61,27 +85,27 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'enabled' => [
 
-                'title' => __('Enable/Disable', 'mobbex-for-woocommerce'),
+                'title' => __('Enable/Disable', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'checkbox',
-                'label' => __('Enable checking out with Mobbex.', 'mobbex-for-woocommerce'),
+                'label' => __('Enable checking out with Mobbex.', MOBBEX_WC_TEXT_DOMAIN),
                 'default' => 'yes',
 
             ],
 
             'title' => [
 
-                'title' => __('Title', 'mobbex-for-woocommerce'),
+                'title' => __('Title', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'text',
-                'description' => __('This title will be shown on user checkout.', 'mobbex-for-woocommerce'),
-                'default' => __('Pay with Mobbex', 'mobbex-for-woocommerce'),
+                'description' => __('This title will be shown on user checkout.', MOBBEX_WC_TEXT_DOMAIN),
+                'default' => __('Pay with Mobbex', MOBBEX_WC_TEXT_DOMAIN),
                 'desc_tip' => true,
 
             ],
 
             'description' => [
 
-                'title' => __('Description', 'mobbex-for-woocommerce'),
-                'description' => __('This description will be shown on user checkout.', 'mobbex-for-woocommerce'),
+                'title' => __('Description', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('This description will be shown on user checkout.', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'textarea',
                 'default' => '',
 
@@ -89,25 +113,34 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'api-key' => [
 
-                'title' => __('API Key', 'mobbex-for-woocommerce'),
-                'description' => __('Your Mobbex API key.', 'mobbex-for-woocommerce'),
+                'title' => __('API Key', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('Your Mobbex API key.', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'text',
 
             ],
 
             'access-token' => [
 
-                'title' => __('Access Token', 'mobbex-for-woocommerce'),
-                'description' => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
+                'title' => __('Access Token', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('Your Mobbex access token.', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'text',
+
+            ],
+
+            'test_mode' => [
+
+                'title' => __('Enable/Disable Test Mode', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'checkbox',
+                'label' => __('Enable Test Mode.', MOBBEX_WC_TEXT_DOMAIN),
+                'default' => 'no',
 
             ],
 
             'button' => [
 
-                'title' => __('Enable/Disable Button', 'mobbex-for-woocommerce'),
+                'title' => __('Enable/Disable Button', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'checkbox',
-                'label' => __('Enable Mobbex Button experience.', 'mobbex-for-woocommerce'),
+                'label' => __('Enable Mobbex Button experience.', MOBBEX_WC_TEXT_DOMAIN),
                 'default' => 'yes',
 
             ],
@@ -116,8 +149,17 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     }
 
+    public function process_admin_options()
+    {
+        $saved = parent::process_admin_options();
+
+        return $saved;
+    }
+
     public function process_payment($order_id)
     {
+        $this->debug([], "Creating payment");
+
         if ($this->error) {
             return ['result' => 'error'];
         }
@@ -125,16 +167,25 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         global $woocommerce;
         $order = new WC_Order($order_id);
 
-        $return_url = $this->get_api_endpoint('mobbex_return_url', $order);
+        $this->debug([
+            "order_id" => $order_id,
+        ], "Creating for Order");
+
+        $return_url = $this->get_api_endpoint('mobbex_return_url', $order_id);
         $checkout_data = $this->get_checkout($order, $return_url);
+
+        $this->debug([
+            "return_url" => $return_url,
+            "checkout_data" => $checkout_data,
+        ], "Creating payment");
 
         if (empty($checkout_data)) {
             return ['result' => 'error'];
         }
 
-        $order->update_status('pending', __('Awaiting Mobbex Webhook', 'mobbex-for-woocommerce'));
+        $order->update_status('pending', __('Awaiting Mobbex Webhook', MOBBEX_WC_TEXT_DOMAIN));
 
-        if ($this->useButton == 'yes') {
+        if (false === $this->use_button) {
             return [
                 'result' => 'success',
                 'data' => $checkout_data,
@@ -153,17 +204,22 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function get_checkout($order = null, $return_url = null)
     {
+        $this->debug([
+            "order" => $order,
+            "return_url" => $return_url,
+        ]);
+
         if (empty($order)) {
             die('No order was found');
         }
 
         // Get Domain to allow comm
         $site_url = site_url('', null);
-        $this->debug(print_r($site_url, true));
+        $this->debug($site_url);
 
         $domain = str_replace(["http://", "https://"], "", $site_url);
 
-        $this->debug(print_r($domain, true));
+        $this->debug($domain);
 
         // Create the Checkout
         $response = wp_remote_post(MOBBEX_CHECKOUT, [
@@ -182,10 +238,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'reference' => $order->get_id(),
                 'description' => 'No description',
                 'items' => $this->get_items($order),
-                'webhook' => $this->get_api_endpoint('mobbex_webhook', $order),
+                'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
                 'return_url' => $return_url,
+                'test' => $this->test_mode,
                 "options" => [
-                    "button" => $this->useButton == 'yes',
+                    "button" => $this->use_button,
                     "domain" => $domain,
                 ],
 
@@ -234,15 +291,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     }
 
-    public function get_api_endpoint($endpoint, $order)
+    public function get_api_endpoint($endpoint, $order_id)
     {
-        $query = ['wc-api' => $endpoint];
+        $query = [
+            'wc-api' => $endpoint,
+            'mobbex_token' => $this->generate_token(),
+        ];
 
-        if ($order) {
-
-            $query['mobbex_order_id'] = $order->get_id();
-            $query['mobbex_token'] = $this->generate_token();
-
+        if ($order_id) {
+            $query['mobbex_order_id'] = $order_id;
         }
 
         return add_query_arg($query, home_url('/'));
@@ -255,7 +312,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             die('Mobbex sent an invalid request body.');
         }
 
-        $this->debug(print_r($_POST['data'], true));
+        $this->debug($_POST['data']);
 
         $status = $_POST['data']['payment']['status']['code'];
         $id = $_REQUEST['mobbex_order_id'];
@@ -284,14 +341,14 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // Check status and set
         if ($status == 2 || $status == 3) {
-            $order->update_status('on-hold', __('Awaiting payment', 'mobbex-for-woocommerce'));
+            $order->update_status('on-hold', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
         } else if ($status == 4 || $status >= 200 && $status < 400) {
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.
             // TODO: implement return
             $order->payment_complete($id);
         } else {
-            $order->update_status('failed', __('Order failed', 'mobbex-for-woocommerce'));
+            $order->update_status('failed', __('Order failed', MOBBEX_WC_TEXT_DOMAIN));
         }
 
         die();
@@ -301,16 +358,21 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function mobbex_return_url()
     {
 
-        $status = $_REQUEST['status'];
-        $id = $_REQUEST['mobbex_order_id'];
-        $token = $_REQUEST['mobbex_token'];
+        $status = $_GET['status'];
+        $id = $_GET['mobbex_order_id'];
+        $token = $_GET['mobbex_token'];
 
+        $error = false;
         if (empty($status) || empty($id) || empty($token)) {
-            die('Missing status, id, or token.');
+            $error = "No se pudo validar la transacción. Contacte con el administrador de su sitio";
         }
 
         if (!$this->valid_mobbex_token($token)) {
-            die('Invalid mobbex token.');
+            $error = "Token de seguridad inválido.";
+        }
+
+        if (false !== $error) {
+            return $this->_redirect_to_cart_with_error($error);
         }
 
         $order = new WC_Order($id);
@@ -324,7 +386,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         wp_safe_redirect($redirect);
-        die();
     }
 
     public function valid_mobbex_token($token)
@@ -339,7 +400,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function isReady()
     {
-        if ('no' === $this->enabled) {
+        if ($this->enabled) {
             return false;
         }
 
@@ -362,20 +423,25 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return;
         }
 
+        // If button is Disabled do not add the button
+        if (false === $this->use_button) {
+            return;
+        }
+
         $order_url = home_url('/mobbex?wc-ajax=checkout');
 
         $this->debug($order_url);
 
         // let's suppose it is our payment processor JavaScript that allows to obtain a token
-        wp_enqueue_script('mobbex-button', plugins_url('assets/js/mobbex.0.9.20.js', __FILE__), null, "0.9.20", false);
+        wp_enqueue_script('mobbex-button', plugins_url('assets/js/mobbex.0.9.21.js', __FILE__), null, "0.9.22", false);
 
         // Inject our bootstrap JS to intercept the WC button press and invoke standard JS
-        wp_register_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), "2.0.3", false);
+        wp_register_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), "2.1.0", false);
 
         $mobbex_data = array(
-			'order_url' => $order_url,
+            'order_url' => $order_url,
         );
-        
+
         wp_localize_script('mobbex-bootstrap', 'mobbex_data', $mobbex_data);
         wp_enqueue_script('mobbex-bootstrap');
     }
@@ -385,11 +451,27 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
      */
     public function display_mobbex_button()
     {
-        ?>
+        if (false === $this->use_button) {
+            return;
+        }
+
+        ob_start();
+
+        echo '
         <!-- Mobbex Button -->
         <div id="mbbx-button"></div>
         <!-- Mobbex Container -->
-		<div id="mbbx-container"></div>
-		<?php
-}
+        <div id="mbbx-container"></div>
+        ';
+
+        return ob_get_clean();
+    }
+
+    private function _redirect_to_cart_with_error($error_msg)
+    {
+        wc_add_notice($error_msg, 'error');
+        wp_redirect(wc_get_cart_url());
+
+        return array('result' => 'error', 'redirect' => wc_get_cart_url());
+    }
 }

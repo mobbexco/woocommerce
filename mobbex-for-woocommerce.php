@@ -4,11 +4,11 @@
 
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      2.0.3
+Version:      2.1.0
 
  */
 
-const MOBBEX_CHECKOUT = 'https://mobbex.com/p/checkout/create';
+require_once 'utils.php';
 
 class MobbexGateway
 {
@@ -38,14 +38,7 @@ class MobbexGateway
     {
 
         MobbexGateway::load_textdomain();
-
-        if (!class_exists('WooCommerce')) {
-            MobbexGateway::$errors[] = __('WooCommerce needs to be installed and activated.', 'mobbex-for-woocommerce');
-        }
-
-        if (!defined('WP_DEBUG') && !WP_DEBUG && !is_ssl()) {
-            MobbexGateway::$errors[] = __('Your site needs to be served via HTTPS to comunicate securely with Mobbex.', 'mobbex-for-woocommerce');
-        }
+        MobbexGateway::check_dependencies();
 
         if (count(MobbexGateway::$errors)) {
 
@@ -64,16 +57,59 @@ class MobbexGateway
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
     }
 
+    /**
+     * Check dependencies.
+     *
+     * @throws Exception
+     */
+    public static function check_dependencies()
+    {
+        if (!class_exists('WooCommerce')) {
+            MobbexGateway::$errors[] = __('WooCommerce needs to be installed and activated.', MOBBEX_WC_TEXT_DOMAIN);
+        }
+
+        if (!function_exists('WC')) {
+            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce to be activated', MOBBEX_WC_TEXT_DOMAIN);
+        }
+
+        if (!is_ssl()) {
+            MobbexGateway::$errors[] = __('Your site needs to be served via HTTPS to comunicate securely with Mobbex.', MOBBEX_WC_TEXT_DOMAIN);
+        }
+
+        if (version_compare(wc()->version, '2.6', '<')) {
+            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce version 2.6 or greater', MOBBEX_WC_TEXT_DOMAIN);
+        }
+
+        if (!function_exists('curl_init')) {
+            MobbexGateway::$errors[] = __('Mobbex requires the cURL PHP extension to be installed on your server', MOBBEX_WC_TEXT_DOMAIN);
+        }
+
+        if (!function_exists('json_decode')) {
+            MobbexGateway::$errors[] = __('Mobbex requires the JSON PHP extension to be installed on your server', MOBBEX_WC_TEXT_DOMAIN);
+        }
+
+        $openssl_warning = __('Mobbex requires OpenSSL >= 1.0.1 to be installed on your server', MOBBEX_WC_TEXT_DOMAIN);
+        if (!defined('OPENSSL_VERSION_TEXT')) {
+            MobbexGateway::$errors[] = $openssl_warning;
+        }
+
+        preg_match('/^(?:Libre|Open)SSL ([\d.]+)/', OPENSSL_VERSION_TEXT, $matches);
+        if (empty($matches[1])) {
+            MobbexGateway::$errors[] = $openssl_warning;
+        }
+
+        if (!version_compare($matches[1], '1.0.1', '>=')) {
+            MobbexGateway::$errors[] = $openssl_warning;
+        }
+    }
+
     public function add_action_links($links)
     {
-        error_log(print_r($links, true));
         $plugin_links = [
-            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex') . '">' . __('Settings', 'mobbex-for-woocommerce') . '</a>',
+            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex') . '">' . __('Settings', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
         ];
 
         $links = array_merge($plugin_links, $links);
-
-        error_log(print_r($links, true));
 
         return $links;
     }
@@ -101,7 +137,7 @@ class MobbexGateway
     public static function load_textdomain()
     {
 
-        load_plugin_textdomain('mobbex-for-woocommerce', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+        load_plugin_textdomain(MOBBEX_WC_TEXT_DOMAIN, false, dirname(plugin_basename(__FILE__)) . '/languages/');
 
     }
 
@@ -128,19 +164,21 @@ class MobbexGateway
     {
 
         add_action('admin_notices', function () use ($type, $msg) {
-
             $class = esc_attr("notice notice-$type");
             $msg = esc_html($msg);
 
-            ob_start();?>
+            ob_start();
+
+            ?>
 
             <div class="<?=$class?>">
                 <h2>Mobbex for Woocommerce</h2>
                 <p><?=$msg?></p>
             </div>
 
-            <?php echo ob_get_clean();
+            <?php
 
+            echo ob_get_clean();
         });
 
     }

@@ -3,17 +3,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mobbex for Woocommerce\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-12 16:25+0000\n"
+"POT-Creation-Date: 2020-01-21 11:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: \n"
+"Last-Translator: geon.admin <carlos@grupoeon.com.ar>\n"
+"Language-Team: Español\n"
 "Language: \n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Loco-Source-Locale: es_AR\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.2.0; wp-5.0"
+"X-Loco-Version: 2.2.0; wp-5.0\n"
+"X-Loco-Parser: loco_parse_po"
 
 #: gateway.php:10
 msgid "Mobbex"
@@ -100,4 +102,31 @@ msgstr ""
 
 #. Description of the plugin
 msgid "A small plugin that provides Woocommerce <-> Mobbex integration."
+msgstr ""
+
+msgid "Enable/Disable Test Mode"
+msgstr ""
+
+msgid "Enable Test Mode."
+msgstr ""
+
+msgid "Enable/Disable Button"
+msgstr ""
+
+msgid "Enable Mobbex Button experience."
+msgstr ""
+
+msgid "Mobbex requires WooCommerce to be activated"
+msgstr ""
+
+msgid "Mobbex requires WooCommerce version 2.6 or greater"
+msgstr ""
+
+msgid "Mobbex requires the cURL PHP extension to be installed on your server"
+msgstr ""
+
+msgid "Mobbex requires the JSON PHP extension to be installed on your server"
+msgstr ""
+
+msgid "Mobbex requires OpenSSL >= 1.0.1 to be installed on your server"
 msgstr ""

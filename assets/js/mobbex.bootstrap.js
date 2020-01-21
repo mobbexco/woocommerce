@@ -25,7 +25,6 @@ jQuery(function ($) {
         if (isMobbexPaymentMethodSelected()) {
             // Need to show spinner before standard checkout as we have to spend time getting the pay URL
             // TODO: Add some loading spinner ( show )
-
             getSignedCheckoutUrlViaAjax();
 
             // Make sure we don't submit the form normally
@@ -70,6 +69,7 @@ jQuery(function ($) {
     function startMobbexCheckoutModal(checkoutData, returnUrl) {
         var mbbxButton = window.MobbexButton.init({
             checkout: checkoutData.id,
+            isInSite: true,
             onPayment: (data) => {
                 location.href = returnUrl + '&status=' + data.status.code;
             },

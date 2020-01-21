@@ -32,6 +32,14 @@ If you don't do it you won't be able to receive the information about the paymen
 
 ## Changelog
 
+### 2.1.0 :: 2020-01-21
+
+- Implemented new Test Mode using your own credentials.
+- New Translations.
+- New Mobbex Button 0.9.22 with In Site Experience.
+- New standards and helpers methods.
+- Some important fixes on the module.
+
 ### 2.0.2 :: 2019-08-23
 
 - Implemented Mobbex Button
