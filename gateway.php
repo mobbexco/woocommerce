@@ -187,11 +187,18 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $order->update_status('pending', __('Awaiting Mobbex Webhook', MOBBEX_WC_TEXT_DOMAIN));
 
-        if (false === $this->use_button) {
+        if ($this->use_button) {
+            $this->debug([
+                'result' => 'success',
+                'data' => $checkout_data,
+                'return_url' => $return_url,
+            ], "Reply for button");
+
             return [
                 'result' => 'success',
                 'data' => $checkout_data,
                 'return_url' => $return_url,
+                'redirect' => false
             ];
         } else {
             $return_url = $checkout_data['url'];
@@ -359,7 +366,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function mobbex_return_url()
     {
-
         $status = $_GET['status'];
         $id = $_GET['mobbex_order_id'];
         $token = $_GET['mobbex_token'];
@@ -432,7 +438,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->debug($order_url);
 
         // let's suppose it is our payment processor JavaScript that allows to obtain a token
-        wp_enqueue_script('mobbex-button', plugins_url('assets/js/mobbex.0.9.22.js', __FILE__), null, "0.9.22", false);
+        wp_enqueue_script('mobbex-button', plugins_url('assets/js/mobbex.' . MOBBEX_BUTTON_VERSION . '.js', __FILE__), null, MOBBEX_BUTTON_VERSION, false);
 
         // Inject our bootstrap JS to intercept the WC button press and invoke standard JS
         wp_register_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), "2.1.0", false);
@@ -448,22 +454,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     /**
      * Display Mobbex button on the cart page.
      */
-    public function display_mobbex_button()
+    public function display_mobbex_button($checkout)
     {
-        if (false === $this->use_button) {
-            return;
-        }
-
-        ob_start();
-
-        echo '
+        ?>
         <!-- Mobbex Button -->
         <div id="mbbx-button"></div>
-        <!-- Mobbex Container -->
-        <div id="mbbx-container"></div>
-        ';
-
-        return ob_get_clean();
+        <?php
     }
 
     private function _redirect_to_cart_with_error($error_msg)

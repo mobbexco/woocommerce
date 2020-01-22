@@ -42,6 +42,10 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 2.1.3 :: 2020-01-22
+- Mobbex Button v0.9.30
+- Multiple fixes.
+
 ### 2.1.2 :: 2020-01-21
 - Fix for Mobbex Button
 - Some fixes on the new version.

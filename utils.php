@@ -1,8 +1,10 @@
 <?php
 
 // Defines
-define( 'MOBBEX_WC_TEXT_DOMAIN', 'mobbex-for-woocommerce' );
-define( 'MOBBEX_CHECKOUT', 'https://mobbex.com/p/checkout/create' );
+define('MOBBEX_WC_TEXT_DOMAIN', 'mobbex-for-woocommerce');
+define('MOBBEX_CHECKOUT', 'https://mobbex.com/p/checkout/create');
+
+define('MOBBEX_BUTTON_VERSION', '0.9.30');
 
 if (!function_exists('mobbex_debug')) {
     // https://github.com/bonny/WordPress-Simple-History/

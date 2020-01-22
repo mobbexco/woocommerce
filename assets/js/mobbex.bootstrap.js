@@ -1,19 +1,29 @@
 jQuery(function ($) {
-    
+
     // Can submit from either checkout or order review forms
     var form = jQuery('form.checkout, form#order_review');
 
     // Intercept form button (Bind to click instead of WC trigger to avoid popup) 
     jQuery('form.checkout').on('click', ':submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
         return !invokeOverlayCheckout();
     });
+
     // Intercept submit for order review
     jQuery('form#order_review').on('submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
         return !invokeOverlayCheckout();
     });
 
     // Some customers (Inky) have themes where the button is outside the form
     jQuery('#checkout_buttons button').on('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
         jQuery('form#order_review').submit();
 
         return false; // Don't fire the submit event twice if the buttons ARE in the form
@@ -23,8 +33,10 @@ jQuery(function ($) {
     function invokeOverlayCheckout() {
         // Check payment method etc
         if (isMobbexPaymentMethodSelected()) {
-            // Need to show spinner before standard checkout as we have to spend time getting the pay URL
-            // TODO: Add some loading spinner ( show )
+            $("body").append('<div id="mbbx-container"></div>');
+
+            lockForm();
+
             getSignedCheckoutUrlViaAjax();
 
             // Make sure we don't submit the form normally
@@ -60,7 +72,12 @@ jQuery(function ($) {
             },
             error: function (jqxhr, status) {
                 // We got a 500 or something if we hit here. Shouldn't normally happen
-                alert("We were unable to process your order, please try again in a few minutes.");
+                // alert("We were unable to process your order, please try again in a few minutes.");
+                handleErrorResponse({
+                    result: 'errors',
+                    reload: false,
+                    messages: ['Se produjo un error al procesar la transacción. Intente nuevamente']
+                });
             }
         });
     };
@@ -69,7 +86,7 @@ jQuery(function ($) {
     function startMobbexCheckoutModal(checkoutData, returnUrl) {
         var mbbxButton = window.MobbexButton.init({
             checkout: checkoutData.id,
-            isInSite: true,
+            inSite: true,
             onPayment: (data) => {
                 location.href = returnUrl + '&status=' + data.status.code;
             },
@@ -80,12 +97,26 @@ jQuery(function ($) {
                 }
             },
             onError: (error) => {
-                location.href = returnUrl + '&status=0';
+                // location.href = returnUrl + '&status=0';
+                handleErrorResponse({
+                    result: 'errors',
+                    reload: false,
+                    messages: ['Se produjo un error al procesar la transacción. Intente nuevamente']
+                });
             }
         });
 
         mbbxButton.open();
     };
+
+    function lockForm() {
+        form.addClass('processing').block();
+    }
+
+    function unlockForm() {
+        // Cancel processing
+        form.removeClass('processing').unblock();
+    }
 
     // Shows any errors we encountered
     function handleErrorResponse(response) {
@@ -95,15 +126,21 @@ jQuery(function ($) {
             return;
         }
 
-        // Remove old errors
-        jQuery('.woocommerce-error, .woocommerce-message').remove();
+        // Notices wrapper on WooCommerce
+        var noticesWrapper = $(".woocommerce-notices-wrapper");
+
         // Add new errors
         if (response.messages) {
-            form.prepend(response.messages);
+            // Remove old errors
+            noticesWrapper.empty();
+
+            // form.prepend(response.messages);
+            for (var message of response.messages) {
+                noticesWrapper.append(`<ul class="woocommerce-error" role="alert"><li>${message}</li></ul>`);
+            }
         }
 
-        // Cancel processing
-        form.removeClass('processing').unblock();
+        unlockForm();
 
         // Lose focus for all fields
         form.find('.input-text, select').blur();
