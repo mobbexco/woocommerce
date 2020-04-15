@@ -7,8 +7,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function __construct()
     {
-
-        $this->id = 'mobbex';
+        $this->id = MOBBEX_WC_GATEWAY_ID;
 
         $this->method_title = __('Mobbex', MOBBEX_WC_TEXT_DOMAIN);
         $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', MOBBEX_WC_TEXT_DOMAIN);
@@ -26,6 +25,14 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Internal Options
         $this->use_button = ($this->get_option('button') === 'yes');
         $this->test_mode = ($this->get_option('test_mode') === 'yes');
+
+        // New Webhook
+        $this->use_webhook_api = ($this->get_option('use_webhook_api') === 'yes');
+
+        // Theme
+        $this->checkout_theme = $this->get_option('checkout_theme');
+        $this->checkout_background_color = $this->get_option('checkout_background_color');
+        $this->checkout_primary_color = $this->get_option('checkout_primary_color');
 
         // String variables
         $this->title = $this->get_option('title');
@@ -60,8 +67,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         if (!$this->error && $this->enabled === 'yes') {
             $this->debug([], "Adding actions");
 
-            add_action('woocommerce_api_mobbex_webhook', [$this, 'mobbex_webhook']);
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
+
+            if ($this->use_webhook_api === false) {
+                $this->debug([], "Registering WC Controller");
+
+                add_action('woocommerce_api_mobbex_webhook', [$this, 'mobbex_webhook']);
+            }
 
             // If button is enabled show it
             if ($this->use_button) {
@@ -143,7 +155,49 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Enable/Disable Button', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'checkbox',
                 'label' => __('Enable Mobbex Button experience.', MOBBEX_WC_TEXT_DOMAIN),
-                'default' => 'yes',
+                'default' => 'no',
+
+            ],
+
+            'use_webhook_api' => [
+
+                'title' => __('Use new WebHook API', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'checkbox',
+                'label' => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', MOBBEX_WC_TEXT_DOMAIN),
+                'default' => 'no',
+
+            ],
+
+            'checkout_theme' => [
+
+                'title' => __('Checkout Theme', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Checkout Theme from here.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'select',
+                'options' => [
+                    'light' => __('Light Theme', MOBBEX_WC_TEXT_DOMAIN),
+                    'dark' => __('Dark Theme', MOBBEX_WC_TEXT_DOMAIN),
+                ],
+                'default' => 'light',
+
+            ],
+
+            'checkout_background_color' => [
+
+                'title' => __('Checkout Background Color', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Checkout Background Color from here.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'text',
+                'class' => 'colorpick',
+                'default' => '#ECF2F6',
+
+            ],
+
+            'checkout_primary_color' => [
+
+                'title' => __('Checkout Primary Color', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Checkout Primary Color for Buttons and TextFields from here.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'text',
+                'class' => 'colorpick',
+                'default' => '#6f00ff',
 
             ],
 
@@ -198,7 +252,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'result' => 'success',
                 'data' => $checkout_data,
                 'return_url' => $return_url,
-                'redirect' => false
+                'redirect' => false,
             ];
         } else {
             $return_url = $checkout_data['url'];
@@ -209,6 +263,25 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             ];
         }
 
+    }
+
+    public function getPlatform()
+    {
+        return [
+            "name" => "woocommerce",
+            "version" => MOBBEX_VERSION,
+        ];
+    }
+
+    public function getTheme()
+    {
+        return [
+            "type" => $this->checkout_theme,
+            "background" => $this->checkout_background_color,
+            "colors" => [
+                "primary" => $this->checkout_primary_color,
+            ],
+        ];
     }
 
     public function get_checkout($order = null, $return_url = null)
@@ -245,7 +318,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
                 'total' => $order->get_total(),
                 'reference' => $order->get_id(),
-                'description' => 'No description',
+                'description' => 'Orden #' . $order->get_id(),
                 'items' => $this->get_items($order),
                 'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
                 'return_url' => $return_url,
@@ -253,6 +326,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 "options" => [
                     "button" => $this->use_button,
                     "domain" => $domain,
+                    "theme" => $this->getTheme(),
+                    "platform" => $this->getPlatform(),
                 ],
 
             ]),
@@ -303,12 +378,19 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function get_api_endpoint($endpoint, $order_id)
     {
         $query = [
-            'wc-api' => $endpoint,
             'mobbex_token' => $this->generate_token(),
+            'platform' => "woocommerce",
+            "version" => MOBBEX_VERSION,
         ];
 
         if ($order_id) {
             $query['mobbex_order_id'] = $order_id;
+        }
+
+        if ($endpoint === 'mobbex_webhook' && $this->use_webhook_api) {
+            return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
+        } else {
+            $query['wc-api'] = $endpoint;
         }
 
         return add_query_arg($query, home_url('/'));
@@ -360,8 +442,73 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $order->update_status('failed', __('Order failed', MOBBEX_WC_TEXT_DOMAIN));
         }
 
-        die();
+        echo "WebHook OK: Mobbex for WooCommerce v" . MOBBEX_VERSION;
 
+        die();
+    }
+
+    public function mobbex_webhook_api($request)
+    {
+        $postData = $request->get_params();
+        $id = $request->get_param('mobbex_order_id');
+        $token = $request->get_param('mobbex_token');
+
+        $this->debug($postData, "Mobbex API > Post Data");
+        $this->debug([
+            "id" => $id,
+            "token" => $token
+        ], "Mobbex API > Params");
+
+        $res = $this->process_webhook($id, $token, $postData['data']);
+
+        return [
+            "result" => $res,
+            "platform" => $this->getPlatform(),
+        ];
+    }
+
+    public function process_webhook($id, $token, $data)
+    {
+        $status = $data['payment']['status']['code'];
+
+        $this->debug([
+            "id" => $id,
+            "token" => $token,
+            "status" => $status
+        ], "Mobbex API > Process Data");
+
+        if (empty($status) || empty($id) || empty($token)) {
+            $this->debug([], 'Missing status, id, or token.');
+            
+            return false;
+        }
+
+        if (!$this->valid_mobbex_token($token)) {
+            $this->debug([], 'Invalid mobbex token.');
+            
+            return false;
+        }
+
+        $order = new WC_Order($id);
+        $payment_method = $data['payment']['source']['name'];
+
+        if (!empty($payment_method)) {
+            $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
+        }
+
+        // Check status and set
+        if ($status == 2 || $status == 3) {
+            $order->update_status('on-hold', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
+        } else if ($status == 4 || $status >= 200 && $status < 400) {
+            // Set as completed and reduce stock
+            // Set Mobbex Order ID to be able to refund.
+            // TODO: implement return
+            $order->payment_complete($id);
+        } else {
+            $order->update_status('failed', __('Order failed', MOBBEX_WC_TEXT_DOMAIN));
+        }
+
+        return true;
     }
 
     public function mobbex_return_url()
@@ -460,7 +607,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         <!-- Mobbex Button -->
         <div id="mbbx-button"></div>
         <?php
-    }
+}
 
     private function _redirect_to_cart_with_error($error_msg)
     {

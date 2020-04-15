@@ -8,7 +8,7 @@ jQuery(function ($) {
         event.preventDefault();
         event.stopPropagation();
 
-        return !invokeOverlayCheckout();
+        return !invokeOverlayCheckout(event);
     });
 
     // Intercept submit for order review
@@ -16,7 +16,7 @@ jQuery(function ($) {
         event.preventDefault();
         event.stopPropagation();
 
-        return !invokeOverlayCheckout();
+        return !invokeOverlayCheckout(event);
     });
 
     // Some customers (Inky) have themes where the button is outside the form
@@ -26,11 +26,11 @@ jQuery(function ($) {
 
         jQuery('form#order_review').submit();
 
-        return false; // Don't fire the submit event twice if the buttons ARE in the form
+        return !invokeOverlayCheckout(event); // Don't fire the submit event twice if the buttons ARE in the form
     });
 
     // Starts the overlay checkout process (returns false if we can't)
-    function invokeOverlayCheckout() {
+    function invokeOverlayCheckout(event) {
         // Check payment method etc
         if (isMobbexPaymentMethodSelected()) {
             $("body").append('<div id="mbbx-container"></div>');
@@ -42,6 +42,11 @@ jQuery(function ($) {
             // Make sure we don't submit the form normally
             return true;
         }
+
+        try {
+            // Try to dispatch the event after stop it
+            event.target.dispatchEvent(event);
+        } catch(e) {}
 
         // We didn't fire
         return false;

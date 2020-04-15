@@ -42,6 +42,14 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 2.2.0 :: 2020-04-15
+- Added new Theme Settings
+- New Webhook using WP API
+- Mobbex Button is now disabled by default because is not Working with WooCommerce 4 due to new React UI ( Fix in Progress )
+- Better Logging on DEBUG Mode
+- Moved constants into defines
+- Some fixes because bugs must be squashed.
+
 ### 2.1.3 :: 2020-01-22
 - Mobbex Button v0.9.30
 - Multiple fixes.

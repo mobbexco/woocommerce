@@ -4,7 +4,7 @@
 
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      2.1.2
+Version:      2.2.0
 
  */
 
@@ -55,6 +55,13 @@ class MobbexGateway
         // Add some useful things
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
+
+        add_action('rest_api_init', function () {
+            register_rest_route('mobbex/v1', '/webhook', [
+                'methods' => WP_REST_Server::CREATABLE,
+                'callback' => [$this, 'mobbex_webhook_api'],
+            ]);
+        });
     }
 
     /**
@@ -134,6 +141,23 @@ class MobbexGateway
         return array_merge($input, $links);
     }
 
+    public function mobbex_webhook_api($request)
+    {
+        try {
+            mobbex_debug("REST API > Request", $request->get_params());
+            
+            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+
+            return $mobbexGateway->mobbex_webhook_api($request);
+        } catch (Exception $e) {
+            mobbex_debug("REST API > Error", $e);
+
+            return [
+                "result" => false,
+            ];
+        }
+    }
+
     public static function load_textdomain()
     {
 
@@ -153,7 +177,7 @@ class MobbexGateway
 
         add_filter('woocommerce_payment_gateways', function ($methods) {
 
-            $methods[] = 'WC_Gateway_Mobbex';
+            $methods[] = MOBBEX_WC_GATEWAY;
             return $methods;
 
         });
