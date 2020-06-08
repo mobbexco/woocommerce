@@ -4,7 +4,7 @@
 
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      2.2.0
+Version:      2.3.0
 
  */
 
@@ -83,7 +83,7 @@ class MobbexGateway
             MobbexGateway::$errors[] = __('Your site needs to be served via HTTPS to comunicate securely with Mobbex.', MOBBEX_WC_TEXT_DOMAIN);
         }
 
-        if (version_compare(wc()->version, '2.6', '<')) {
+        if (version_compare(WC_VERSION, '2.6', '<')) {
             MobbexGateway::$errors[] = __('Mobbex requires WooCommerce version 2.6 or greater', MOBBEX_WC_TEXT_DOMAIN);
         }
 
@@ -129,23 +129,27 @@ class MobbexGateway
      * @param  string $file plugin file path and name being processed
      * @return array $input
      */
-    public function plugin_row_meta($input, $file)
+    public function plugin_row_meta($links, $file)
     {
-        $links = [
-            '<a href="' . esc_url(MobbexGateway::$site_url) . '" target="_blank">' . __('Website', 'woocommerce-mobbex-gateway') . '</a>',
-            '<a href="' . esc_url(MobbexGateway::$doc_url) . '" target="_blank">' . __('Documentation', 'woocommerce-mobbex-gateway') . '</a>',
-            '<a href="' . esc_url(MobbexGateway::$github_url) . '" target="_blank">' . __('Contribute', 'woocommerce-mobbex-gateway') . '</a>',
-            '<a href="' . esc_url(MobbexGateway::$github_issues_url) . '" target="_blank">' . __('Report Issues', 'woocommerce-mobbex-gateway') . '</a>',
-        ];
+        if (strpos($file, plugin_basename(__FILE__)) !== false) {
+            $plugin_links = [
+                '<a href="' . esc_url(MobbexGateway::$site_url) . '" target="_blank">' . __('Website', 'woocommerce-mobbex-gateway') . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$doc_url) . '" target="_blank">' . __('Documentation', 'woocommerce-mobbex-gateway') . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$github_url) . '" target="_blank">' . __('Contribute', 'woocommerce-mobbex-gateway') . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$github_issues_url) . '" target="_blank">' . __('Report Issues', 'woocommerce-mobbex-gateway') . '</a>',
+            ];
 
-        return array_merge($input, $links);
+            $links = array_merge($links, $plugin_links);
+        }
+
+        return $links;
     }
 
     public function mobbex_webhook_api($request)
     {
         try {
             mobbex_debug("REST API > Request", $request->get_params());
-            
+
             $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
 
             return $mobbexGateway->mobbex_webhook_api($request);

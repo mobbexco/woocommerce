@@ -163,9 +163,6 @@ jQuery(function ($) {
         if (response.refresh === 'true') {
             jQuery('body').trigger('update_checkout');
         }
-
-        // Clear the Mobbex spinner manually as we didn't start checkout
-        // TODO: Add some loading spinner ( hide )
     };
 
 });

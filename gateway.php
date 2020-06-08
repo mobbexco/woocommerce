@@ -30,9 +30,14 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->use_webhook_api = ($this->get_option('use_webhook_api') === 'yes');
 
         // Theme
+        $this->checkout_title = $this->get_option('checkout_title');
+        $this->checkout_logo = $this->get_option('checkout_logo');
         $this->checkout_theme = $this->get_option('checkout_theme');
         $this->checkout_background_color = $this->get_option('checkout_background_color');
         $this->checkout_primary_color = $this->get_option('checkout_primary_color');
+
+        // Reseller ID
+        $this->reseller_id = $this->get_option('reseller_id');
 
         // String variables
         $this->title = $this->get_option('title');
@@ -181,6 +186,24 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
+            'checkout_title' => [
+
+                'title' => __('Checkout Title', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Checkout Title from here.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'text',
+                'default' => '',
+
+            ],
+
+            'checkout_logo' => [
+
+                'title' => __('Checkout Logo URL', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Checkout Logo from here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on Mobbex will be used. Dimensions: 250x250 pixels', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'text',
+                'default' => '',
+
+            ],
+
             'checkout_background_color' => [
 
                 'title' => __('Checkout Background Color', MOBBEX_WC_TEXT_DOMAIN),
@@ -198,6 +221,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'type' => 'text',
                 'class' => 'colorpick',
                 'default' => '#6f00ff',
+
+            ],
+
+            'reseller_id' => [
+
+                'title' => __('Reseller ID', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Reseller ID from here. This field is optional and must be used only if was specified by the main seller.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'text',
+                'default' => '',
 
             ],
 
@@ -275,13 +307,37 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function getTheme()
     {
-        return [
+        $theme = [
             "type" => $this->checkout_theme,
             "background" => $this->checkout_background_color,
             "colors" => [
                 "primary" => $this->checkout_primary_color,
             ],
         ];
+
+        if ($this->checkout_title !== '' || $this->checkout_logo !== '') {
+            $theme = array_merge($theme, [
+                "header" => [],
+            ]);
+        }
+
+        if ($this->checkout_title !== '') {
+            $theme['header'] = array_merge($theme['header'], [
+                "name" => $this->checkout_title,
+            ]);
+        }
+
+        if ($this->checkout_logo !== '') {
+            $theme['header'] = array_merge($theme['header'], [
+                "logo" => $this->checkout_logo,
+            ]);
+        }
+
+        $this->debug([
+            "theme" => $theme,
+        ]);
+
+        return $theme;
     }
 
     public function get_checkout($order = null, $return_url = null)
@@ -303,6 +359,48 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $this->debug($domain);
 
+        $reference = $order->get_id();
+
+        if (isset($this->reseller_id) && $this->reseller_id !== '') {
+            $reference = $this->reseller_id . "-" . $reference;
+        }
+
+        $checkout_body = [
+            'total' => $order->get_total(),
+            'reference' => $reference,
+            'description' => 'Orden #' . $order->get_id(),
+            'items' => $this->get_items($order),
+            'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
+            'return_url' => $return_url,
+            'test' => $this->test_mode,
+            "options" => [
+                "button" => $this->use_button,
+                "domain" => $domain,
+                "theme" => $this->getTheme(),
+                "redirect" => array(
+                    "success" => true,
+                    "failure" => false,
+                ),
+                "platform" => $this->getPlatform(),
+            ],
+        ];
+
+        $this->debug([
+            "checkout_body" => $checkout_body
+        ]);
+
+        // Add Customer if Logged In
+        $current_user = wp_get_current_user();
+        if ( 0 !== $current_user->ID ) {
+            $checkout_body = array_merge($checkout_body, [
+                "customer" => [
+                    "name" => $current_user->display_name,
+                    "email" => $current_user->user_email,
+                    "uid" => $current_user->ID
+                ]
+            ]);
+        }
+
         // Create the Checkout
         $response = wp_remote_post(MOBBEX_CHECKOUT, [
 
@@ -314,27 +412,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'x-access-token' => $this->access_token,
             ],
 
-            'body' => json_encode([
-
-                'total' => $order->get_total(),
-                'reference' => $order->get_id(),
-                'description' => 'Orden #' . $order->get_id(),
-                'items' => $this->get_items($order),
-                'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
-                'return_url' => $return_url,
-                'test' => $this->test_mode,
-                "options" => [
-                    "button" => $this->use_button,
-                    "domain" => $domain,
-                    "theme" => $this->getTheme(),
-                    "platform" => $this->getPlatform(),
-                ],
-
-            ]),
+            'body' => json_encode($checkout_body),
 
             'data_format' => 'body',
 
         ]);
+
+        $this->debug($response);
 
         if (!is_wp_error($response)) {
 
@@ -456,7 +540,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->debug($postData, "Mobbex API > Post Data");
         $this->debug([
             "id" => $id,
-            "token" => $token
+            "token" => $token,
         ], "Mobbex API > Params");
 
         $res = $this->process_webhook($id, $token, $postData['data']);
@@ -474,22 +558,22 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->debug([
             "id" => $id,
             "token" => $token,
-            "status" => $status
+            "status" => $status,
         ], "Mobbex API > Process Data");
 
         if (empty($status) || empty($id) || empty($token)) {
             $this->debug([], 'Missing status, id, or token.');
-            
+
             return false;
         }
 
         if (!$this->valid_mobbex_token($token)) {
             $this->debug([], 'Invalid mobbex token.');
-            
+
             return false;
         }
 
-        $order = new WC_Order($id);
+        $order = wc_get_order($order_id);
         $payment_method = $data['payment']['source']['name'];
 
         if (!empty($payment_method)) {
@@ -507,6 +591,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         } else {
             $order->update_status('failed', __('Order failed', MOBBEX_WC_TEXT_DOMAIN));
         }
+
+        // Set Total Paid
+        $total = (float) $data['payment']['total'];
+        $order->set_total( $total );
 
         return true;
     }
@@ -530,7 +618,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return $this->_redirect_to_cart_with_error($error);
         }
 
-        $order = new WC_Order($id);
+        $order = wc_get_order($order_id);
 
         if ($status == 0 || $status >= 400) {
             // Try to restore the cart here

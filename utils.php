@@ -2,13 +2,13 @@
 
 // Defines
 define('MOBBEX_WC_TEXT_DOMAIN', 'mobbex-for-woocommerce');
-define('MOBBEX_CHECKOUT', 'https://mobbex.com/p/checkout');
+define('MOBBEX_CHECKOUT', 'https://api.mobbex.com/p/checkout');
 
 define('MOBBEX_WC_GATEWAY', 'WC_Gateway_Mobbex');
 define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
 
-define('MOBBEX_VERSION', '2.2.0');
-define('MOBBEX_BUTTON_VERSION', '0.9.30');
+define('MOBBEX_VERSION', '2.3.0');
+define('MOBBEX_BUTTON_VERSION', '1.0.1');
 
 if (!function_exists('mobbex_debug')) {
     // https://github.com/bonny/WordPress-Simple-History/
