@@ -42,6 +42,15 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 2.3.0 :: 2020-06-08
+- Use the standard WC API.
+- Custom Mobbex Header Settings.
+- Add Customer into Checkout for Smart Checkout.
+- New Mobbex Button.
+- Reseller ID Settings.
+- Set the Paid Total on Checkout.
+- Multiple Fixes.
+
 ### 2.2.0 :: 2020-04-15
 - Added new Theme Settings
 - New Webhook using WP API
