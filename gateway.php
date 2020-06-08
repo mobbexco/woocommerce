@@ -573,7 +573,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return false;
         }
 
-        $order = wc_get_order($order_id);
+        $order = wc_get_order($id);
         $payment_method = $data['payment']['source']['name'];
 
         if (!empty($payment_method)) {
@@ -618,7 +618,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return $this->_redirect_to_cart_with_error($error);
         }
 
-        $order = wc_get_order($order_id);
+        $order = wc_get_order($id);
 
         if ($status == 0 || $status >= 400) {
             // Try to restore the cart here
