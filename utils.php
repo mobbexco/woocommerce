@@ -7,8 +7,8 @@ define('MOBBEX_CHECKOUT', 'https://api.mobbex.com/p/checkout');
 define('MOBBEX_WC_GATEWAY', 'WC_Gateway_Mobbex');
 define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
 
-define('MOBBEX_VERSION', '2.3.0');
-define('MOBBEX_BUTTON_VERSION', '1.0.1');
+define('MOBBEX_VERSION', '2.3.3');
+define('MOBBEX_EMBED_VERSION', '1.0.6');
 
 if (!function_exists('mobbex_debug')) {
     // https://github.com/bonny/WordPress-Simple-History/

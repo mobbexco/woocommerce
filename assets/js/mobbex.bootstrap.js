@@ -89,10 +89,12 @@ jQuery(function ($) {
 
     // Starts the Mobbex overlay once we have the checkout url.
     function startMobbexCheckoutModal(checkoutData, returnUrl) {
-        var mbbxButton = window.MobbexButton.init({
-            checkout: checkoutData.id,
-            inSite: true,
-            onPayment: (data) => {
+        var mbbxEmbed = window.MobbexEmbed.init({
+            id: checkoutData.id,
+            sid: 'none',
+            type: 'checkout',
+
+            onResult: (data) => {
                 location.href = returnUrl + '&status=' + data.status.code;
             },
             onClose: (cancelled) => {
@@ -111,11 +113,13 @@ jQuery(function ($) {
             }
         });
 
-        mbbxButton.open();
+        mbbxEmbed.open();
     };
 
     function lockForm() {
         form.addClass('processing').block();
+
+        jQuery('.blockMsg').hide();
     }
 
     function unlockForm() {
