@@ -5,25 +5,16 @@ jQuery(function ($) {
 
     // Intercept form button (Bind to click instead of WC trigger to avoid popup) 
     jQuery('form.checkout').on('click', ':submit', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-
         return !invokeOverlayCheckout(event);
     });
 
     // Intercept submit for order review
     jQuery('form#order_review').on('submit', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-
         return !invokeOverlayCheckout(event);
     });
 
     // Some customers (Inky) have themes where the button is outside the form
     jQuery('#checkout_buttons button').on('click', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-
         jQuery('form#order_review').submit();
 
         return !invokeOverlayCheckout(event); // Don't fire the submit event twice if the buttons ARE in the form
@@ -42,11 +33,6 @@ jQuery(function ($) {
             // Make sure we don't submit the form normally
             return true;
         }
-
-        try {
-            // Try to dispatch the event after stop it
-            event.target.dispatchEvent(event);
-        } catch(e) {}
 
         // We didn't fire
         return false;
