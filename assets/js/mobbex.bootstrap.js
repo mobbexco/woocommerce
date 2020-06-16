@@ -129,9 +129,12 @@ jQuery(function ($) {
             // Remove old errors
             noticesWrapper.empty();
 
-            // form.prepend(response.messages);
-            for (var message of response.messages) {
-                noticesWrapper.append(`<ul class="woocommerce-error" role="alert"><li>${message}</li></ul>`);
+            if (typeof (response.messages) === 'string') {
+                noticesWrapper.append(response.messages);
+            } else {
+                for (var message of response.messages) {
+                    noticesWrapper.append(`<ul class="woocommerce-error" role="alert"><li>${message}</li></ul>`);
+                }
             }
         }
 
