@@ -1,11 +1,12 @@
 <?php
-
 /*
-
-Plugin Name:  Mobbex for Woocommerce
-Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      2.3.5
-
+ Plugin Name:  Mobbex for Woocommerce
+ Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
+ Version:      2.3.6
+ WC tested up to: 4.2.2
+ Author: mobbex.com
+ Author URI: https://mobbex.com/
+ Copyright: 2020 mobbex.com
  */
 
 require_once 'utils.php';
