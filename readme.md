@@ -42,6 +42,11 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 2.4.0 :: 2020-09-14
+- Implemented mobbex refund.
+- Set processing fees/discounts on Checkout.
+- Save mobbex payment data in Order.
+
 ### 2.3.0 :: 2020-06-08
 - Use the standard WC API.
 - Custom Mobbex Header Settings.

@@ -826,4 +826,38 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     }
 
+    public function process_refund($order_id, $amount = null, $reason = '') 
+    {
+
+        $payment_id = get_post_meta($order_id, 'mobbex_payment_id', true);
+        if(!$payment_id){
+            return false;
+        }
+
+		$response = wp_remote_post(str_replace('{ID}', $payment_id, MOBBEX_REFUND), [
+
+            'headers' => [
+
+                'cache-control' => 'no-cache',
+                'content-type' => 'application/json',
+                'x-api-key' => $this->api_key,
+                'x-access-token' => $this->access_token,
+            ],
+
+            'body' => json_encode(['total' => floatval($amount)]),
+
+            'data_format' => 'body',
+
+        ]);
+
+        $result = json_decode($response['body']);
+        
+        if ($result->result) {
+            return true;
+        } else {
+            return new WP_Error('mobbex_refund_error', __('Refund Error: Sorry! This is not a refundable transaction.', 'mobbex-gateway'));
+        }
+
+    }
+    
 }
