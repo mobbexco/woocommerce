@@ -4,6 +4,11 @@ require_once 'utils.php';
 class WC_Gateway_Mobbex extends WC_Payment_Gateway
 {
 
+    public $supports = array( 
+        'products',
+        'refunds',
+    );
+
     public function __construct()
     {
         $this->id = MOBBEX_WC_GATEWAY_ID;
@@ -567,6 +572,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $order = new WC_Order($id);
         $payment_method = $_POST['data']['payment']['source']['name'];
+        //TODO: function add_metadata_to_order
+        $order->update_meta_data('mobbex_payment_id', $_POST['data']['payment']['id']);
+        $order->update_meta_data('mobbex_risk_analysis', $_POST['data']['payment']['riskAnalysis']['level']);
+        $order->update_meta_data('mobbex_payment', $_POST['data']['payment']);
+        $order->save();
 
         if (!empty($payment_method)) {
             $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
@@ -579,6 +589,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.
             // TODO: implement return
+            $this->add_fee_or_discount($_POST['data']['payment']['total'], $order);
             $order->payment_complete($id);
         } else {
             $order->update_status('failed', __('Order failed', MOBBEX_WC_TEXT_DOMAIN));
@@ -632,6 +643,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         $order = wc_get_order($id);
+        //TODO: function add_metadata_to_order
+        $order->update_meta_data('mobbex_payment', $_POST['data']['payment']);
+        $order->update_meta_data('mobbex_payment_id', $_POST['data']['payment']['id']);
+        $order->update_meta_data('mobbex_risk_analysis', $_POST['data']['payment']['riskAnalysis']);
+        $order->save();
         $payment_method = $data['payment']['source']['name'];
 
         if (!empty($payment_method)) {
@@ -645,6 +661,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.
             // TODO: implement return
+            $this->add_fee_or_discount($data['payment']['total'], $order);
             $order->payment_complete($id);
         } else {
             $order->update_status('failed', __('Order failed', MOBBEX_WC_TEXT_DOMAIN));
@@ -753,7 +770,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         <!-- Mobbex Button -->
         <div id="mbbx-button"></div>
         <?php
-}
+    }
 
     private function _redirect_to_cart_with_error($error_msg)
     {
@@ -762,4 +779,51 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         return array('result' => 'error', 'redirect' => wc_get_cart_url());
     }
+
+    private function add_fee_or_discount($total, $order)
+    {
+        if (version_compare(WC_VERSION, '2.6', '>') && version_compare(WC_VERSION, '3.2', '<') && $total < $order->get_total()) {
+            // In these versions discounts can only be applied using coupons
+            $current_user = wp_get_current_user();
+            $coupon_code = $current_user->ID . $order->get_id();
+
+            $coupon = array(
+                'post_title'   => $coupon_code,
+                'post_content' => '',
+                'post_status'  => 'publish',
+                'post_author'  => 1,
+                'post_type'    => 'shop_coupon'
+            );    
+
+            $new_coupon_id = wp_insert_post($coupon);
+
+            update_post_meta($new_coupon_id, 'discount_type', 'fixed_cart');
+            update_post_meta($new_coupon_id, 'coupon_amount', $order->get_total() - $total);
+            update_post_meta($new_coupon_id, 'individual_use', 'no');
+            update_post_meta($new_coupon_id, 'product_ids', '');
+            update_post_meta($new_coupon_id, 'exclude_product_ids', '');
+            update_post_meta($new_coupon_id, 'usage_limit', '1');
+            update_post_meta($new_coupon_id, 'expiry_date', '');
+            update_post_meta($new_coupon_id, 'apply_before_tax', 'yes');
+            update_post_meta($new_coupon_id, 'free_shipping', 'no');
+
+            $order->apply_coupon($coupon_code);
+            $order->recalculate_coupons();
+
+        } elseif ($total != $order->get_total()) {
+
+            $item_fee = new WC_Order_Item_Fee();
+
+            $item_fee->set_name($total > $order->get_total() ? "Processing Fee" : "Discount");
+            $item_fee->set_amount($total - $order->get_total());
+            $item_fee->set_total($total - $order->get_total());
+
+            $order->add_item( $item_fee );
+            
+        }
+        
+        $order->calculate_totals();
+
+    }
+
 }
