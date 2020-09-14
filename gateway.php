@@ -571,16 +571,30 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         $order = new WC_Order($id);
-        $payment_method = $_POST['data']['payment']['source']['name'];
-        //TODO: function add_metadata_to_order
+        $order->update_meta_data('mobbex_webhook', $_POST);
+
         $order->update_meta_data('mobbex_payment_id', $_POST['data']['payment']['id']);
         $order->update_meta_data('mobbex_risk_analysis', $_POST['data']['payment']['riskAnalysis']['level']);
-        $order->update_meta_data('mobbex_payment', $_POST['data']['payment']);
-        $order->save();
 
+        $source = $_POST['data']['payment']['source'];
+        $payment_method = $source['name'];
+        
+        if ($source['type'] == 'card') {
+            $order->update_meta_data('mobbex_card_info',  $payment_method . ' ' . $source['number']);
+            $order->update_meta_data('mobbex_plan', $source['installment']['description'] . ' de ' . $source['installment']['amount']);
+        }
+        
+        if (!empty($_POST['data']['entity']['uid'])) {
+            $entity_uid = $_POST['data']['entity']['uid'];
+            $order->update_meta_data('mobbex_coupon', $entity_uid);
+            $order->update_meta_data('mobbex_coupon_url', str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $_POST['data']['payment']['id']], MOBBEX_COUPON));
+        }
+        
         if (!empty($payment_method)) {
             $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
         }
+
+        $order->save();
 
         // Check status and set
         if ($status == 2 || $status == 3) {
@@ -643,16 +657,30 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         $order = wc_get_order($id);
-        //TODO: function add_metadata_to_order
-        $order->update_meta_data('mobbex_payment', $_POST['data']['payment']);
-        $order->update_meta_data('mobbex_payment_id', $_POST['data']['payment']['id']);
-        $order->update_meta_data('mobbex_risk_analysis', $_POST['data']['payment']['riskAnalysis']);
-        $order->save();
-        $payment_method = $data['payment']['source']['name'];
+        $order->update_meta_data('mobbex_webhook', $_POST);
 
+        $order->update_meta_data('mobbex_payment_id', $_POST['data']['payment']['id']);
+        $order->update_meta_data('mobbex_risk_analysis', $_POST['data']['payment']['riskAnalysis']['level']);
+
+        $source = $_POST['data']['payment']['source'];
+        $payment_method = $source['name'];
+        
+        if ($source['type'] == 'card') {
+            $order->update_meta_data('mobbex_card_info',  $payment_method . ' ' . $source['number']);
+            $order->update_meta_data('mobbex_plan', $source['installment']['description'] . ' de ' . $source['installment']['amount']);
+        }
+        
+        if (!empty($_POST['data']['entity']['uid'])) {
+            $entity_uid = $_POST['data']['entity']['uid'];
+            $order->update_meta_data('mobbex_coupon', $entity_uid);
+            $order->update_meta_data('mobbex_coupon_url', str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $_POST['data']['payment']['id']], MOBBEX_COUPON));
+        }
+        
         if (!empty($payment_method)) {
             $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
         }
+
+        $order->save();
 
         // Check status and set
         if ($status == 2 || $status == 3) {
