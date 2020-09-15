@@ -520,6 +520,17 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         }
 
+        foreach ($order->get_items('shipping') as $item) {
+
+            $items[] = [
+
+                'description' => 'Shipping: ' . $item->get_name(),
+                'total' => $item->get_total(),
+                
+            ];
+            
+        }
+
         return $items;
 
     }
