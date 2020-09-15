@@ -4,7 +4,7 @@ require_once 'utils.php';
 class WC_Gateway_Mobbex extends WC_Payment_Gateway
 {
 
-    public $supports = array( 
+    public $supports = array(
         'products',
         'refunds',
     );
@@ -578,18 +578,18 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $source = $_POST['data']['payment']['source'];
         $payment_method = $source['name'];
-        
+
         if ($source['type'] == 'card') {
-            $order->update_meta_data('mobbex_card_info',  $payment_method . ' ' . $source['number']);
+            $order->update_meta_data('mobbex_card_info', $payment_method . ' ' . $source['number']);
             $order->update_meta_data('mobbex_plan', $source['installment']['description'] . ' de ' . $source['installment']['amount']);
         }
-        
+
         if (!empty($_POST['data']['entity']['uid'])) {
             $entity_uid = $_POST['data']['entity']['uid'];
             $order->update_meta_data('mobbex_coupon', $entity_uid);
             $order->update_meta_data('mobbex_coupon_url', str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $_POST['data']['payment']['id']], MOBBEX_COUPON));
         }
-        
+
         if (!empty($payment_method)) {
             $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
         }
@@ -659,23 +659,43 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order = wc_get_order($id);
         $order->update_meta_data('mobbex_webhook', $_POST);
 
+        $mobbex_risk_analysis = $_POST['data']['payment']['riskAnalysis']['level'];
+
         $order->update_meta_data('mobbex_payment_id', $_POST['data']['payment']['id']);
-        $order->update_meta_data('mobbex_risk_analysis', $_POST['data']['payment']['riskAnalysis']['level']);
 
         $source = $_POST['data']['payment']['source'];
         $payment_method = $source['name'];
-        
-        if ($source['type'] == 'card') {
-            $order->update_meta_data('mobbex_card_info',  $payment_method . ' ' . $source['number']);
-            $order->update_meta_data('mobbex_plan', $source['installment']['description'] . ' de ' . $source['installment']['amount']);
-        }
-        
+
+        // TODO: Check the Status and Make a better note here based on the last registered status
+        $main_mobbex_note = 'ID de Operación Mobbex: ' . $_POST['data']['payment']['id'] . '. ';
         if (!empty($_POST['data']['entity']['uid'])) {
             $entity_uid = $_POST['data']['entity']['uid'];
-            $order->update_meta_data('mobbex_coupon', $entity_uid);
-            $order->update_meta_data('mobbex_coupon_url', str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $_POST['data']['payment']['id']], MOBBEX_COUPON));
+            $mobbex_order_url = str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $_POST['data']['payment']['id']], MOBBEX_COUPON);
+
+            $order->update_meta_data('mobbex_coupon_url', $mobbex_order_url);
+
+            $main_mobbex_note .= 'URL al Cupón: ' . $mobbex_order_url . '. ';
         }
-        
+
+        if ($source['type'] == 'card') {
+            $mobbex_card_payment_info = $payment_method . ' ( ' . $source['number'] . ' )';
+            $mobbex_card_plan = $source['installment']['description'] . '. ' . $source['installment']['count'] . ' Cuota/s' . ' de ' . $source['installment']['amount'];
+
+            $order->update_meta_data('mobbex_card_info', $mobbex_card_payment_info);
+            $order->update_meta_data('mobbex_plan', $mobbex_card_plan);
+
+            $main_mobbex_note .= 'Pago realizado con ' . $mobbex_card_payment_info . '. ' . $mobbex_card_plan . '. ';
+        } else {
+            $main_mobbex_note .= 'Pago realizado con ' . $payment_method . '. ';
+        }
+
+        $order->add_order_note($main_mobbex_note);
+
+        if ($mobbex_risk_analysis > 0) {
+            $order->add_order_note('El riesgo de la operación fue evaluado en: ' . $mobbex_risk_analysis);
+            $order->update_meta_data('mobbex_risk_analysis', $mobbex_risk_analysis);
+        }
+
         if (!empty($payment_method)) {
             $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
         }
@@ -798,7 +818,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         <!-- Mobbex Button -->
         <div id="mbbx-button"></div>
         <?php
-    }
+}
 
     private function _redirect_to_cart_with_error($error_msg)
     {
@@ -816,12 +836,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $coupon_code = $current_user->ID . $order->get_id();
 
             $coupon = array(
-                'post_title'   => $coupon_code,
+                'post_title' => $coupon_code,
                 'post_content' => '',
-                'post_status'  => 'publish',
-                'post_author'  => 1,
-                'post_type'    => 'shop_coupon'
-            );    
+                'post_status' => 'publish',
+                'post_author' => 1,
+                'post_type' => 'shop_coupon',
+            );
 
             $new_coupon_id = wp_insert_post($coupon);
 
@@ -846,23 +866,23 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $item_fee->set_amount($total - $order->get_total());
             $item_fee->set_total($total - $order->get_total());
 
-            $order->add_item( $item_fee );
-            
+            $order->add_item($item_fee);
+
         }
-        
+
         $order->calculate_totals();
 
     }
 
-    public function process_refund($order_id, $amount = null, $reason = '') 
+    public function process_refund($order_id, $amount = null, $reason = '')
     {
 
         $payment_id = get_post_meta($order_id, 'mobbex_payment_id', true);
-        if(!$payment_id){
+        if (!$payment_id) {
             return false;
         }
 
-		$response = wp_remote_post(str_replace('{ID}', $payment_id, MOBBEX_REFUND), [
+        $response = wp_remote_post(str_replace('{ID}', $payment_id, MOBBEX_REFUND), [
 
             'headers' => [
 
@@ -879,7 +899,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         ]);
 
         $result = json_decode($response['body']);
-        
+
         if ($result->result) {
             return true;
         } else {
@@ -887,5 +907,5 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
     }
-    
+
 }
