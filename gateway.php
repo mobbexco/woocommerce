@@ -503,7 +503,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         foreach ($order->get_items() as $item) {
 
-            $image = get_the_post_thumbnail_url($item->get_id(), 'thumbnail');
+            $product = wc_get_product($item->get_product_id());
+            $image_id = $product->get_image_id();
+            $image = wp_get_attachment_image_url($image_id, 'thumbnail');
             $default_image = wc_placeholder_img_src('thumbnail');
             $image = $image ? $image : $default_image;
 
@@ -512,6 +514,17 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'image' => $image,
                 'quantity' => $item->get_quantity(),
                 'description' => $item->get_name(),
+                'total' => $item->get_total(),
+
+            ];
+
+        }
+
+        foreach ($order->get_items('shipping') as $item) {
+
+            $items[] = [
+                // TODO: Use a translate key here for "Shipping"
+                'description' => 'Envío: ' . $item->get_name(),
                 'total' => $item->get_total(),
 
             ];
