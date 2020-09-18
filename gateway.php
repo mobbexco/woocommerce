@@ -563,64 +563,16 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             die('Mobbex sent an invalid request body.');
         }
 
-        $this->debug($_POST['data']);
+        $this->debug($postData, "Mobbex IPN > Post Data");
+        $this->debug([
+            "id" => $id,
+            "token" => $token,
+        ], "Mobbex IPN > Params");
 
-        $status = $_POST['data']['payment']['status']['code'];
         $id = $_REQUEST['mobbex_order_id'];
         $token = $_REQUEST['mobbex_token'];
 
-        $this->debug($status);
-        $this->debug($id);
-        $this->debug($token);
-
-        if (empty($status) || empty($id) || empty($token)) {
-            $this->debug('Missing status, id, or token.');
-            die('Missing status, id, or token.');
-        }
-
-        if (!$this->valid_mobbex_token($token)) {
-            $this->debug('Invalid mobbex token.');
-            die('Invalid mobbex token.');
-        }
-
-        $order = new WC_Order($id);
-        $order->update_meta_data('mobbex_webhook', $_POST);
-
-        $order->update_meta_data('mobbex_payment_id', $_POST['data']['payment']['id']);
-        $order->update_meta_data('mobbex_risk_analysis', $_POST['data']['payment']['riskAnalysis']['level']);
-
-        $source = $_POST['data']['payment']['source'];
-        $payment_method = $source['name'];
-
-        if ($source['type'] == 'card') {
-            $order->update_meta_data('mobbex_card_info', $payment_method . ' ' . $source['number']);
-            $order->update_meta_data('mobbex_plan', $source['installment']['description'] . ' de ' . $source['installment']['amount']);
-        }
-
-        if (!empty($_POST['data']['entity']['uid'])) {
-            $entity_uid = $_POST['data']['entity']['uid'];
-            $order->update_meta_data('mobbex_coupon', $entity_uid);
-            $order->update_meta_data('mobbex_coupon_url', str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $_POST['data']['payment']['id']], MOBBEX_COUPON));
-        }
-
-        if (!empty($payment_method)) {
-            $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
-        }
-
-        $order->save();
-
-        // Check status and set
-        if ($status == 2 || $status == 3) {
-            $order->update_status('on-hold', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
-        } else if ($status == 4 || $status >= 200 && $status < 400) {
-            // Set as completed and reduce stock
-            // Set Mobbex Order ID to be able to refund.
-            // TODO: implement return
-            $this->add_fee_or_discount($_POST['data']['payment']['total'], $order);
-            $order->payment_complete($id);
-        } else {
-            $order->update_status('failed', __('Order failed', MOBBEX_WC_TEXT_DOMAIN));
-        }
+        $this->process_webhook($id, $token, $_POST['data']);
 
         echo "WebHook OK: Mobbex for WooCommerce v" . MOBBEX_VERSION;
 
@@ -683,11 +635,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $main_mobbex_note = 'ID de Operación Mobbex: ' . $_POST['data']['payment']['id'] . '. ';
         if (!empty($_POST['data']['entity']['uid'])) {
             $entity_uid = $_POST['data']['entity']['uid'];
+
             $mobbex_order_url = str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $_POST['data']['payment']['id']], MOBBEX_COUPON);
 
             $order->update_meta_data('mobbex_coupon_url', $mobbex_order_url);
 
-            $main_mobbex_note .= 'URL al Cupón: ' . $mobbex_order_url . '. ';
+            $order->add_order_note('URL al Cupón: ' . $mobbex_order_url);
         }
 
         if ($source['type'] == 'card') {
