@@ -11,7 +11,7 @@ define('MOBBEX_COUPON', 'https://mobbex.com/console/{entity.uid}/operations/?oid
 define('MOBBEX_WC_GATEWAY', 'WC_Gateway_Mobbex');
 define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
 
-define('MOBBEX_VERSION', '2.4.2');
+define('MOBBEX_VERSION', '2.4.3');
 define('MOBBEX_EMBED_VERSION', '1.0.8');
 
 if (!function_exists('mobbex_debug')) {
