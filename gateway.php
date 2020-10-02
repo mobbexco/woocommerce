@@ -98,7 +98,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             }
         }
 
-        if ($this->own_dni == 'yes') {
+        if ($this->own_dni == 'yes' && !function_exists('mobbex_dni_woocommerce_billing_fields') && !function_exists('mobbex_dni_display_admin_order_meta')) {
 
             add_filter('woocommerce_billing_fields', 'mobbex_dni_woocommerce_billing_fields');
 
@@ -294,6 +294,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function process_admin_options()
     {
         $saved = parent::process_admin_options();
+
+        // Both fields cannot be filled at the same time
+        if ($this->get_option('own_dni') === 'yes' && $this->get_option('custom_dni') != '') {
+            $this->update_option('custom_dni');
+        }
 
         return $saved;
     }
