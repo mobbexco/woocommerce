@@ -57,6 +57,12 @@ class MobbexGateway
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
 
+        // Mobbex product management tab
+        add_filter('woocommerce_product_data_tabs', [$this, 'mobbex_product_settings_tabs']);
+        add_action( 'woocommerce_product_data_panels', [$this, 'mobbex_product_panels']);
+        add_action('woocommerce_process_product_meta', [$this, 'mobbex_product_save']);
+        add_action('admin_head', [$this, 'mobbex_icon']);
+        
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/webhook', [
                 'methods' => WP_REST_Server::CREATABLE,
@@ -210,6 +216,83 @@ class MobbexGateway
             echo ob_get_clean();
         });
 
+    }
+
+    public function mobbex_product_settings_tabs($tabs)
+    {
+    
+        $tabs['mobbex'] = array(
+            'label'    => 'Mobbex',
+            'target'   => 'mobbex_product_data',
+            'priority' => 21,
+        );
+        return $tabs;
+    
+    }
+    
+    public function mobbex_product_panels()
+    {
+        $product = wc_get_product(get_the_ID());
+    
+        echo '<div id="mobbex_product_data" class="panel woocommerce_options_panel hidden">';
+        echo '<h2><b>' . __('Choose the plans you want NOT to appear during the purchase', MOBBEX_WC_TEXT_DOMAIN) . ':</b></h2>';
+    
+        $ahora = array(
+            'ahora_3'  => 'Ahora 3',
+            'ahora_6'  => 'Ahora 6',
+            'ahora_12' => 'Ahora 12',
+            'ahora_18' => 'Ahora 18',
+        );
+
+        foreach ($ahora as $key => $value) {
+
+            $checkbox_data = array(
+                'id'      => $key,
+                'value'   => get_post_meta(get_the_ID(), $key, true),
+                'label'   => $value,
+            );
+            
+            if (get_post_meta(get_the_ID(), $key, true) === 'yes') {
+                $checkbox_data['custom_attributes'] = 'checked';
+            }
+
+            woocommerce_wp_checkbox($checkbox_data);
+        }
+    
+        echo '</div>';
+    
+    }
+
+    public function mobbex_product_save($post_id) 
+    {
+        $product = wc_get_product($post_id);
+
+        $ahora = array(
+            'ahora_3'  => false,
+            'ahora_6'  => false,
+            'ahora_12' => false,
+            'ahora_18' => false,
+        );
+
+        foreach ($ahora as $key => $value) {
+            if (isset($_POST[$key]) && $_POST[$key] === 'yes') {
+                $value = 'yes';
+            }
+            
+            $product->update_meta_data($key, $value);
+        }
+
+        $product->save();
+    }
+
+    public function mobbex_icon()
+    {
+        echo '<style>
+        #woocommerce-product-data ul.wc-tabs li.mobbex_options.mobbex_tab a:before{
+            color: #7000ff;
+            content: "\f153";
+        }
+        </style>';
     }
 
 }

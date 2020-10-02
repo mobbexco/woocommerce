@@ -469,6 +469,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             ]);
         }
 
+        // Installment filter
+        if (!empty($this->get_installments($order))) {
+            $checkout_body['installments'] = $this->get_installments($order);
+        }
+
         // Create the Checkout
         $response = wp_remote_post(MOBBEX_CHECKOUT, [
 
@@ -789,7 +794,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         <!-- Mobbex Button -->
         <div id="mbbx-button"></div>
         <?php
-}
+    }
 
     private function _redirect_to_cart_with_error($error_msg)
     {
@@ -876,6 +881,35 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         } else {
             return new WP_Error('mobbex_refund_error', __('Refund Error: Sorry! This is not a refundable transaction.', 'mobbex-gateway'));
         }
+
+    }
+
+    public function get_installments($order)
+    {
+
+        $installments = [];
+
+        $ahora = array(
+            'ahora_3'  => 'Ahora 3',
+            'ahora_6'  => 'Ahora 6',
+            'ahora_12' => 'Ahora 12',
+            'ahora_18' => 'Ahora 18',
+        );
+
+        foreach ($order->get_items() as $item) {
+
+            foreach ($ahora as $key => $value) {
+                
+                if (get_post_meta($item->get_product_id(), $key, true) === 'yes') {
+                    $installments[] = '-' . $key;
+                    unset($ahora[$key]);
+                }
+    
+            }
+
+        }
+
+        return $installments;
 
     }
 
