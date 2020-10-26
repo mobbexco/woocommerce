@@ -417,9 +417,23 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $domain = str_replace(["http://", "https://"], "", $site_url);
 
         $this->debug($domain);
-
+        
+        // Get Customer data
+        $current_user = wp_get_current_user();
+        $customer = array(
+            "name" => $current_user->display_name ? : $order->get_formatted_billing_full_name(),
+            "email" => $current_user->user_email ? : $order->get_billing_email(),
+            'phone' => get_user_meta($current_user->ID,'phone_number',true) ? : $order->get_billing_phone(),
+            "uid" => $current_user->ID ? : null,
+        );
+        if (!empty($this->custom_dni)) {
+            $customer['dni'] = get_post_meta($order->get_id(), $this->custom_dni, true);
+        } else {
+            $customer['dni'] = get_post_meta($order->get_id(), '_billing_dni', true);
+        }
+        
+        // Get Reference
         $reference = $order->get_id();
-
         if (isset($this->reseller_id) && $this->reseller_id !== '') {
             $reference = $this->reseller_id . "-" . $reference;
         }
@@ -442,36 +456,21 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 ),
                 "platform" => $this->getPlatform(),
             ],
+            'customer' => $customer,
+            'timeout' => 5,
         ];
 
         $this->debug([
             "checkout_body" => $checkout_body,
         ]);
-
-        // Add Customer if Logged In
-        $current_user = wp_get_current_user();
-        if (0 !== $current_user->ID) {
-            // Get DNI
-            if ($this->custom_dni) {
-                $dni = get_post_meta($order->get_id(), $this->custom_dni, true);
-            } else {
-                $dni = get_post_meta($order->get_id(), '_billing_dni', true);
-            }
-
-            // Add Customer from the Ecommerce
-            $checkout_body = array_merge($checkout_body, [
-                "customer" => [
-                    "identification" => $dni,
-                    "name" => $current_user->display_name,
-                    "email" => $current_user->user_email,
-                    "uid" => $current_user->ID,
-                ],
-            ]);
-        }
-
+        
         // Installment filter
         if (!empty($this->get_installments($order))) {
             $checkout_body['installments'] = $this->get_installments($order);
+        }
+
+        if (defined('MOBBEX_CHECKOUT_INTENT')) {
+            $checkout_body['intent'] = MOBBEX_CHECKOUT_INTENT;
         }
 
         // Create the Checkout
