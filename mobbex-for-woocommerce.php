@@ -59,7 +59,7 @@ class MobbexGateway
 
         // Mobbex product management tab
         add_filter('woocommerce_product_data_tabs', [$this, 'mobbex_product_settings_tabs']);
-        add_action( 'woocommerce_product_data_panels', [$this, 'mobbex_product_panels']);
+        add_action('woocommerce_product_data_panels', [$this, 'mobbex_product_panels']);
         add_action('woocommerce_process_product_meta', [$this, 'mobbex_product_save']);
         add_action('admin_head', [$this, 'mobbex_icon']);
         
@@ -115,6 +115,14 @@ class MobbexGateway
         if (!version_compare($matches[1], '1.0.1', '>=')) {
             MobbexGateway::$errors[] = $openssl_warning;
         }
+
+        require 'plugin-update-checker/plugin-update-checker.php';
+        $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+            'https://github.com/mobbexco/woocommerce/',
+            __FILE__,
+            'mobbex-plugin-update-checker'
+        );
+        $myUpdateChecker->getVcsApi()->enableReleaseAssets();
     }
 
     public function add_action_links($links)
