@@ -29,6 +29,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Internal Options
         $this->use_button = ($this->get_option('button') === 'yes');
         $this->test_mode = ($this->get_option('test_mode') === 'yes');
+        $this->use_wallet = ($this->get_option('wallet') === 'yes');
 
         // New Webhook
         $this->use_webhook_api = ($this->get_option('use_webhook_api') === 'yes');
@@ -196,6 +197,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Enable/Disable Button', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'checkbox',
                 'label' => __('Enable Mobbex Button experience.', MOBBEX_WC_TEXT_DOMAIN),
+                'default' => 'no',
+
+            ],
+
+            'wallet' => [
+
+                'title' => __('Enable/Disable Wallet', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'checkbox',
+                'label' => __('Enable Mobbex Wallet experience.', MOBBEX_WC_TEXT_DOMAIN),
                 'default' => 'no',
 
             ],
@@ -467,6 +477,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Installment filter
         if (!empty($this->get_installments($order))) {
             $checkout_body['installments'] = $this->get_installments($order);
+        }
+
+        if ($this->use_wallet && wp_get_current_user()->ID) {
+            $checkout_body['wallet'] = true;
         }
 
         if (defined('MOBBEX_CHECKOUT_INTENT')) {
@@ -772,12 +786,14 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // let's suppose it is our payment processor JavaScript that allows to obtain a token
         wp_enqueue_script('mobbex-button', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_EMBED_VERSION, false);
+        wp_enqueue_script('mobbex', 'https://res.mobbex.com/js/sdk/mobbex@1.0.0.js', null, null, false);
 
         // Inject our bootstrap JS to intercept the WC button press and invoke standard JS
         wp_register_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), MOBBEX_VERSION, false);
 
         $mobbex_data = array(
             'order_url' => $order_url,
+            'is_wallet' => ($this->use_wallet && wp_get_current_user()->ID),
         );
 
         wp_localize_script('mobbex-bootstrap', 'mobbex_data', $mobbex_data);
