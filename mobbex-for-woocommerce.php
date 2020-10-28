@@ -62,6 +62,11 @@ class MobbexGateway
         add_action('woocommerce_product_data_panels', [$this, 'mobbex_product_panels']);
         add_action('woocommerce_process_product_meta', [$this, 'mobbex_product_save']);
         add_action('admin_head', [$this, 'mobbex_icon']);
+
+        // Checkout update actions
+        add_action('woocommerce_api_mobbex_checkout_update', [$this, 'mobbex_checkout_update']);
+        add_action('woocommerce_cart_emptied', function(){WC()->session->set('order_id', null);});
+        add_action('woocommerce_add_to_cart', function(){WC()->session->set('order_id', null);});
         
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/webhook', [
@@ -301,6 +306,62 @@ class MobbexGateway
             content: "\f153";
         }
         </style>';
+    }
+
+    public function mobbex_checkout_update()
+    {
+        // Get Checkout and Order Id  
+        $checkout = WC()->checkout;
+        $order_id = WC()->session->get('order_id');
+        WC()->cart->calculate_totals();
+
+        // Get Order info if exists
+        if (!$order_id) {
+            return false;
+        }
+        $order = wc_get_order($order_id);
+
+        // If form data is sent 
+        if (!empty($_REQUEST['payment_method'])) {
+
+            // Get billing and shipping data from Request
+            $billing = [];
+            $shipping = [];
+            foreach ($_REQUEST as $key => $value) {
+
+                if (strpos($key, 'billing_') === 0) {
+                    $new_key = str_replace('billing_', '',$key);
+                    $billing[$new_key] = $value;
+                } elseif (strpos($key, 'shipping_') === 0) {
+
+                    $new_key = str_replace('billing_', '',$key);
+                    $shipping[$new_key] = $value;
+                }
+
+            }
+
+            // Save data to Order
+            $order->set_payment_method($_REQUEST['payment_method']);
+            $order->set_address($billing, 'billing');
+            $order->set_address($shipping, 'shipping');
+            echo ($order->save());
+            exit;
+        } else {
+            
+            // Renew Order Items
+            $order->remove_order_items();
+            $order->set_cart_hash(WC()->cart->get_cart_hash());
+            $checkout->set_data_from_cart($order);
+    
+            // Save Order
+            $order->save();
+    
+            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+    
+            echo json_encode($mobbexGateway->process_payment($order_id));
+            exit;
+        }
+
     }
 
 }

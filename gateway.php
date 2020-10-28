@@ -349,6 +349,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'return_url' => $return_url,
             ], "Reply for button");
 
+            if (!empty($checkout_data['wallet'])) {
+                WC()->session->set('order_id' , $order_id);
+            }
+
             return [
                 'result' => 'success',
                 'data' => $checkout_data,
@@ -740,6 +744,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $redirect = $order->get_checkout_order_received_url();
         }
 
+        WC()->session->set('order_id', null);
         wp_safe_redirect($redirect);
     }
 
@@ -769,7 +774,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function payment_scripts()
     {
         // we need JavaScript to process a token only on cart/checkout pages, right?
-        if (!is_cart() && !is_checkout() && !isset($_GET['pay_for_order'])) {
+        if (is_wc_endpoint_url('order-received') || (!is_cart() && !is_checkout() && !isset($_GET['pay_for_order']))) {
             $this->debug([], "Not checkout page");
             return;
         }
@@ -781,6 +786,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         $order_url = home_url('/mobbex?wc-ajax=checkout');
+        $update_url = home_url('/wc-api/mobbex_checkout_update');
+        $is_wallet = ($this->use_wallet && wp_get_current_user()->ID);
+        $order_id = WC()->session->get('order_id');
 
         $this->debug($order_url);
 
@@ -793,8 +801,34 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $mobbex_data = array(
             'order_url' => $order_url,
-            'is_wallet' => ($this->use_wallet && wp_get_current_user()->ID),
+            'update_url' => $update_url,
+            'is_wallet' => $is_wallet,
         );
+
+        // If using wallet, create Order previously
+        if ($is_wallet) {
+
+            if (empty($order_id)) {
+                // Create Order and save in session
+                $checkout = WC()->checkout;
+                $order_id = $checkout->create_order($_POST);
+
+                WC()->session->set('order_id', $order_id);
+            }
+
+            // Get order
+            $order = wc_get_order($order_id);
+
+            // Create mobbex checkout
+            $return_url = $this->get_api_endpoint('mobbex_return_url', $order_id);
+            $checkout_data = $this->get_checkout($order, $return_url);
+    
+            // Set mobbex wallet data
+            $mobbex_data['wallet'] = $checkout_data['wallet'];
+            $mobbex_data['return_url'] = $return_url;
+            $mobbex_data['transaction_uid'] = $checkout_data['id'];
+
+        }
 
         wp_localize_script('mobbex-bootstrap', 'mobbex_data', $mobbex_data);
         wp_enqueue_script('mobbex-bootstrap');
