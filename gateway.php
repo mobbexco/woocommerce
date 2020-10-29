@@ -349,10 +349,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'return_url' => $return_url,
             ], "Reply for button");
 
-            if (!empty($checkout_data['wallet'])) {
-                WC()->session->set('order_id' , $order_id);
-            }
-
             return [
                 'result' => 'success',
                 'data' => $checkout_data,
@@ -431,15 +427,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $domain = str_replace(["http://", "https://"], "", $site_url);
 
         $this->debug($domain);
-        
+
         // Get Customer data
         $current_user = wp_get_current_user();
-        $customer = array(
-            "name" => $current_user->display_name ? : $order->get_formatted_billing_full_name(),
-            "email" => $current_user->user_email ? : $order->get_billing_email(),
+        $customer = [
+            'name' => $current_user->display_name ? : $order->get_formatted_billing_full_name(),
+            'email' => $current_user->user_email ? : $order->get_billing_email(),
             'phone' => get_user_meta($current_user->ID,'phone_number',true) ? : $order->get_billing_phone(),
-            "uid" => $current_user->ID ? : null,
-        );
+            'uid' => $current_user->ID ? : null,
+        ];
         if (!empty($this->custom_dni)) {
             $customer['dni'] = get_post_meta($order->get_id(), $this->custom_dni, true);
         } else {
@@ -453,49 +449,45 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         $checkout_body = [
-            'total' => $order->get_total(),
             'reference' => $reference,
             'description' => 'Orden #' . $order->get_id(),
             'items' => $this->get_items($order),
-            'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
-            'return_url' => $return_url,
-            'test' => $this->test_mode,
-            "options" => [
-                "button" => $this->use_button,
-                "domain" => $domain,
-                "theme" => $this->getTheme(),
-                "redirect" => array(
-                    "success" => true,
-                    "failure" => false,
-                ),
-                "platform" => $this->getPlatform(),
-            ],
+            'installments' => $this->get_installments($order),
             'customer' => $customer,
+            'test' => $this->test_mode,
+            'options' => [
+                'button' => $this->use_button,
+                'domain' => $domain,
+                'theme' => $this->getTheme(),
+                'redirect' => array(
+                    'success' => true,
+                    'failure' => false,
+                ),
+                'platform' => $this->getPlatform(),
+            ],
+            'wallet' => ($this->use_wallet && wp_get_current_user()->ID),
             'timeout' => 5,
         ];
+
+        // Custom data filter
+        $checkout_body = apply_filters('mobbex_checkout_custom_data', $checkout_body);
+
+        // Merge not editable data
+        $checkout_body = array_merge($checkout_body,[
+            'total' => $order->get_total(),
+            'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
+            'return_url' => $return_url,
+            'intent' => defined('MOBBEX_CHECKOUT_INTENT') ? MOBBEX_CHECKOUT_INTENT : null,
+        ]);
 
         $this->debug([
             "checkout_body" => $checkout_body,
         ]);
-        
-        // Installment filter
-        if (!empty($this->get_installments($order))) {
-            $checkout_body['installments'] = $this->get_installments($order);
-        }
-
-        if ($this->use_wallet && wp_get_current_user()->ID) {
-            $checkout_body['wallet'] = true;
-        }
-
-        if (defined('MOBBEX_CHECKOUT_INTENT')) {
-            $checkout_body['intent'] = MOBBEX_CHECKOUT_INTENT;
-        }
 
         // Create the Checkout
         $response = wp_remote_post(MOBBEX_CHECKOUT, [
 
             'headers' => [
-
                 'cache-control' => 'no-cache',
                 'content-type' => 'application/json',
                 'x-api-key' => $this->api_key,
