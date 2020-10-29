@@ -1,0 +1,28 @@
+{
+	"name": "Mobbex for Woocommerce",
+	"version": "3.0.0",
+
+	"homepage": "https://github.com/",
+	"requires": "5.0",
+	"tested": "5.5",
+	"last_updated": "2020-10-26",
+	"upgrade_notice": "Upgrade to get new features",
+
+	"author": "mobbex.com",
+	"author_homepage": "https://mobbex.com/",
+
+	"sections": {
+		"description": "A small plugin that provides Woocommerce <-> Mobbex integration."
+	},
+	
+	"icons" : {
+		"1x" : "http://w-shadow.com/files/external-update-example/assets/icon-128x128.png",
+		"2x" : "http://w-shadow.com/files/external-update-example/assets/icon-256x256.png"
+    },
+
+	"banners": {
+		"low": "http://w-shadow.com/files/external-update-example/assets/banner-772x250.png",
+		"high": "http://w-shadow.com/files/external-update-example/assets/banner-1544x500.png"
+	}
+
+}

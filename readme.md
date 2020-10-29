@@ -42,6 +42,15 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.0.0 :: 2020-10-29
+- Implemented Mobbex Wallet fully on-site.
+- Switch to enable/disable Mobbex Wallet.
+- Integrate plugin update checker.
+- Save customer information when not logged in and has paid.
+- New constant for checkout management.
+- Send checkout lifetime to Mobbex.
+- New filter to edit checkout data from external plugins/themes.
+
 ### 2.4.0 :: 2020-09-14
 - Implemented mobbex refund.
 - Set processing fees/discounts on Checkout.

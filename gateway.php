@@ -29,6 +29,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Internal Options
         $this->use_button = ($this->get_option('button') === 'yes');
         $this->test_mode = ($this->get_option('test_mode') === 'yes');
+        $this->use_wallet = ($this->get_option('wallet') === 'yes');
 
         // New Webhook
         $this->use_webhook_api = ($this->get_option('use_webhook_api') === 'yes');
@@ -196,6 +197,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Enable/Disable Button', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'checkbox',
                 'label' => __('Enable Mobbex Button experience.', MOBBEX_WC_TEXT_DOMAIN),
+                'default' => 'no',
+
+            ],
+
+            'wallet' => [
+
+                'title' => __('Enable/Disable Wallet', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'checkbox',
+                'label' => __('Enable Mobbex Wallet experience.', MOBBEX_WC_TEXT_DOMAIN),
                 'default' => 'no',
 
             ],
@@ -418,67 +428,66 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $this->debug($domain);
 
+        // Get Customer data
+        $current_user = wp_get_current_user();
+        $customer = [
+            'name' => $current_user->display_name ? : $order->get_formatted_billing_full_name(),
+            'email' => $current_user->user_email ? : $order->get_billing_email(),
+            'phone' => get_user_meta($current_user->ID,'phone_number',true) ? : $order->get_billing_phone(),
+            'uid' => $current_user->ID ? : null,
+        ];
+        if (!empty($this->custom_dni)) {
+            $customer['dni'] = get_post_meta($order->get_id(), $this->custom_dni, true);
+        } else {
+            $customer['dni'] = get_post_meta($order->get_id(), '_billing_dni', true);
+        }
+        
+        // Get Reference
         $reference = $order->get_id();
-
         if (isset($this->reseller_id) && $this->reseller_id !== '') {
             $reference = $this->reseller_id . "-" . $reference;
         }
 
         $checkout_body = [
-            'total' => $order->get_total(),
             'reference' => $reference,
             'description' => 'Orden #' . $order->get_id(),
             'items' => $this->get_items($order),
+            'installments' => $this->get_installments($order),
+            'customer' => $customer,
+            'test' => $this->test_mode,
+            'options' => [
+                'button' => $this->use_button,
+                'domain' => $domain,
+                'theme' => $this->getTheme(),
+                'redirect' => array(
+                    'success' => true,
+                    'failure' => false,
+                ),
+                'platform' => $this->getPlatform(),
+            ],
+            'wallet' => ($this->use_wallet && wp_get_current_user()->ID),
+            'timeout' => 5,
+        ];
+
+        // Custom data filter
+        $checkout_body = apply_filters('mobbex_checkout_custom_data', $checkout_body);
+
+        // Merge not editable data
+        $checkout_body = array_merge($checkout_body,[
+            'total' => $order->get_total(),
             'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
             'return_url' => $return_url,
-            'test' => $this->test_mode,
-            "options" => [
-                "button" => $this->use_button,
-                "domain" => $domain,
-                "theme" => $this->getTheme(),
-                "redirect" => array(
-                    "success" => true,
-                    "failure" => false,
-                ),
-                "platform" => $this->getPlatform(),
-            ],
-        ];
+            'intent' => defined('MOBBEX_CHECKOUT_INTENT') ? MOBBEX_CHECKOUT_INTENT : null,
+        ]);
 
         $this->debug([
             "checkout_body" => $checkout_body,
         ]);
 
-        // Add Customer if Logged In
-        $current_user = wp_get_current_user();
-        if (0 !== $current_user->ID) {
-            // Get DNI
-            if ($this->custom_dni) {
-                $dni = get_post_meta($order->get_id(), $this->custom_dni, true);
-            } else {
-                $dni = get_post_meta($order->get_id(), '_billing_dni', true);
-            }
-
-            // Add Customer from the Ecommerce
-            $checkout_body = array_merge($checkout_body, [
-                "customer" => [
-                    "identification" => $dni,
-                    "name" => $current_user->display_name,
-                    "email" => $current_user->user_email,
-                    "uid" => $current_user->ID,
-                ],
-            ]);
-        }
-
-        // Installment filter
-        if (!empty($this->get_installments($order))) {
-            $checkout_body['installments'] = $this->get_installments($order);
-        }
-
         // Create the Checkout
         $response = wp_remote_post(MOBBEX_CHECKOUT, [
 
             'headers' => [
-
                 'cache-control' => 'no-cache',
                 'content-type' => 'application/json',
                 'x-api-key' => $this->api_key,
@@ -727,6 +736,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $redirect = $order->get_checkout_order_received_url();
         }
 
+        WC()->session->set('order_id', null);
         wp_safe_redirect($redirect);
     }
 
@@ -756,7 +766,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function payment_scripts()
     {
         // we need JavaScript to process a token only on cart/checkout pages, right?
-        if (!is_cart() && !is_checkout() && !isset($_GET['pay_for_order'])) {
+        if (is_wc_endpoint_url('order-received') || (!is_cart() && !is_checkout() && !isset($_GET['pay_for_order']))) {
             $this->debug([], "Not checkout page");
             return;
         }
@@ -768,18 +778,49 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         $order_url = home_url('/mobbex?wc-ajax=checkout');
+        $update_url = home_url('/wc-api/mobbex_checkout_update');
+        $is_wallet = ($this->use_wallet && wp_get_current_user()->ID);
+        $order_id = WC()->session->get('order_id');
 
         $this->debug($order_url);
 
         // let's suppose it is our payment processor JavaScript that allows to obtain a token
         wp_enqueue_script('mobbex-button', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_EMBED_VERSION, false);
+        wp_enqueue_script('mobbex', 'https://res.mobbex.com/js/sdk/mobbex@1.0.0.js', null, null, false);
 
         // Inject our bootstrap JS to intercept the WC button press and invoke standard JS
         wp_register_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), MOBBEX_VERSION, false);
 
         $mobbex_data = array(
             'order_url' => $order_url,
+            'update_url' => $update_url,
+            'is_wallet' => $is_wallet,
         );
+
+        // If using wallet, create Order previously
+        if ($is_wallet) {
+
+            if (empty($order_id)) {
+                // Create Order and save in session
+                $checkout = WC()->checkout;
+                $order_id = $checkout->create_order($_POST);
+
+                WC()->session->set('order_id', $order_id);
+            }
+
+            // Get order
+            $order = wc_get_order($order_id);
+
+            // Create mobbex checkout
+            $return_url = $this->get_api_endpoint('mobbex_return_url', $order_id);
+            $checkout_data = $this->get_checkout($order, $return_url);
+    
+            // Set mobbex wallet data
+            $mobbex_data['wallet'] = $checkout_data['wallet'];
+            $mobbex_data['return_url'] = $return_url;
+            $mobbex_data['transaction_uid'] = $checkout_data['id'];
+
+        }
 
         wp_localize_script('mobbex-bootstrap', 'mobbex_data', $mobbex_data);
         wp_enqueue_script('mobbex-bootstrap');
