@@ -30,6 +30,8 @@ If you are using WP Cerber for security you must go under WP Cerber settings on 
 
 If you don't do it you won't be able to receive the information about the payment and will be marked in a wrong way.
 
+#### Checkout data filter
+To manipulate the information sent to Mobbex checkout, you must use the filter ```mobbex_checkout_custom_data```. When using it, it will receive as an argument the body of the checkout to be modified
 ## Preguntas Frecuentes
 
 #### Error: "No se pudo validar la transacción. Contacte con el administrador de su sitio"
