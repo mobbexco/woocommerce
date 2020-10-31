@@ -437,9 +437,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'uid' => $current_user->ID ? : null,
         ];
         if (!empty($this->custom_dni)) {
-            $customer['dni'] = get_post_meta($order->get_id(), $this->custom_dni, true);
+            $customer['identification'] = get_post_meta($order->get_id(), $this->custom_dni, true);
         } else {
-            $customer['dni'] = get_post_meta($order->get_id(), '_billing_dni', true);
+            $customer['identification'] = get_post_meta($order->get_id(), '_billing_dni', true);
         }
         
         // Get Reference
@@ -459,10 +459,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'button' => $this->use_button,
                 'domain' => $domain,
                 'theme' => $this->getTheme(),
-                'redirect' => array(
+                'redirect' => [
                     'success' => true,
                     'failure' => false,
-                ),
+                ],
                 'platform' => $this->getPlatform(),
             ],
             'wallet' => ($this->use_wallet && wp_get_current_user()->ID),
@@ -803,6 +803,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             if (empty($order_id)) {
                 // Create Order and save in session
                 $checkout = WC()->checkout;
+                WC()->cart->calculate_totals();
                 $order_id = $checkout->create_order($_POST);
 
                 WC()->session->set('order_id', $order_id);

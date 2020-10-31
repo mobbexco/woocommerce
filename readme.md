@@ -50,6 +50,7 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 - New constant for checkout management.
 - Send checkout lifetime to Mobbex.
 - New filter to edit checkout data from external plugins/themes.
+- Mobbex Embed updated to 1.0.17.
 
 ### 2.4.0 :: 2020-09-14
 - Implemented mobbex refund.
