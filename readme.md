@@ -30,6 +30,8 @@ If you are using WP Cerber for security you must go under WP Cerber settings on 
 
 If you don't do it you won't be able to receive the information about the payment and will be marked in a wrong way.
 
+#### Checkout data filter
+To manipulate the information sent to Mobbex checkout, you must use the filter ```mobbex_checkout_custom_data```. When using it, it will receive as an argument the body of the checkout to be modified
 ## Preguntas Frecuentes
 
 #### Error: "No se pudo validar la transacción. Contacte con el administrador de su sitio"
@@ -41,6 +43,15 @@ Esto se debe a que tu sitio posee una redirección en el archivo .htaccess o a n
 Al igual que el error anterior esto se debe a que el parametro de validación se pierde durante la redirección. Revisá la configuración de tu sitio.
 
 ## Changelog
+
+### 3.0.0 :: 2020-10-29
+- Implemented Mobbex Wallet fully on-site.
+- Switch to enable/disable Mobbex Wallet.
+- Integrate plugin update checker.
+- Save customer information when not logged in and has paid.
+- New constant for checkout management.
+- Send checkout lifetime to Mobbex.
+- New filter to edit checkout data from external plugins/themes.
 
 ### 2.4.0 :: 2020-09-14
 - Implemented mobbex refund.

@@ -1,7 +1,6 @@
 {
 	"name": "Mobbex for Woocommerce",
 	"version": "3.0.0",
-	"download_url": "https://github.com/mobbexco/woocommerce/releases/download/2.4.3/wc-mobbex-3-0-0.zip",
 
 	"homepage": "https://github.com/",
 	"requires": "5.0",
