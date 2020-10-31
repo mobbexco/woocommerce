@@ -176,7 +176,11 @@ jQuery(function ($) {
                 if (data.result === true) {
                     location.href = walletReturn + '&status=' + data.data.status.code
                 }
-                else location.reload()
+                else handleErrorResponse({
+                    result: 'errors',
+                    reload: false,
+                    messages: ['Se produjo un error al procesar la transacción. Intente nuevamente']
+                });
             })
             .catch(error => {alert(error)})
         }
@@ -198,8 +202,11 @@ jQuery(function ($) {
             url: mobbex_data.update_url,
             data: data,
             success: function( response) {
-                walletData = response.data.wallet
-                updateWallet()
+                if (typeof data === "undefined" || data === null) {
+                    mobbex_data.transaction_uid = response.data.id
+                    walletData = response.data.wallet
+                    updateWallet()
+                }
                 unlockForm()
             },
             error: function () {

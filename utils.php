@@ -12,7 +12,7 @@ define('MOBBEX_WC_GATEWAY', 'WC_Gateway_Mobbex');
 define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
 
 define('MOBBEX_VERSION', '3.0.0');
-define('MOBBEX_EMBED_VERSION', '1.0.8');
+define('MOBBEX_EMBED_VERSION', '1.0.17');
 
 if (!function_exists('mobbex_debug')) {
     // https://github.com/bonny/WordPress-Simple-History/
