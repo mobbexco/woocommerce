@@ -2,8 +2,8 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.0.0
-WC tested up to: 4.2.2
+Version:      3.0.1
+WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
 Copyright: 2020 mobbex.com
@@ -67,7 +67,7 @@ class MobbexGateway
         add_action('woocommerce_api_mobbex_checkout_update', [$this, 'mobbex_checkout_update']);
         add_action('woocommerce_cart_emptied', function(){WC()->session->set('order_id', null);});
         add_action('woocommerce_add_to_cart', function(){WC()->session->set('order_id', null);});
-        
+
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/webhook', [
                 'methods' => WP_REST_Server::CREATABLE,
@@ -233,23 +233,23 @@ class MobbexGateway
 
     public function mobbex_product_settings_tabs($tabs)
     {
-    
+
         $tabs['mobbex'] = array(
             'label'    => 'Mobbex',
             'target'   => 'mobbex_product_data',
             'priority' => 21,
         );
         return $tabs;
-    
+
     }
-    
+
     public function mobbex_product_panels()
     {
         $product = wc_get_product(get_the_ID());
-    
+
         echo '<div id="mobbex_product_data" class="panel woocommerce_options_panel hidden">';
         echo '<h2><b>' . __('Choose the plans you want NOT to appear during the purchase', MOBBEX_WC_TEXT_DOMAIN) . ':</b></h2>';
-    
+
         $ahora = array(
             'ahora_3'  => 'Ahora 3',
             'ahora_6'  => 'Ahora 6',
@@ -264,19 +264,19 @@ class MobbexGateway
                 'value'   => get_post_meta(get_the_ID(), $key, true),
                 'label'   => $value,
             );
-            
+
             if (get_post_meta(get_the_ID(), $key, true) === 'yes') {
                 $checkbox_data['custom_attributes'] = 'checked';
             }
 
             woocommerce_wp_checkbox($checkbox_data);
         }
-    
+
         echo '</div>';
-    
+
     }
 
-    public function mobbex_product_save($post_id) 
+    public function mobbex_product_save($post_id)
     {
         $product = wc_get_product($post_id);
 
@@ -291,7 +291,7 @@ class MobbexGateway
             if (isset($_POST[$key]) && $_POST[$key] === 'yes') {
                 $value = 'yes';
             }
-            
+
             $product->update_meta_data($key, $value);
         }
 
@@ -310,7 +310,7 @@ class MobbexGateway
 
     public function mobbex_checkout_update()
     {
-        // Get Checkout and Order Id  
+        // Get Checkout and Order Id
         $checkout = WC()->checkout;
         $order_id = WC()->session->get('order_id');
         WC()->cart->calculate_totals();
@@ -321,7 +321,7 @@ class MobbexGateway
         }
         $order = wc_get_order($order_id);
 
-        // If form data is sent 
+        // If form data is sent
         if (!empty($_REQUEST['payment_method'])) {
 
             // Get billing and shipping data from Request
@@ -347,17 +347,17 @@ class MobbexGateway
             echo ($order->save());
             exit;
         } else {
-            
+
             // Renew Order Items
             $order->remove_order_items();
             $order->set_cart_hash(WC()->cart->get_cart_hash());
             $checkout->set_data_from_cart($order);
-    
+
             // Save Order
             $order->save();
-    
+
             $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-    
+
             echo json_encode($mobbexGateway->process_payment($order_id));
             exit;
         }
