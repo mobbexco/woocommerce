@@ -376,31 +376,23 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function getTheme()
     {
+        // Get logo from ecommerce
+        $logo_id = get_theme_mod('custom_logo');
+        $shop_logo = null;
+        // TODO: Switch for use logo configured in mobbex
+        //$logo_url = wp_get_attachment_image_src($logo_id , 'full')[0];
+
         $theme = [
             "type" => $this->checkout_theme,
             "background" => $this->checkout_background_color,
             "colors" => [
                 "primary" => $this->checkout_primary_color,
             ],
+            'header' => [
+                'name' => !empty($this->checkout_title) ? $this->checkout_title : get_bloginfo('name'),
+                'logo' => !empty($this->checkout_logo) ? $this->checkout_logo : $shop_logo,
+            ]
         ];
-
-        if ($this->checkout_title !== '' || $this->checkout_logo !== '') {
-            $theme = array_merge($theme, [
-                "header" => [],
-            ]);
-        }
-
-        if ($this->checkout_title !== '') {
-            $theme['header'] = array_merge($theme['header'], [
-                "name" => $this->checkout_title,
-            ]);
-        }
-
-        if ($this->checkout_logo !== '') {
-            $theme['header'] = array_merge($theme['header'], [
-                "logo" => $this->checkout_logo,
-            ]);
-        }
 
         $this->debug([
             "theme" => $theme,
@@ -430,26 +422,18 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // Get Customer data
         $current_user = wp_get_current_user();
+        $dni_key = !empty($this->custom_dni) ? $this->custom_dni : '_billing_dni';
+        
         $customer = [
             'name' => $current_user->display_name ? : $order->get_formatted_billing_full_name(),
             'email' => $current_user->user_email ? : $order->get_billing_email(),
             'phone' => get_user_meta($current_user->ID,'phone_number',true) ? : $order->get_billing_phone(),
             'uid' => $current_user->ID ? : null,
+            'identification' => get_post_meta($order->get_id(), $dni_key, true),
         ];
-        if (!empty($this->custom_dni)) {
-            $customer['identification'] = get_post_meta($order->get_id(), $this->custom_dni, true);
-        } else {
-            $customer['identification'] = get_post_meta($order->get_id(), '_billing_dni', true);
-        }
         
-        // Get Reference
-        $reference = $order->get_id();
-        if (isset($this->reseller_id) && $this->reseller_id !== '') {
-            $reference = $this->reseller_id . "-" . $reference;
-        }
-
         $checkout_body = [
-            'reference' => $reference,
+            'reference' => $this->get_reference($order->get_id()),
             'description' => 'Orden #' . $order->get_id(),
             'items' => $this->get_items($order),
             'installments' => $this->get_installments($order),
@@ -953,6 +937,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         return $installments;
 
+    }
+
+    public function get_reference($order_id)
+    {
+        return 'wc_order_'.$order_id.'_time_'.time();
     }
 
 }

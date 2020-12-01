@@ -44,6 +44,10 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.0.1 :: 2020-10-29
+- Uniqueness improvement for reference id.
+- Structure improvements.
+
 ### 3.0.0 :: 2020-10-29
 - Implemented Mobbex Wallet fully on-site.
 - Switch to enable/disable Mobbex Wallet.
