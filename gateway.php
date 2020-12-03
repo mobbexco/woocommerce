@@ -94,38 +94,17 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 $this->debug([], "Adding actions for Button");
 
                 add_action('woocommerce_after_checkout_form', [$this, 'display_mobbex_button']);
-
                 add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
             }
+
+            // If own is enabled
+            if ($this->own_dni == 'yes') {
+                add_filter('woocommerce_billing_fields', [$this, 'mobbex_dni_woocommerce_billing_fields']);
+                add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'mobbex_dni_display_admin_order_meta'], 10, 1);
+                add_action('woocommerce_checkout_create_order', [$this, 'mobbex_dni_save_data'], 10, 1);
+            }
         }
 
-        if ($this->own_dni == 'yes' && !function_exists('mobbex_dni_woocommerce_billing_fields') && !function_exists('mobbex_dni_display_admin_order_meta')) {
-
-            add_filter('woocommerce_billing_fields', 'mobbex_dni_woocommerce_billing_fields');
-
-            function mobbex_dni_woocommerce_billing_fields($fields)
-            {
-
-                $fields['billing_dni'] = array(
-                    'label' => __('DNI', 'woocommerce'), // Add custom field label
-                    'placeholder' => _x('Ingrese su DNI', 'placeholder', 'woocommerce'), // Add custom field placeholder
-                    'required' => true, // if field is required or not
-                    'clear' => false, // add clear or not
-                    'type' => 'text', // add field type
-                    'class' => array('my-dni'), // add class name
-                );
-
-                return $fields;
-            }
-
-            add_action('woocommerce_admin_order_data_after_billing_address', 'mobbex_dni_display_admin_order_meta', 10, 1);
-
-            function mobbex_dni_display_admin_order_meta($order)
-            {
-                echo '<p><strong>' . __('DNI') . ':</strong> ' . get_post_meta($order->get_id(), '_billing_dni', true) . '</p>';
-            }
-
-        }
 
     }
 
@@ -942,6 +921,31 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function get_reference($order_id)
     {
         return 'wc_order_'.$order_id.'_time_'.time();
+    }
+
+    public function mobbex_dni_woocommerce_billing_fields($fields)
+    {
+        $fields['billing_dni'] = array(
+            'label' => __('DNI', 'woocommerce'),
+            'placeholder' => _x('Ingrese su DNI', 'placeholder', 'woocommerce'),
+            'required' => true,
+            'clear' => false,
+            'type' => 'text',
+            'class' => array('my-dni'),
+        );
+
+        return $fields;
+    }
+
+    public function mobbex_dni_display_admin_order_meta($order)
+    {
+        echo '<p><strong>' . __('DNI') . ':</strong> ' . get_post_meta($order->get_id(), '_billing_dni', true) . '</p>';
+    }
+
+    public function mobbex_dni_save_data($order) {
+        if (!empty($_POST['billing_dni'])) {
+            update_post_meta($order->get_id(), '_billing_dni', esc_attr($_POST['billing_dni']));
+        }
     }
 
 }

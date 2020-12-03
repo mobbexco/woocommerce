@@ -44,7 +44,10 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
-### 3.0.1 :: 2020-10-29
+### 3.0.2 :: 2020-12-03
+- Fix DNI field save.
+
+### 3.0.1 :: 2020-12-01
 - Uniqueness improvement for reference id.
 - Structure improvements.
 
