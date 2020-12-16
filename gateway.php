@@ -651,7 +651,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order->save();
 
         // Check status and set
-        if ($status == 2 || $status == 3) {
+        if ($status == 2 || $status == 3 || $status == 100) {
             $order->update_status('on-hold', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
         } else if ($status == 4 || $status >= 200 && $status < 400) {
             // Set as completed and reduce stock
@@ -691,12 +691,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $order = wc_get_order($id);
 
-        if ($status == 0 || $status >= 400) {
-            // Try to restore the cart here
-            $redirect = $order->get_cancel_order_url();
-        } else if ($status == 2 || $status == 3 || $status == 4 || $status >= 200 && $status < 400) {
+        if ($status > 1 && $status < 400) {
             // Redirect
             $redirect = $order->get_checkout_order_received_url();
+        } else {
+            // Try to restore the cart here
+            $redirect = $order->get_cancel_order_url();
         }
 
         WC()->session->set('order_id', null);
