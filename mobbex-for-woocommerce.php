@@ -57,6 +57,10 @@ class MobbexGateway
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
 
+        // Mobbex category management tab
+        add_action('product_cat_add_form_fields', [$this,'mobbex_category_panels'], 10, 1);
+        add_action('product_cat_edit_form_fields', [$this,'mobbex_category_panels_edit'], 10, 1);
+
         // Mobbex product management tab
         add_filter('woocommerce_product_data_tabs', [$this, 'mobbex_product_settings_tabs']);
         add_action('woocommerce_product_data_panels', [$this, 'mobbex_product_panels']);
@@ -231,25 +235,31 @@ class MobbexGateway
 
     }
 
+    /**
+     * Set the tab with the product payment plans
+     */
     public function mobbex_product_settings_tabs($tabs)
     {
-
         $tabs['mobbex'] = array(
-            'label'    => 'Mobbex',
+            'label'    => 'Mobbexs',
             'target'   => 'mobbex_product_data',
             'priority' => 21,
         );
         return $tabs;
-
     }
 
+
+/**
+ * 
+ */
     public function mobbex_product_panels()
     {
-        $product = wc_get_product(get_the_ID());
+        $product = wc_get_product(get_the_ID());//return the product
 
         echo '<div id="mobbex_product_data" class="panel woocommerce_options_panel hidden">';
         echo '<h2><b>' . __('Choose the plans you want NOT to appear during the purchase', MOBBEX_WC_TEXT_DOMAIN) . ':</b></h2>';
 
+        // Array with the active plans
         $ahora = array(
             'ahora_3'  => 'Ahora 3',
             'ahora_6'  => 'Ahora 6',
@@ -258,27 +268,99 @@ class MobbexGateway
         );
 
         foreach ($ahora as $key => $value) {
-
             $checkbox_data = array(
                 'id'      => $key,
                 'value'   => get_post_meta(get_the_ID(), $key, true),
                 'label'   => $value,
             );
 
+            // if the plan was selected before its need to be checked true
             if (get_post_meta(get_the_ID(), $key, true) === 'yes') {
                 $checkbox_data['custom_attributes'] = 'checked';
             }
-
-            woocommerce_wp_checkbox($checkbox_data);
+            woocommerce_wp_checkbox($checkbox_data);//Add the checkbox as array
         }
 
         echo '</div>';
-
     }
 
+
+/**
+ * 
+ */
+    public function mobbex_category_panels()
+    {
+        
+        echo '<div id="mobbex_category_data" class="form-field">';
+        echo '<h2><b>' . __('Choose the plans you want NOT to appear during the purchase', MOBBEX_WC_TEXT_DOMAIN) . ':</b></h2>';
+        
+
+        // Array with the active plans
+        $plans = array(
+            'ahora_3'  => 'Ahora 3',
+            'ahora_6'  => 'Ahora 6',
+            'ahora_12' => 'Ahora 12',
+            'ahora_18' => 'Ahora 18',
+        );
+        
+        foreach ($plans as $key => $value) {
+            $checkbox_data = array(
+                'id'      => $key,
+                'value'   => get_post_meta(get_the_ID(), $key, true),
+                'label'   => $value,
+            );
+            woocommerce_wp_checkbox($checkbox_data);//Add the checkbox as array    
+        }
+        
+        echo '</div>';
+    }
+
+
+
+/**
+ * 
+ */
+    public function mobbex_category_panels_edit()
+    {
+            //getting term ID
+            $term_id = $term->term_id;
+            // retrieve the existing value(s) for this meta field.
+            $wh_meta_title = get_term_meta($term_id, 'wh_meta_title', true);
+            $wh_meta_desc = get_term_meta($term_id, 'wh_meta_desc', true);
+            echo '<div id="mobbex_category_data" class="form-field">';
+            echo '<h2><b>' . __('Choose the plans you want NOT to appear during the purchase', MOBBEX_WC_TEXT_DOMAIN) . ':</b></h2>';
+            
+            // Array with the active plans
+            $plans = array(
+                'ahora_3'  => 'Ahora 3',
+                'ahora_6'  => 'Ahora 6',
+                'ahora_12' => 'Ahora 12',
+                'ahora_18' => 'Ahora 18',
+            );
+            
+            foreach ($plans as $key => $value) {
+                $checkbox_data = array(
+                    'id'      => $key,
+                    'value'   => get_post_meta(get_the_ID(), $key, true),
+                    'label'   => $value,
+                );
+
+                // if the plan was selected before its need to be checked true
+                if (get_post_meta(get_the_ID(), $key, true) === 'yes') {
+                    $checkbox_data['custom_attributes'] = 'checked';
+                }
+                woocommerce_wp_checkbox($checkbox_data);//Add the checkbox as array    
+            }
+
+            echo '</div>';
+    }
+
+/**
+ * Save the product meta data after the selection of payment plans
+ */
     public function mobbex_product_save($post_id)
     {
-        $product = wc_get_product($post_id);
+        $product = wc_get_product($post_id);//get the product
 
         $ahora = array(
             'ahora_3'  => false,
@@ -291,7 +373,6 @@ class MobbexGateway
             if (isset($_POST[$key]) && $_POST[$key] === 'yes') {
                 $value = 'yes';
             }
-
             $product->update_meta_data($key, $value);
         }
 
