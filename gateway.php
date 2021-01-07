@@ -585,6 +585,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         $status = $data['payment']['status']['code'];
 
+        //order status filter
+        $status = apply_filters( 'mobbex_webhook_order_status', $post_data );
+        
         $this->debug([
             "id" => $id,
             "token" => $token,
