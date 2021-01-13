@@ -290,12 +290,12 @@ class MobbexGateway
             } 
         </Style>
         <?php
+            global $product;
             //Get the Tax_id(CUIT) from plugin settings
             $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
             //Set Financial info URL
-            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id;
+            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$product->get_price();
             $is_active = $mobbexGateway->financial_info_active;
-            global $product;
             
             // Only for simple product type
             if( ! $product->is_type('simple') ) return;
@@ -303,6 +303,7 @@ class MobbexGateway
             // Trigger/Open The Modal if the checkbox is true in the plugin settings
             if($is_active){
                 echo '<button id="myBtn">Ver Financiación</button>';
+                echo sprintf('<div id="product_total_price" style="margin-bottom:20px;">%s %s</div>',__('Product Total:','woocommerce'),'<span class="price">'.$product->get_price().'</span>');
             }
             
         ?>
@@ -344,6 +345,25 @@ class MobbexGateway
                     modal.style.display = "none";
                 }
             } 
+
+            //acumulate poduct price based in the quantity
+            jQuery(function($){
+                var price = <?php echo $product->get_price(); ?>,
+                taxId = <?php echo $mobbexGateway->tax_id; ?>,
+                currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
+
+                $('[name=quantity]').change(function(){
+                    if (!(this.value < 1)) {
+
+                        var product_total = parseFloat(price * this.value);
+                        $('#product_total_price .price').html( currency + product_total.toFixed(2));
+                        //change the value send to the service
+                        document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
+
+                    }
+                });
+            });
+
         </script>
         <?php
     }
