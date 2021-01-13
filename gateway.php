@@ -1,5 +1,5 @@
 <?php
-require_once 'utils.php';
+require_once 'includes/utils.php';
 
 class WC_Gateway_Mobbex extends WC_Payment_Gateway
 {
@@ -55,6 +55,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->api_key = $this->get_option('api-key');
         $this->access_token = $this->get_option('access-token');
 
+        $this->helper = new MobbexHelper();
         $this->error = false;
         if (empty($this->api_key) || empty($this->access_token)) {
 
@@ -903,6 +904,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         foreach ($order->get_items() as $item) {
 
+            $checked_common_plans = unserialize(get_post_meta($item->get_product_id(), 'common_plans', true));
+            $checked_advanced_plans = unserialize(get_post_meta($item->get_product_id(), 'advanced_plans', true));
+
             foreach ($ahora as $key => $value) {
                 
                 if (get_post_meta($item->get_product_id(), $key, true) === 'yes') {
@@ -912,6 +916,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     
             }
 
+            foreach ($checked_common_plans as $key => $common_plan) {
+                $installments[] = '-' . $common_plan;
+                unset($checked_common_plans[$key]);
+            }
+
+            foreach ($checked_advanced_plans as $key => $advanced_plan) {
+                $installments[] = '+uid:' . $advanced_plan;
+                unset($checked_advanced_plans[$key]);
+            }
         }
 
         return $installments;
