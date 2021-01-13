@@ -34,6 +34,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // New Webhook
         $this->use_webhook_api = ($this->get_option('use_webhook_api') === 'yes');
 
+        // Seller CUIT, is going to be use to show financial information in the product page
+        $this->tax_id = $this->get_option('tax_id');
+
+        // Enable or Disable financial information in products
+        $this->financial_info_active = ($this->get_option('financial_info_active') === 'yes');
+
         // Theme
         $this->checkout_title = $this->get_option('checkout_title');
         $this->checkout_logo = $this->get_option('checkout_logo');
@@ -271,6 +277,24 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
                 'title' => __('Reseller ID', MOBBEX_WC_TEXT_DOMAIN),
                 'description' => __('You can customize your Reseller ID from here. This field is optional and must be used only if was specified by the main seller.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'text',
+                'default' => '',
+
+            ],
+            
+            'financial_info_active' => [
+
+                'title' => __('Financial Information', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('Show financial information in all products, Tax_id need to be set.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'checkbox',
+                'default' => '',
+
+            ],
+
+            'tax_id' => [
+
+                'title' => __('Tax ID', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Reseller Tax ID from here. This field is optional and must be used only if was specified by the main seller to show financial plans in the product.', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'text',
                 'default' => '',
 

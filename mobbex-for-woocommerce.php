@@ -245,6 +245,8 @@ class MobbexGateway
 
     /**
      * Add new button to show a modal with financial information
+     * only if the checkbox of financial information is checked
+     * @access public
      */
     function additional_button_add_to_cart() {
         ?>
@@ -288,19 +290,28 @@ class MobbexGateway
             } 
         </Style>
         <?php
+            //Get the Tax_id(CUIT) from plugin settings
+            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+            //Set Financial info URL
+            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id;
+            $is_active = $mobbexGateway->financial_info_active;
             global $product;
             
             // Only for simple product type
             if( ! $product->is_type('simple') ) return;
-        
-            // Trigger/Open The Modal 
-            echo '<button id="myBtn">Ver Financiación</button>';
+            
+            // Trigger/Open The Modal if the checkbox is true in the plugin settings
+            if($is_active){
+                echo '<button id="myBtn">Ver Financiación</button>';
+            }
+            
         ?>
         <!-- The Modal -->
         <div id="myModal" class="modal">
             <!-- Modal content -->
             <div class="modal-content">
-                <iframe id="iframe"></iframe>
+                <span class="close">&times;</span>
+                <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
             </div>
         </div>
         <script>
@@ -310,11 +321,18 @@ class MobbexGateway
             // Get the button that opens the modal
             var btn = document.getElementById("myBtn");
 
-            // When the user clicks on the button, open the modal
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            // When the user clicks on the button, show/open the modal
             btn.onclick  = function(e) {
                 e.preventDefault();
                 modal.style.display = "block";
-                document.getElementById('iframe').src = "https://mobbex.com/p/sources/widget/arg/20339969532/";
                 window.dispatchEvent(new Event('resize'));
                 document.getElementById('iframe').style.height = "100%"; 
                 return false;
