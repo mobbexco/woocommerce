@@ -741,6 +741,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return;
         }
 
+        // Exclude scripts from cache plugins minification
+        define('DONOTCACHEPAGE', true);
+        define('DONOTMINIFY', true);
+
         $order_url = home_url('/mobbex?wc-ajax=checkout');
         $update_url = home_url('/wc-api/mobbex_checkout_update');
         $is_wallet = ($this->use_wallet && wp_get_current_user()->ID);
