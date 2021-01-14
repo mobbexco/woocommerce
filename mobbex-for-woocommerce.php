@@ -273,6 +273,7 @@ class MobbexGateway
                 overflow: auto; /* Enable scroll if needed */
                 background-color: rgb(0,0,0); /* Fallback color */
                 background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+                z-index: 9999;
             }
             
             /* Modal Content/Box */
@@ -283,6 +284,7 @@ class MobbexGateway
                 border: 1px solid #888;
                 width: 60%; /* Could be more or less, depending on screen size */
                 height: 100%; /* Full height */
+                z-index: 10000;
             }
             /* The Close Button */
             .close {
