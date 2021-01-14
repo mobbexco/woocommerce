@@ -585,6 +585,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         $status = $data['payment']['status']['code'];
 
+        //order status filter
+        $status = apply_filters( 'mobbex_webhook_order_status', $post_data );
+        
         $this->debug([
             "id" => $id,
             "token" => $token,
@@ -889,6 +892,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     }
 
+    /**
+     * Retrieve selected plans that won't be showed in the payment process 
+     * @return array 
+     */
     public function get_installments($order)
     {
 
@@ -903,15 +910,30 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         foreach ($order->get_items() as $item) {
 
+            $terms = get_the_terms( $item->get_product_id(), 'product_cat' );//retrieve categories
+            $countCategories = sizeof($terms);
             foreach ($ahora as $key => $value) {
                 
                 if (get_post_meta($item->get_product_id(), $key, true) === 'yes') {
+                    //the product have $ahora[$key] plan selected
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
+                }else{
+                    //check if any of the product's categories have the plan selected
+                    $index = 0;
+                    if($countCategories > 0 ){
+                        //Have one or more categories
+                        foreach($terms as $term){
+                            if (get_term_meta($term->term_id, $key, true) === 'yes') {
+                                //Plan is checked in the category
+                                $installments[] = '-' . $key;
+                                unset($ahora[$key]);
+                                break;
+                            }
+                        }
+                    }
                 }
-    
             }
-
         }
 
         return $installments;
