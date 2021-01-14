@@ -310,8 +310,8 @@ class MobbexGateway
             // Only for simple product type
             if( ! $product->is_type('simple') ) return;
             
-            // Trigger/Open The Modal if the checkbox is true in the plugin settings
-            if($is_active){
+            // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
+            if($is_active && $mobbexGateway->tax_id){
                 echo '<button id="myBtn">Ver Financiación</button>';
                 echo sprintf('<div id="product_total_price" style="margin-bottom:20px;">%s %s</div>',__('Product Total:','woocommerce'),'<span class="price">'.$product->get_price().'</span>');
             }
@@ -345,6 +345,7 @@ class MobbexGateway
                 e.preventDefault();
                 modal.style.display = "block";
                 window.dispatchEvent(new Event('resize'));
+                document.getElementById('iframe').style.width = "100%"; 
                 document.getElementById('iframe').style.height = "100%"; 
                 return false;
             }
