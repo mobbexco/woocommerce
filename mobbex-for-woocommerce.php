@@ -53,6 +53,9 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
+        //Add a new button after the "add to cart" button
+        add_action( 'woocommerce_after_add_to_cart_button', [$this,'additional_button_add_to_cart'], 20 );
+
         // Add some useful things
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
@@ -237,6 +240,132 @@ class MobbexGateway
             echo ob_get_clean();
         });
 
+    }
+
+
+    /**
+     * Add new button to show a modal with financial information
+     * only if the checkbox of financial information is checked
+     * @access public
+     */
+    function additional_button_add_to_cart() {
+        ?>
+        <Style>
+            /* The Modal (background) */
+            .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 1; /* Sit on top */
+                left: 0;
+                top: 0;
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgb(0,0,0); /* Fallback color */
+                background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            }
+            
+            /* Modal Content/Box */
+            .modal-content {
+                background-color: #fefefe;
+                margin: 10% auto auto; /* 15% from the top and centered */
+                padding: 20px;
+                border: 1px solid #888;
+                width: 60%; /* Could be more or less, depending on screen size */
+                height: 100%; /* Full height */
+            }
+            /* The Close Button */
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+            
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            } 
+        </Style>
+        <?php
+            global $product;
+            //Get the Tax_id(CUIT) from plugin settings
+            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+            //Set Financial info URL
+            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$product->get_price();
+            $is_active = $mobbexGateway->financial_info_active;
+            
+            // Only for simple product type
+            if( ! $product->is_type('simple') ) return;
+            
+            // Trigger/Open The Modal if the checkbox is true in the plugin settings
+            if($is_active){
+                echo '<button id="myBtn">Ver Financiación</button>';
+                echo sprintf('<div id="product_total_price" style="margin-bottom:20px;">%s %s</div>',__('Product Total:','woocommerce'),'<span class="price">'.$product->get_price().'</span>');
+            }
+            
+        ?>
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
+            </div>
+        </div>
+        <script>
+            // Get the modal
+            var modal = document.getElementById("myModal");
+
+            // Get the button that opens the modal
+            var btn = document.getElementById("myBtn");
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            // When the user clicks on the button, show/open the modal
+            btn.onclick  = function(e) {
+                e.preventDefault();
+                modal.style.display = "block";
+                window.dispatchEvent(new Event('resize'));
+                document.getElementById('iframe').style.height = "100%"; 
+                return false;
+            }
+
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            } 
+
+            //acumulate poduct price based in the quantity
+            jQuery(function($){
+                var price = <?php echo $product->get_price(); ?>,
+                taxId = <?php echo $mobbexGateway->tax_id; ?>,
+                currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
+
+                $('[name=quantity]').change(function(){
+                    if (!(this.value < 1)) {
+
+                        var product_total = parseFloat(price * this.value);
+                        $('#product_total_price .price').html( currency + product_total.toFixed(2));
+                        //change the value send to the service
+                        document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
+
+                    }
+                });
+            });
+
+        </script>
+        <?php
     }
 
     public function mobbex_product_settings_tabs($tabs)
