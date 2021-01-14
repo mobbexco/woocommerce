@@ -5,6 +5,10 @@ define('MOBBEX_WC_TEXT_DOMAIN', 'mobbex-for-woocommerce');
 define('MOBBEX_CHECKOUT', 'https://api.mobbex.com/p/checkout');
 define('MOBBEX_REFUND', 'https://api.mobbex.com/p/operations/{ID}/refund');
 
+// Sources and plans
+define('MOBBEX_SOURCES', 'https://api.mobbex.com/p/sources');
+define('MOBBEX_ADVANCED_PLANS', 'https://api.mobbex.com/p/sources/rules/{rule}/installments');
+
 // Coupon URL
 define('MOBBEX_COUPON', 'https://mobbex.com/console/{entity.uid}/operations/?oid={payment.id}');
 
@@ -28,5 +32,4 @@ if (!function_exists('mobbex_debug')) {
             );
         }
     }
-
 }

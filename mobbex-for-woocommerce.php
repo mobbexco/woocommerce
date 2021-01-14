@@ -9,7 +9,7 @@ Author URI: https://mobbex.com/
 Copyright: 2020 mobbex.com
  */
 
-require_once 'utils.php';
+require_once 'includes/utils.php';
 
 class MobbexGateway
 {
@@ -39,6 +39,8 @@ class MobbexGateway
     {
 
         MobbexGateway::load_textdomain();
+        MobbexGateway::load_helper();
+        MobbexGateway::load_update_checker();
         MobbexGateway::check_dependencies();
 
         if (count(MobbexGateway::$errors)) {
@@ -128,14 +130,6 @@ class MobbexGateway
         if (!version_compare($matches[1], '1.0.1', '>=')) {
             MobbexGateway::$errors[] = $openssl_warning;
         }
-
-        require 'plugin-update-checker/plugin-update-checker.php';
-        $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-            'https://github.com/mobbexco/woocommerce/',
-            __FILE__,
-            'mobbex-plugin-update-checker'
-        );
-        $myUpdateChecker->getVcsApi()->enableReleaseAssets();
     }
 
     public function add_action_links($links)
@@ -197,6 +191,22 @@ class MobbexGateway
 
     }
 
+    public static function load_helper()
+    {
+        require_once plugin_dir_path(__FILE__) . 'includes/helper.php';
+    }
+
+    public static function load_update_checker()
+    {
+        require 'plugin-update-checker/plugin-update-checker.php';
+        $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+            'https://github.com/mobbexco/woocommerce/',
+            __FILE__,
+            'mobbex-plugin-update-checker'
+        );
+        $myUpdateChecker->getVcsApi()->enableReleaseAssets();
+    }
+
     public static function load_gateway()
     {
 
@@ -253,10 +263,11 @@ class MobbexGateway
 
     public function mobbex_product_panels()
     {
-        $product = wc_get_product(get_the_ID());
+        $helper = new MobbexHelper();
 
         echo '<div id="mobbex_product_data" class="panel woocommerce_options_panel hidden">';
-        echo '<h2><b>' . __('Choose the plans you want NOT to appear during the purchase', MOBBEX_WC_TEXT_DOMAIN) . ':</b></h2>';
+        echo '<h2>' . __('Enable for plans to NOT appear at checkout for this product', MOBBEX_WC_TEXT_DOMAIN) . ':</h2>';
+        echo '<p>' . __('Common plans in all payment methods', MOBBEX_WC_TEXT_DOMAIN) . ':</p>';
 
         $ahora = array(
             'ahora_3'  => 'Ahora 3',
@@ -265,8 +276,10 @@ class MobbexGateway
             'ahora_18' => 'Ahora 18',
         );
 
-        foreach ($ahora as $key => $value) {
+        // Set rendered plans so there are no duplicates
+        $rendered_plans = [];
 
+        foreach ($ahora as $key => $value) {
             $checkbox_data = array(
                 'id'      => $key,
                 'value'   => get_post_meta(get_the_ID(), $key, true),
@@ -278,6 +291,74 @@ class MobbexGateway
             }
 
             woocommerce_wp_checkbox($checkbox_data);
+            $rendered_plans[] = $key;
+        }
+
+        // Get sources with common plans
+        $sources = $helper->get_sources();
+        $checked_common_plans = unserialize(get_post_meta(get_the_ID(), 'common_plans', true));
+
+        foreach ($sources as $source) {
+            // If source has plans render checkboxes
+            if (!empty($source['installments']['list'])) {
+                $installments = $source['installments']['list'];
+
+                foreach ($installments as $installment) {
+                    // If it hasn't been rendered yet
+                    if (!in_array($installment['reference'], $rendered_plans)) {
+                        $is_checked = is_array($checked_common_plans) ? in_array($installment['reference'], $checked_common_plans) : false;
+
+                        $checkbox_data = [
+                            'id'      => 'common_plan_' . $installment['reference'],
+                            'value'   => $is_checked ? 'yes' : false,
+                            'label'   => $installment['description'] ? : $installment['name'],
+                        ];
+
+                        if ($is_checked) {
+                            $checkbox_data['custom_attributes'] = 'checked';
+                        }
+
+                        woocommerce_wp_checkbox($checkbox_data);
+                        $rendered_plans[] = $installment['reference'];
+                    }
+                }
+            }
+        }
+
+        // Get sources with advanced rule plans
+        $sources_advanced = $helper->get_sources_advanced();
+        $checked_advanced_plans = unserialize(get_post_meta(get_the_ID(), 'advanced_plans', true));
+
+        echo '<hr><h2>' . __('Enable for plans to appear at checkout for this product', MOBBEX_WC_TEXT_DOMAIN) . ':</h2>';
+        echo '<p>' . __('Plans with advanced rules by payment method', MOBBEX_WC_TEXT_DOMAIN) . ':</p>';
+        
+        foreach ($sources_advanced as $source) {
+            if (!empty($source['installments'])) {
+                echo '
+                    <div style="display: flex; align-items: center; padding-left: 15px;">
+                        <img src="https://res.mobbex.com/images/sources/' . $source['source']['reference'] . '.png" style="border-radius: 100%; width: 40px;">
+                        <p>' . $source['source']['name'] . ':' . '</p>
+                    </div>';
+
+                foreach ($source['installments'] as $installment) {
+                    if (!in_array($installment['uid'], $rendered_plans)) {
+                        $is_checked = is_array($checked_advanced_plans) ? in_array($installment['uid'], $checked_advanced_plans) : false;
+
+                        $checkbox_data = array(
+                            'id'      => 'advanced_plan_' . $installment['uid'],
+                            'value'   => $is_checked ? 'yes' : false,
+                            'label'   => $installment['description'] ? : $installment['name'],
+                        );
+
+                        if ($is_checked) {
+                            $checkbox_data['custom_attributes'] = 'checked';
+                        }
+
+                        woocommerce_wp_checkbox($checkbox_data);
+                        $rendered_plans[] = $installment['uid'];
+                    }
+                }
+            }
         }
 
         echo '</div>';
@@ -302,6 +383,25 @@ class MobbexGateway
 
             $product->update_meta_data($key, $value);
         }
+
+        $common_plans = [];
+        $advanced_plans = [];
+        $post_fields = $_POST;
+
+        // Get plans selected and save as meta data
+        foreach ($post_fields as $id => $value) {
+            if (strpos($id, 'common_plan_') !== false && $value === 'yes') {
+                $uid = explode('common_plan_', $id)[1];
+                $common_plans[] = $uid;
+            } else if (strpos($id, 'advanced_plan_') !== false && $value === 'yes'){
+                $uid = explode('advanced_plan_', $id)[1];
+                $advanced_plans[] = $uid;
+            } else {
+                unset($post_fields[$id]);
+            }
+        }
+        $product->update_meta_data('common_plans', serialize($common_plans));
+        $product->update_meta_data('advanced_plans', serialize($advanced_plans));
 
         $product->save();
     }
