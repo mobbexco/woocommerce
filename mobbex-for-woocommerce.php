@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.0.3
+Version:      3.1.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -258,7 +258,7 @@ class MobbexGateway
      * only if the checkbox of financial information is checked
      * @access public
      */
-    function additional_button_add_to_cart() {
+    public function additional_button_add_to_cart() {
         ?>
         <Style>
             /* The Modal (background) */
@@ -608,9 +608,9 @@ class MobbexGateway
     }
 
 
-/**
-* Save the category meta data after save/update, including the selection(check) of payment plans
-*/
+    /**
+    * Save the category meta data after save/update, including the selection(check) of payment plans
+    */
     public function mobbex_category_save($term_id)
     {
         $plans = array(

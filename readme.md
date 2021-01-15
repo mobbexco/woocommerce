@@ -32,6 +32,9 @@ If you don't do it you won't be able to receive the information about the paymen
 
 #### Checkout data filter
 To manipulate the information sent to Mobbex checkout, you must use the filter ```mobbex_checkout_custom_data```. When using it, it will receive as an argument the body of the checkout to be modified
+
+#### Webhook data filter
+To manipulate or save data from Mobbex webhook, you must use the filter ```mobbex_order_webhook```.
 ## Preguntas Frecuentes
 
 #### Error: "No se pudo validar la transacción. Contacte con el administrador de su sitio"
@@ -43,6 +46,14 @@ Esto se debe a que tu sitio posee una redirección en el archivo .htaccess o a n
 Al igual que el error anterior esto se debe a que el parametro de validación se pierde durante la redirección. Revisá la configuración de tu sitio.
 
 ## Changelog
+
+### 3.1.0 :: 2021-01-15
+- Add plans filter by category.
+- Add common/advanced plans filter by product.
+- Add plans widget to product view.
+- New filter to edit mobbex webhook data from external plugins/themes.
+- Fix minify conflicts with cache plugins.
+- Structure improvements.
 
 ### 3.0.3 :: 2020-12-16
 - Fix handling of order hold states.
