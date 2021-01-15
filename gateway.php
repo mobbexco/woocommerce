@@ -1,5 +1,5 @@
 <?php
-require_once 'utils.php';
+require_once 'includes/utils.php';
 
 class WC_Gateway_Mobbex extends WC_Payment_Gateway
 {
@@ -55,6 +55,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->api_key = $this->get_option('api-key');
         $this->access_token = $this->get_option('access-token');
 
+        $this->helper = new MobbexHelper();
         $this->error = false;
         if (empty($this->api_key) || empty($this->access_token)) {
 
@@ -554,6 +555,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $id = $_REQUEST['mobbex_order_id'];
         $token = $_REQUEST['mobbex_token'];
 
+        //order webhook filter
+        $_POST['data'] = apply_filters( 'mobbex_order_webhook', $_POST['data'] );
+        
         $this->process_webhook($id, $token, $_POST['data']);
 
         echo "WebHook OK: Mobbex for WooCommerce v" . MOBBEX_VERSION;
@@ -573,6 +577,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             "token" => $token,
         ], "Mobbex API > Params");
 
+        //order webhook filter
+        $postData = apply_filters( 'mobbex_order_webhook', $postData );
+
         $res = $this->process_webhook($id, $token, $postData['data']);
 
         return [
@@ -583,8 +590,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function process_webhook($id, $token, $data)
     {
-        $status = $data['payment']['status']['code'];
-
+        $status = $data['payment']['status']['code'];   
+        
         $this->debug([
             "id" => $id,
             "token" => $token,
@@ -739,6 +746,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $this->debug([], "Not ready");
             return;
         }
+
+        // Exclude scripts from cache plugins minification
+        define('DONOTCACHEPAGE', true);
+        define('DONOTMINIFY', true);
 
         $order_url = home_url('/mobbex?wc-ajax=checkout');
         $update_url = home_url('/wc-api/mobbex_checkout_update');
@@ -903,15 +914,28 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         foreach ($order->get_items() as $item) {
 
+            $terms = get_the_terms( $item->get_product_id(), 'product_cat' );//retrieve categories
+            $countCategories = sizeof($terms);
+
             foreach ($ahora as $key => $value) {
-                
                 if (get_post_meta($item->get_product_id(), $key, true) === 'yes') {
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
                 }
-    
             }
 
+            $checked_common_plans = unserialize(get_post_meta($item->get_product_id(), 'common_plans', true));
+            $checked_advanced_plans = unserialize(get_post_meta($item->get_product_id(), 'advanced_plans', true));
+
+            foreach ($checked_common_plans as $key => $common_plan) {
+                $installments[] = '-' . $common_plan;
+                unset($checked_common_plans[$key]);
+            }
+
+            foreach ($checked_advanced_plans as $key => $advanced_plan) {
+                $installments[] = '+uid:' . $advanced_plan;
+                unset($checked_advanced_plans[$key]);
+            }
         }
 
         return $installments;
