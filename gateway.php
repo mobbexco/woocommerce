@@ -579,6 +579,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $id = $_REQUEST['mobbex_order_id'];
         $token = $_REQUEST['mobbex_token'];
 
+        //order webhook filter
+        $_POST['data'] = apply_filters( 'mobbex_order_webhook', $_POST['data'] );
+        
         $this->process_webhook($id, $token, $_POST['data']);
 
         echo "WebHook OK: Mobbex for WooCommerce v" . MOBBEX_VERSION;
@@ -598,6 +601,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             "token" => $token,
         ], "Mobbex API > Params");
 
+        //order webhook filter
+        $postData = apply_filters( 'mobbex_order_webhook', $postData );
+
         $res = $this->process_webhook($id, $token, $postData['data']);
 
         return [
@@ -608,10 +614,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function process_webhook($id, $token, $data)
     {
-        $status = $data['payment']['status']['code'];
-
-        //order status filter
-        $status = apply_filters( 'mobbex_webhook_order_status', $post_data );
+        $status = $data['payment']['status']['code'];   
         
         $this->debug([
             "id" => $id,
