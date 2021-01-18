@@ -49,6 +49,7 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ### 3.1.1 :: 2021-01-18
 - Re-add reseller id to reference.
+- Send order id as argument in checkout hook.
 
 ### 3.1.0 :: 2021-01-15
 - Add plans filter by category.
