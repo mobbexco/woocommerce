@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.1.0
+Version:      3.1.1
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -556,8 +556,6 @@ class MobbexGateway
         echo '</div>';
     }
 
-
-
     /**
      * Add Payment plans for a category in the edition page, and search if any of them was checked before
      */
@@ -593,7 +591,6 @@ class MobbexGateway
 
             echo '</div>';
     }
-
 
     /**
     * Save the category meta data after save/update, including the selection(check) of payment plans
