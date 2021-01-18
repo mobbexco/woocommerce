@@ -434,7 +434,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         ];
 
         // Custom data filter
-        $checkout_body = apply_filters('mobbex_checkout_custom_data', $checkout_body);
+        $checkout_body = apply_filters('mobbex_checkout_custom_data', $checkout_body, $order->get_id());
 
         // Merge not editable data
         $checkout_body = array_merge($checkout_body,[
