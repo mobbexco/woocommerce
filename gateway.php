@@ -944,7 +944,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function get_reference($order_id)
     {
-        return 'wc_order_'.$order_id.'_time_'.time();
+        // If isset reseller id add it to reference
+        $reseller_id = !empty($this->reseller_id) ? '_reseller_' . $this->reseller_id : null;
+
+        return 'wc_order_'.$order_id.'_time_'.time() . $reseller_id;
     }
 
     public function mobbex_dni_woocommerce_billing_fields($fields)
