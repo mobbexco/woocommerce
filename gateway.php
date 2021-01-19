@@ -34,6 +34,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // New Webhook
         $this->use_webhook_api = ($this->get_option('use_webhook_api') === 'yes');
 
+        // Seller CUIT, is going to be use to show financial information in the product page
+        $this->tax_id = $this->get_option('tax_id');
+
+        // Enable or Disable financial information in products
+        $this->financial_info_active = ($this->get_option('financial_info_active') === 'yes');
+
         // Theme
         $this->checkout_title = $this->get_option('checkout_title');
         $this->checkout_logo = $this->get_option('checkout_logo');
@@ -272,6 +278,24 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
                 'title' => __('Reseller ID', MOBBEX_WC_TEXT_DOMAIN),
                 'description' => __('You can customize your Reseller ID from here. This field is optional and must be used only if was specified by the main seller.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'text',
+                'default' => '',
+
+            ],
+            
+            'financial_info_active' => [
+
+                'title' => __('Financial Information', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('Show financial information in all products, Tax_id need to be set.', MOBBEX_WC_TEXT_DOMAIN),
+                'type' => 'checkbox',
+                'default' => '',
+
+            ],
+
+            'tax_id' => [
+
+                'title' => __('Tax ID', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Reseller Tax ID from here. This field is optional and must be used only if was specified by the main seller to show financial plans in the product.', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'text',
                 'default' => '',
 
@@ -900,6 +924,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     }
 
+    /**
+     * Retrieve selected plans that won't be showed in the payment process 
+     * @return array 
+     */
     public function get_installments($order)
     {
 
@@ -918,9 +946,25 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $countCategories = sizeof($terms);
 
             foreach ($ahora as $key => $value) {
+                
                 if (get_post_meta($item->get_product_id(), $key, true) === 'yes') {
+                    //the product have $ahora[$key] plan selected
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
+                }else{
+                    //check if any of the product's categories have the plan selected
+                    $index = 0;
+                    if($countCategories > 0 ){
+                        //Have one or more categories
+                        foreach($terms as $term){
+                            if (get_term_meta($term->term_id, $key, true) === 'yes') {
+                                //Plan is checked in the category
+                                $installments[] = '-' . $key;
+                                unset($ahora[$key]);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 
