@@ -55,10 +55,21 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
+        //Add a new button after the "add to cart" button
+        add_action( 'woocommerce_after_add_to_cart_button', [$this,'additional_button_add_to_cart'], 20 );
+
         // Add some useful things
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
         add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 2);
 
+        // Mobbex category management 
+        //Category Creation
+        add_action('product_cat_add_form_fields', [$this,'mobbex_category_panels'], 10, 1);
+        add_action('create_product_cat', [$this,'mobbex_category_save'], 10, 1);
+        //Category Edition
+        add_action('edited_product_cat', [$this,'mobbex_category_save'], 10, 1);
+        add_action('product_cat_edit_form_fields', [$this,'mobbex_category_panels_edit'], 10, 1);
+        
         // Mobbex product management tab
         add_filter('woocommerce_product_data_tabs', [$this, 'mobbex_product_settings_tabs']);
         add_action('woocommerce_product_data_panels', [$this, 'mobbex_product_panels']);
@@ -240,6 +251,7 @@ class MobbexGateway
         });
 
     }
+
 
     /**
      * Add new button to show a modal with financial information
@@ -525,6 +537,7 @@ class MobbexGateway
 
         $product->save();
     }
+
 
     /**
      *  Add plans checkbox list to the category creation form
