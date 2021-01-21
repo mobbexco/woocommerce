@@ -264,7 +264,6 @@ class MobbexGateway
             .modal {
                 display: none; /* Hidden by default */
                 position: fixed; /* Stay in place */
-                z-index: 1; /* Sit on top */
                 left: 0;
                 top: 0;
                 width: 100%; /* Full width */
@@ -281,7 +280,7 @@ class MobbexGateway
                 margin: 10% auto auto; /* 15% from the top and centered */
                 padding: 20px;
                 border: 1px solid #888;
-                width: 60%; /* Could be more or less, depending on screen size */
+                max-width: 650px; /* Could be more or less, depending on screen size */
                 height: 100%; /* Full height */
                 z-index: 10000;
             }
