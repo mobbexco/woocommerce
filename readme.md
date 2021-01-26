@@ -47,6 +47,10 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.1.2 :: 2021-01-26
+- Add do_action filters to checkout and webhook process.
+- Fix modal styles.
+
 ### 3.1.1 :: 2021-01-18
 - Re-add reseller id to reference.
 - Send order id as argument in checkout hook.

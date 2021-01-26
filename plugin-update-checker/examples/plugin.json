@@ -1,11 +1,11 @@
 {
 	"name": "Mobbex for Woocommerce",
-	"version": "3.1.1",
+	"version": "3.1.2",
 
 	"homepage": "https://github.com/",
 	"requires": "5.0",
 	"tested": "5.5",
-	"last_updated": "2020-10-26",
+	"last_updated": "2021-01-26",
 	"upgrade_notice": "Upgrade to get new features",
 
 	"author": "mobbex.com",
