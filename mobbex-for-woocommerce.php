@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.1.1
+Version:      3.1.2
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -56,7 +56,7 @@ class MobbexGateway
         MobbexGateway::add_gateway();
 
         //Add a new button after the "add to cart" button
-        add_action( 'woocommerce_after_add_to_cart_button', [$this,'additional_button_add_to_cart'], 20 );
+        add_action( 'woocommerce_after_add_to_cart_form', [$this,'additional_button_add_to_cart'], 20 );
 
         // Add some useful things
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
@@ -257,14 +257,13 @@ class MobbexGateway
      * only if the checkbox of financial information is checked
      * @access public
      */
-    public function additional_button_add_to_cart() {
+    function additional_button_add_to_cart() {
         ?>
         <Style>
             /* The Modal (background) */
             .modal {
                 display: none; /* Hidden by default */
                 position: fixed; /* Stay in place */
-                z-index: 1; /* Sit on top */
                 left: 0;
                 top: 0;
                 width: 100%; /* Full width */
@@ -281,7 +280,7 @@ class MobbexGateway
                 margin: 10% auto auto; /* 15% from the top and centered */
                 padding: 20px;
                 border: 1px solid #888;
-                width: 60%; /* Could be more or less, depending on screen size */
+                max-width: 650px; /* Could be more or less, depending on screen size */
                 height: 100%; /* Full height */
                 z-index: 10000;
             }
@@ -299,6 +298,13 @@ class MobbexGateway
                 text-decoration: none;
                 cursor: pointer;
             } 
+            .button{
+                padding: 20px;
+            }
+             
+            #myBtn{
+                margin-top: 5%;
+            }
         </Style>
         <?php
             global $product;
@@ -313,8 +319,7 @@ class MobbexGateway
             
             // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
             if($is_active && $mobbexGateway->tax_id){
-                echo '<button id="myBtn">Ver Financiación</button>';
-                echo sprintf('<div id="product_total_price" style="margin-bottom:20px;">%s %s</div>',__('Product Total:','woocommerce'),'<span class="price">'.$product->get_price().'</span>');
+                echo '<button id="myBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
             }
             
         ?>
@@ -368,7 +373,6 @@ class MobbexGateway
                     if (!(this.value < 1)) {
 
                         var product_total = parseFloat(price * this.value);
-                        $('#product_total_price .price').html( currency + product_total.toFixed(2));
                         //change the value send to the service
                         document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
 
