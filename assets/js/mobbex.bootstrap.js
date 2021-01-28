@@ -148,9 +148,11 @@ jQuery(function ($) {
         walletDiv.append(`
             <li class="wc_payment_method payment_method_card" style="margin-bottom:1.5rem">
                 <input name="walletOpt" class="input-radio" id="new_card" type="radio" value="new_card">
-                <label class="payment_method_cod" for="new_card">Agregar Tarjeta</label>
+                <label class="payment_method_cod" for="new_card">Utilizar otra tarjeta / Medio de pago</label>
             </li>`)
         
+        // Automatic check new card
+        $('input[name=walletOpt][value="new_card"]').prop("checked", true)
         // The wallet is empty
         if (walletData.length < 1) renderNoCardsMessage()
         // Renders the credit cards
@@ -260,10 +262,10 @@ jQuery(function ($) {
 
     // Renders the message when no cards are available
     function renderNoCardsMessage() {
-        $('#walletCards').append(`
-            <li class="wc_payment_method payment_method_card" style="margin-bottom:1.5rem">
-                <p>No se encontraron tarjetas guardadas</p>
-            </li>`)
+        $("#walletCards").hide()
+        $("#walletCardsContainer").append(`
+        <p>Paga con tarjeta, efectivo y otros medios de pago</p>
+        `)
     }
 
     // Utils
@@ -323,4 +325,3 @@ jQuery(function ($) {
         }
     }
 });
-
