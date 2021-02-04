@@ -46,6 +46,11 @@ Esto se debe a que tu sitio posee una redirección en el archivo .htaccess o a n
 Al igual que el error anterior esto se debe a que el parametro de validación se pierde durante la redirección. Revisá la configuración de tu sitio.
 
 ## Changelog
+### 3.1.3 :: 2021-02-04
+- Fix wallet option error when sending empty Wallet form in checkout.
+- Cards view improvements in Wallet form.
+- Move checkout do action to support Wallet checkouts.
+- Add check for unsaved plans data.
 
 ### 3.1.2 :: 2021-01-26
 - Add do_action filters to checkout and webhook process.
