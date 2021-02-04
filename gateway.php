@@ -346,9 +346,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $order->update_status('pending', __('Awaiting Mobbex Webhook', MOBBEX_WC_TEXT_DOMAIN));
 
-        //action with the checkout data
-        do_action('mobbex_checkout_process',$checkout_data,$order_id);
-
         if ($this->use_button) {
             $this->debug([
                 'result' => 'success',
@@ -494,12 +491,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->debug($response);
 
         if (!is_wp_error($response)) {
-
             $response = json_decode($response['body'], true);
-            $data = $response['data'];
 
-            if ($data) {
-                return $data;
+            if (!empty($response['data'])) {
+                // Fire action and return data
+                do_action('mobbex_checkout_process', $response['data'], $order->get_id());
+
+                return $response['data'];
             }
         }
 
