@@ -258,10 +258,11 @@ class MobbexGateway
      * @access public
      */
     function additional_button_add_to_cart() {
+        
         ?>
         <Style>
             /* The Modal (background) */
-            .modal {
+            #myModal {
                 display: none; /* Hidden by default */
                 position: fixed; /* Stay in place */
                 left: 0;
@@ -275,7 +276,7 @@ class MobbexGateway
             }
             
             /* Modal Content/Box */
-            .modal-content {
+            #myModalContent {
                 background-color: #fefefe;
                 margin: 10% auto auto; /* 15% from the top and centered */
                 padding: 20px;
@@ -285,24 +286,22 @@ class MobbexGateway
                 z-index: 10000;
             }
             /* The Close Button */
-            .close {
+            #closeModal {
                 color: #aaa;
                 float: right;
                 font-size: 28px;
                 font-weight: bold;
             }
             
-            .close:hover,
-            .close:focus {
+            #closeModal:hover,
+            #closeModal:focus {
                 color: black;
                 text-decoration: none;
                 cursor: pointer;
             } 
-            .button{
-                padding: 20px;
-            }
              
             #myBtn{
+                padding: 20px;
                 margin-top: 5%;
             }
         </Style>
@@ -310,27 +309,30 @@ class MobbexGateway
             global $product;
             //Get the Tax_id(CUIT) from plugin settings
             $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-            //Set Financial info URL
-            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$product->get_price();
             $is_active = $mobbexGateway->financial_info_active;
-            
+
             // Only for simple product type
             if( ! $product->is_type('simple') ) return;
-            
+
             // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
             if($is_active && $mobbexGateway->tax_id){
+                //Set Financial info URL
+                $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$product->get_price();
+                
                 echo '<button id="myBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
             }
-            
+
         ?>
-        <!-- The Modal -->
-        <div id="myModal" class="modal">
-            <!-- Modal content -->
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
+        <?php if($is_active){?>
+            <!-- The Modal -->
+            <div id="myModal" class="modal">
+                <!-- Modal content -->
+                <div id="myModalContent" class="modal-content">
+                    <span id="closeModal" class="close">&times;</span>
+                    <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
+                </div>
             </div>
-        </div>
+        <?php } ?>
         <script>
             // Get the modal
             var modal = document.getElementById("myModal");
@@ -341,21 +343,25 @@ class MobbexGateway
             // Get the <span> element that closes the modal
             var span = document.getElementsByClassName("close")[0];
 
-            // When the user clicks on <span> (x), close the modal
-            span.onclick = function() {
-                modal.style.display = "none";
+            //only if the button is avalible
+            if(span){
+                // When the user clicks on <span> (x), close the modal
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
             }
-
-            // When the user clicks on the button, show/open the modal
-            btn.onclick  = function(e) {
-                e.preventDefault();
-                modal.style.display = "block";
-                window.dispatchEvent(new Event('resize'));
-                document.getElementById('iframe').style.width = "100%"; 
-                document.getElementById('iframe').style.height = "100%"; 
-                return false;
+            //only if the button is avalible
+            if(btn){
+                // When the user clicks on the button, show/open the modal
+                btn.onclick  = function(e) {
+                    e.preventDefault();
+                    modal.style.display = "block";
+                    window.dispatchEvent(new Event('resize'));
+                    document.getElementById('iframe').style.width = "100%"; 
+                    document.getElementById('iframe').style.height = "100%"; 
+                    return false;
+                }
             }
-
             // When the user clicks anywhere outside of the modal, close it
             window.onclick = function(event) {
                 if (event.target == modal) {
@@ -363,25 +369,26 @@ class MobbexGateway
                 }
             } 
 
-            //acumulate poduct price based in the quantity
-            jQuery(function($){
-                var price = <?php echo $product->get_price(); ?>,
-                taxId = <?php echo $mobbexGateway->tax_id; ?>,
-                currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
+            //acumulate poduct price based in the quantity only if the button is active
+            jQuery(function($){    
+                    var price = <?php echo $product->get_price(); ?>;
+                    var taxId = <?php echo ($mobbexGateway->tax_id > 0 ? $mobbexGateway->tax_id : 0 ); ?>;
+                    var currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
 
-                $('[name=quantity]').change(function(){
-                    if (!(this.value < 1)) {
+                    $('[name=quantity]').change(function(){
+                        if (!(this.value < 1) && (taxId > 0)) {
 
-                        var product_total = parseFloat(price * this.value);
-                        //change the value send to the service
-                        document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
+                            var product_total = parseFloat(price * this.value);
+                            //change the value send to the service
+                            document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
 
-                    }
-                });
+                        }
+                   });   
             });
 
         </script>
         <?php
+        
     }
 
     public function mobbex_product_settings_tabs($tabs)
