@@ -1,28 +1,21 @@
 <?php
 require_once 'utils.php';
 
-class MobbexHelper extends WC_Settings_API
+class MobbexHelper
 {
 
     public function __construct()
     {
-        $this->id = MOBBEX_WC_GATEWAY_ID;
-        $this->enabled = $this->get_option('enabled');
-        $this->api_key = $this->get_option('api-key');
-        $this->access_token = $this->get_option('access-token');
+        // Init settings (Full List in WC_Gateway_Mobbex::init_form_fields)
+        $option_key = 'woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings';
+		$settings = get_option($option_key, null);
+        foreach ($settings as $key => $value)
+            $this->$key = $value;
     }
 
     public function isReady()
     {
-        if ($this->enabled !== 'yes') {
-            return false;
-        }
-
-        if (empty($this->api_key) || empty($this->access_token)) {
-            return false;
-        }
-
-        return true;
+        return ($this->enabled === 'yes' && !empty($this->api_key) && !empty($this->access_token));
     }
 
     /**
