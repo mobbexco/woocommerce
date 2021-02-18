@@ -37,12 +37,6 @@ class MobbexGateway
 
     public function init()
     {
-
-        // register jquery and style on initialization
-        //add_action('init', array($this,'register_style') );
-        add_action( 'wp_enqueue_scripts', [$this,'mobbex_style']);
-        //add_action('wp_enqueue_scripts', 'wpdocs_override_stylesheets', PHP_INT_MAX);
-
         MobbexGateway::load_textdomain();
         MobbexGateway::load_helper();
         MobbexGateway::load_update_checker();
@@ -60,13 +54,13 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
-        $helper = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-        if ($helper->financial_info_active && $helper->tax_id) {
-            //Add a new button after the "add to cart" button
-            add_action( 'woocommerce_after_add_to_cart_form', [$this,'additional_button_add_to_cart'], 20 );
+        $gateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+        if ($gateway->financial_info_active && $gateway->tax_id) {
+            // Add a new button after the "add to cart" button
+            add_action('woocommerce_after_add_to_cart_form', [$this,'additional_button_add_to_cart'], 20 );
+            // Register style on initialization
+            add_action('wp_enqueue_scripts', [$this,'mobbex_styles']);
         }
-        
-        
 
         // Add some useful things
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
@@ -262,23 +256,18 @@ class MobbexGateway
 
     }
 
-    
-    function mobbex_style() {   
-
+    public function mobbex_styles() {   
         $dir = plugin_dir_url(__FILE__);
-        wp_register_style( 'mobbex_style_producto', $dir.'assets/css/mobbex.css' );
-        wp_enqueue_style( 'mobbex_style_producto' );
-
+        wp_register_style('mobbex_product_style', $dir.'assets/css/mobbex_product.css');
+        wp_enqueue_style('mobbex_product_style');
     }
 
-
-    
     /**
      * Add new button to show a modal with financial information
      * only if the checkbox of financial information is checked
      * @access public
      */
-    function additional_button_add_to_cart() {
+    public function additional_button_add_to_cart() {
             
             global $product;
             //Get the Tax_id(CUIT) from plugin settings
