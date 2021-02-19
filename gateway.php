@@ -506,41 +506,48 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function get_items($order)
     {
+        // Get items from order
+        $line_items = $order->get_items();
+        $shipping_items = $order->get_items('shipping');
 
-        $items = [];
+        $mobbex_items = [];
 
-        foreach ($order->get_items() as $item) {
+        if (!empty($line_items)) {
+            foreach ($line_items as $item) {
+                $image = null;
+                $product_id = $item->get_product_id();
 
-            $product = wc_get_product($item->get_product_id());
-            $image_id = $product->get_image_id();
-            $image = wp_get_attachment_image_url($image_id, 'thumbnail');
-            $default_image = wc_placeholder_img_src('thumbnail');
-            $image = $image ? $image : $default_image;
+                if (!empty($product_id)) {
+                    $product = wc_get_product($item->get_product_id());
 
-            $items[] = [
+                    // Get product image
+                    $image_id = $product->get_image_id();
+                    $cover_image = wp_get_attachment_image_url($image_id, 'thumbnail');
+                    $default_image = wc_placeholder_img_src('thumbnail');
 
-                'image' => $image,
-                'quantity' => $item->get_quantity(),
-                'description' => $item->get_name(),
-                'total' => $item->get_total(),
-
-            ];
-
+                    $image = !empty($cover_image) ? $cover_image : $default_image;
+                }
+    
+                $mobbex_items[] = [
+                    'image' => $image,
+                    'quantity' => $item->get_quantity(),
+                    'description' => $item->get_name(),
+                    'total' => $item->get_total(),
+                ];
+            }
         }
 
-        foreach ($order->get_items('shipping') as $item) {
-
-            $items[] = [
-                // TODO: Use a translate key here for "Shipping"
-                'description' => 'Envío: ' . $item->get_name(),
-                'total' => $item->get_total(),
-
-            ];
-
+        if (!empty($shipping_items)) {
+            foreach ($shipping_items as $item) {
+                $mobbex_items[] = [
+                    // TODO: Use a translate key here for "Shipping"
+                    'description' => __('Shipping: ') . $item->get_name(),
+                    'total' => $item->get_total(),
+                ];
+            }
         }
 
-        return $items;
-
+        return $mobbex_items;
     }
 
     public function get_api_endpoint($endpoint, $order_id)
