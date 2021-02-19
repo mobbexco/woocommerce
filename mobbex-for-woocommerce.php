@@ -37,7 +37,6 @@ class MobbexGateway
 
     public function init()
     {
-
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
         MobbexGateway::check_dependencies();
@@ -55,8 +54,13 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
-        //Add a new button after the "add to cart" button
-        add_action( 'woocommerce_after_add_to_cart_form', [$this,'additional_button_add_to_cart'], 20 );
+        $gateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+        if ($gateway->financial_info_active && $gateway->tax_id) {
+            // Add a new button after the "add to cart" button
+            add_action('woocommerce_after_add_to_cart_form', [$this,'additional_button_add_to_cart'], 20 );
+            // Register style on initialization
+            add_action('wp_enqueue_scripts', [$this,'mobbex_styles']);
+        }
 
         // Add some useful things
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
@@ -252,136 +256,35 @@ class MobbexGateway
 
     }
 
+    public function mobbex_styles() {   
+        $dir = plugin_dir_url(__FILE__);
+        wp_register_style('mobbex_product_style', $dir.'assets/css/mobbex_product.css');
+        wp_enqueue_style('mobbex_product_style');
+    }
+
     /**
      * Add new button to show a modal with financial information
      * only if the checkbox of financial information is checked
      * @access public
      */
-    function additional_button_add_to_cart() {
-        ?>
-        <Style>
-            /* The Modal (background) */
-            .modal {
-                display: none; /* Hidden by default */
-                position: fixed; /* Stay in place */
-                left: 0;
-                top: 0;
-                width: 100%; /* Full width */
-                height: 100%; /* Full height */
-                overflow: auto; /* Enable scroll if needed */
-                background-color: rgb(0,0,0); /* Fallback color */
-                background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-                z-index: 9999;
-            }
+    public function additional_button_add_to_cart() {
             
-            /* Modal Content/Box */
-            .modal-content {
-                background-color: #fefefe;
-                margin: 10% auto auto; /* 15% from the top and centered */
-                padding: 20px;
-                border: 1px solid #888;
-                max-width: 650px; /* Could be more or less, depending on screen size */
-                height: 100%; /* Full height */
-                z-index: 10000;
-            }
-            /* The Close Button */
-            .close {
-                color: #aaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-            }
-            
-            .close:hover,
-            .close:focus {
-                color: black;
-                text-decoration: none;
-                cursor: pointer;
-            } 
-            .button{
-                padding: 20px;
-            }
-             
-            #myBtn{
-                margin-top: 5%;
-            }
-        </Style>
-        <?php
             global $product;
             //Get the Tax_id(CUIT) from plugin settings
             $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-            //Set Financial info URL
-            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$product->get_price();
             $is_active = $mobbexGateway->financial_info_active;
-            
+
             // Only for simple product type
             if( ! $product->is_type('simple') ) return;
-            
             // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
             if($is_active && $mobbexGateway->tax_id){
-                echo '<button id="myBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+                //Set Financial info URL
+                $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$product->get_price();
+                
+                echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
             }
-            
-        ?>
-        <!-- The Modal -->
-        <div id="myModal" class="modal">
-            <!-- Modal content -->
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
-            </div>
-        </div>
-        <script>
-            // Get the modal
-            var modal = document.getElementById("myModal");
-
-            // Get the button that opens the modal
-            var btn = document.getElementById("myBtn");
-
-            // Get the <span> element that closes the modal
-            var span = document.getElementsByClassName("close")[0];
-
-            // When the user clicks on <span> (x), close the modal
-            span.onclick = function() {
-                modal.style.display = "none";
-            }
-
-            // When the user clicks on the button, show/open the modal
-            btn.onclick  = function(e) {
-                e.preventDefault();
-                modal.style.display = "block";
-                window.dispatchEvent(new Event('resize'));
-                document.getElementById('iframe').style.width = "100%"; 
-                document.getElementById('iframe').style.height = "100%"; 
-                return false;
-            }
-
-            // When the user clicks anywhere outside of the modal, close it
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            } 
-
-            //acumulate poduct price based in the quantity
-            jQuery(function($){
-                var price = <?php echo $product->get_price(); ?>,
-                taxId = <?php echo $mobbexGateway->tax_id; ?>,
-                currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
-
-                $('[name=quantity]').change(function(){
-                    if (!(this.value < 1)) {
-
-                        var product_total = parseFloat(price * this.value);
-                        //change the value send to the service
-                        document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
-
-                    }
-                });
-            });
-
-        </script>
-        <?php
+            include 'assets/html/mobbex_product.php';
+        
     }
 
     public function mobbex_product_settings_tabs($tabs)
