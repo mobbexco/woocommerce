@@ -39,7 +39,6 @@ class MobbexGateway
     {
 
         MobbexGateway::load_textdomain();
-        MobbexGateway::load_helper();
         MobbexGateway::load_update_checker();
         MobbexGateway::check_dependencies();
 
@@ -52,6 +51,7 @@ class MobbexGateway
             return;
         }
 
+        MobbexGateway::load_helper();
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
