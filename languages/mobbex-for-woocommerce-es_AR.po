@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mobbex for Woocommerce\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-13 23:16+0000\n"
-"PO-Revision-Date: 2021-01-13 23:24+0000\n"
+"PO-Revision-Date: 2021-02-19 20:05+0000\n"
 "Last-Translator: Jorge Borges\n"
 "Language-Team: Español de Argentina\n"
 "Language: es_AR\n"
@@ -116,6 +116,9 @@ msgstr "Pagar con Mobbex"
 
 msgid "Plans with advanced rules by payment method"
 msgstr "Planes con reglas avanzadas ordenados por método de pago"
+
+msgid "Shipping: "
+msgstr "Envío: "
 
 #: gateway.php:67
 msgid "This description will be shown on user checkout."
