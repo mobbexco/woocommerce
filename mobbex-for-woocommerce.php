@@ -54,13 +54,14 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
-        $gateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-        if ($gateway->financial_info_active && $gateway->tax_id) {
+        $helper = new MobbexHelper();
+        if (!empty($helper->financial_info_active) && !empty($helper->tax_id) && $helper->financial_info_active === 'yes') {
             // Add a new button after the "add to cart" button
-            add_action('woocommerce_after_add_to_cart_form', [$this,'additional_button_add_to_cart'], 20 );
-            // Register style on initialization
-            add_action('wp_enqueue_scripts', [$this,'mobbex_styles']);
+            add_action('woocommerce_after_add_to_cart_form', [$this, 'additional_button_add_to_cart'], 20 );
         }
+
+        // Enqueue assets
+        add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
 
         // Add some useful things
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
@@ -256,10 +257,22 @@ class MobbexGateway
 
     }
 
-    public function mobbex_styles() {   
-        $dir = plugin_dir_url(__FILE__);
-        wp_register_style('mobbex_product_style', $dir.'assets/css/mobbex_product.css');
-        wp_enqueue_style('mobbex_product_style');
+    public function mobbex_assets_enqueue() {
+        $helper = new MobbexHelper();
+        $dir_url = plugin_dir_url(__FILE__);
+
+        // If dir url looks good
+        if (!empty($dir_url) && substr($dir_url, -1) === '/') {
+            // Product page
+            if (is_product() &&
+                !empty($helper->financial_info_active) && 
+                !empty($helper->tax_id) &&
+                $helper->financial_info_active === 'yes'
+            ) {
+                wp_register_style('mobbex_product_style', $dir_url . 'assets/css/mobbex_product.css');
+                wp_enqueue_style('mobbex_product_style');
+            }
+        }
     }
 
     /**
