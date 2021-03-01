@@ -951,10 +951,23 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'ahora_18' => 'Ahora 18',
         );
 
+        
+        // Check "Ahora" custom fields in categories
+        $categories_ids = $this->get_categories_ids($order->get_items());
+        foreach ($ahora as $key => $value) {
+            //check if any of the product's categories have the plan selected
+            //Have one or more categories
+            foreach($categories_ids as $cat_id){
+                if (get_term_meta($cat_id, $key, true) === 'yes') {
+                    //Plan is checked in the category
+                    $installments[] = '-' . $key;
+                    unset($ahora[$key]);
+                    break;
+                }
+            }
+        }
+        
         foreach ($order->get_items() as $item) {
-
-            $terms = get_the_terms( $item->get_product_id(), 'product_cat' );//retrieve categories
-            $countCategories = sizeof($terms);
 
             foreach ($ahora as $key => $value) {
                 
@@ -962,20 +975,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                     //the product have $ahora[$key] plan selected
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
-                }else{
-                    //check if any of the product's categories have the plan selected
-                    $index = 0;
-                    if($countCategories > 0 ){
-                        //Have one or more categories
-                        foreach($terms as $term){
-                            if (get_term_meta($term->term_id, $key, true) === 'yes') {
-                                //Plan is checked in the category
-                                $installments[] = '-' . $key;
-                                unset($ahora[$key]);
-                                break;
-                            }
-                        }
-                    }
                 }
             }
 
@@ -999,6 +998,29 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         return $installments;
 
+    }
+
+    /**
+     * Return categories ids of products
+     * @param $products : array
+     * @return $categories_id : array
+     */
+    private function get_categories_ids($products)
+    {
+        $categories_ids = array();
+
+        foreach($products as $product){
+            $categories = get_the_terms( $product->get_product_id(), 'product_cat' );//retrieve categories
+            //Have one or more categories
+            foreach($categories as $category){
+                //Plan is checked in the category
+                if(!in_array($category->term_id, $categories_ids)){
+                    array_push($categories_ids, $category->term_id);
+                }
+            }
+        }
+
+        return $categories_ids;
     }
 
     public function get_reference($order_id)
