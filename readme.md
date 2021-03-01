@@ -47,6 +47,9 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.1.5 :: 2021-03-01
+- Fix assets equeue using helper.
+
 ### 3.1.4 :: 2021-02-19
 - Add uniqueness to funding widget styles to prevent design errors.
 - Add additional verifications to get_checkout and financing widget filters,
