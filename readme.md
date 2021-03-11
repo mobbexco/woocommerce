@@ -47,6 +47,9 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.1.6 :: 2021-03-11
+- Fix helper properties loading.
+
 ### 3.1.5 :: 2021-03-01
 - Fix assets equeue using helper.
 - Fix categories plans get in checkout.
