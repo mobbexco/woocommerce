@@ -295,7 +295,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'tax_id' => [
 
                 'title' => __('Tax ID', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('You can customize your Reseller Tax ID from here. This field is optional and must be used only if was specified by the main seller to show financial plans in the product.', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('You can customize your Tax ID from here. This field is optional and must be used only if was specified by the main seller to show financial plans in the product.', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'text',
                 'default' => '',
 
@@ -1026,7 +1026,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function get_reference($order_id)
     {
         // If isset reseller id add it to reference
-        $reseller_id = !empty($this->reseller_id) ? '_reseller_' . $this->reseller_id : null;
+        $reseller_id = !empty($this->reseller_id) ? '_reseller:' . str_replace(' ', '-', trim($this->reseller_id)) : null;
 
         return 'wc_order_'.$order_id.'_time_'.time() . $reseller_id;
     }

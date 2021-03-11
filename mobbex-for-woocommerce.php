@@ -163,10 +163,10 @@ class MobbexGateway
     {
         if (strpos($file, plugin_basename(__FILE__)) !== false) {
             $plugin_links = [
-                '<a href="' . esc_url(MobbexGateway::$site_url) . '" target="_blank">' . __('Website', 'woocommerce-mobbex-gateway') . '</a>',
-                '<a href="' . esc_url(MobbexGateway::$doc_url) . '" target="_blank">' . __('Documentation', 'woocommerce-mobbex-gateway') . '</a>',
-                '<a href="' . esc_url(MobbexGateway::$github_url) . '" target="_blank">' . __('Contribute', 'woocommerce-mobbex-gateway') . '</a>',
-                '<a href="' . esc_url(MobbexGateway::$github_issues_url) . '" target="_blank">' . __('Report Issues', 'woocommerce-mobbex-gateway') . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$site_url) . '" target="_blank">' . __('Website', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$doc_url) . '" target="_blank">' . __('Documentation', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$github_url) . '" target="_blank">' . __('Contribute', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$github_issues_url) . '" target="_blank">' . __('Report Issues', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
             ];
 
             $links = array_merge($links, $plugin_links);
