@@ -104,11 +104,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
             }
 
-            // If own is enabled
+            // Add additional checkout fields
             if ($this->own_dni == 'yes') {
-                add_filter('woocommerce_billing_fields', [$this, 'mobbex_dni_woocommerce_billing_fields']);
-                add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'mobbex_dni_display_admin_order_meta'], 10, 1);
-                add_action('woocommerce_checkout_create_order', [$this, 'mobbex_dni_save_data'], 10, 1);
+                add_filter('woocommerce_billing_fields', [$this, 'add_checkout_fields']);
+                add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'display_checkout_fields_data']);
+                add_action('woocommerce_after_checkout_validation', [$this, 'validate_checkout_fields']);
+                add_action('woocommerce_checkout_update_order_meta', [$this, 'save_checkout_fields']);
             }
         }
 
@@ -1031,7 +1032,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         return 'wc_order_'.$order_id.'_time_'.time() . $reseller_id;
     }
 
-    public function mobbex_dni_woocommerce_billing_fields($fields)
+    public function add_checkout_fields($fields)
     {
         $fields['billing_dni'] = array(
             'label' => __('DNI', 'woocommerce'),
@@ -1045,15 +1046,23 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         return $fields;
     }
 
-    public function mobbex_dni_display_admin_order_meta($order)
+    public function display_checkout_fields_data($order)
     {
         echo '<p><strong>' . __('DNI') . ':</strong> ' . get_post_meta($order->get_id(), '_billing_dni', true) . '</p>';
     }
 
-    public function mobbex_dni_save_data($order) {
-        if (!empty($_POST['billing_dni'])) {
-            update_post_meta($order->get_id(), '_billing_dni', esc_attr($_POST['billing_dni']));
+    public function validate_checkout_fields()
+    {
+        if (empty($_POST['billing_dni'])) {
+            wc_add_notice(__('Empty DNI field.'), 'error');
         }
     }
 
+    public function save_checkout_fields($order_id) 
+    {
+        // Save DNI field
+        if (!empty($_POST['billing_dni'])) {
+            update_post_meta($order_id, '_billing_dni', esc_attr($_POST['billing_dni']));
+        }
+    }
 }
