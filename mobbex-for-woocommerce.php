@@ -90,6 +90,7 @@ class MobbexGateway
             register_rest_route('mobbex/v1', '/webhook', [
                 'methods' => WP_REST_Server::CREATABLE,
                 'callback' => [$this, 'mobbex_webhook_api'],
+                'permission_callback' => '__return_true',
             ]);
         });
     }
