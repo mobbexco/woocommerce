@@ -317,6 +317,10 @@ class MobbexGateway
         $helper = new MobbexHelper();
 
         echo '<div id="mobbex_product_data" class="panel woocommerce_options_panel hidden">';
+
+        // Hook for other own plugins
+        do_action('mbbx_product_options');
+
         echo '<h2>' . __('Enable for plans to NOT appear at checkout for this product', MOBBEX_WC_TEXT_DOMAIN) . ':</h2>';
         echo '<p>' . __('Common plans in all payment methods', MOBBEX_WC_TEXT_DOMAIN) . ':</p>';
 
@@ -411,6 +415,9 @@ class MobbexGateway
                 }
             }
         }
+
+        // Hook for other own plugins
+        do_action('mbbx_product_options_end');
 
         echo '</div>';
 
