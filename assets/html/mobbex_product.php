@@ -1,6 +1,6 @@
 <?php    
     $prices = array();//store children prices
-    if(!$product->is_type('simple')){
+    if($product->is_type('grouped')){
         $product = wc_get_product($post->ID); //composite product
         $children = $product->get_children();//get all the children
         
