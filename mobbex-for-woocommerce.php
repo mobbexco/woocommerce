@@ -291,16 +291,18 @@ class MobbexGateway
 
         // Get the component Id
         $total_price = 0;
-        if($product->is_type('simple')) 
+        if($product->is_type('simple') || $product->is_type('variable')) 
         {
-            // Only for simple product type
+            // Only for simple and variable product type
             $total_price = $product->get_price();
-        }else{
+        }elseif($product->is_type('grouped')){
             $product = wc_get_product($post->ID); //composite product
             $children = $product->get_children();//get all the children
             foreach($children as $child){
                 $total_price = $total_price + wc_get_product($child)->get_price();
             }
+        }else{
+            return false;
         }
 
         // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set

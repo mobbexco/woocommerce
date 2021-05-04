@@ -1,5 +1,6 @@
 <?php    
     $prices = array();//store children prices
+    $product_type = "simple";//set product type default to simple
     if($product->is_type('grouped')){
         $product = wc_get_product($post->ID); //composite product
         $children = $product->get_children();//get all the children
@@ -9,11 +10,24 @@
             $id = wc_get_product($child)->get_id();
             $prices[$id] = $price;
         }
-    } 
+        $product_type = "grouped";
+    }elseif($product->is_type('variable')){ 
+        global $woocommerce;
+        $children_id = $product->get_children();//get all the children ids
+        foreach($children_id as $child_id){
+            $product = new WC_Product_Variation($child_id);
+            $price = $product->get_price();
+            if(!$price){
+                $price = 0;
+            }
+            $prices[$child_id] = $price;
+        }
+        $product_type = "variable";
+    }
 ?>
 <!-- The Modal -->
 <div id="mbbxProductModal" class="modal">
-    <!-- Modal content -->
+    <!-- Modal content -->  
     <div id="mbbxProductModalContent" class="modal-content">
         <span id="closembbxProduct" class="close">&times;</span>
         <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
@@ -21,6 +35,10 @@
 </div>
 
 <script>
+
+    //Define produc types
+    const grouped = "grouped";
+    const variable = "variable"
 
     // Get the modal
     var modal = document.getElementById("mbbxProductModal");
@@ -65,36 +83,47 @@
             var currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
             //event for all elements with quantity as part of its name.
             $('[name*=quantity]').change(function(){
-                console.info(jQuery.isEmptyObject(prices));
+                var variation_id = $("input[name=variation_id]").val();
                 if (!(this.value < 1) && (taxId > 0)) {
                     var product_total = 0;
-                    //if prices array is empty, then it is a simple product
+                    //if prices array is empty, then it is a simple product, else it is a grouped or variable product
                     if(jQuery.isEmptyObject(prices))
                     {
                         product_total = parseFloat(price * this.value);
                     }else
                     {
-                        product_total = calculate_totals();
+                        product_total = calculate_totals(this.value,variation_id);
                     }
                     //change the value send to the service
                     document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
 
-                }
+                }   
            });   
     });
 
     /**
     *   Search all parts and calculate the final price
+    *   quantity,variation_id params are usen only for variable products
      */
-    function calculate_totals(){
+    function calculate_totals(quantity,variation_id){
         var prices = <?php echo json_encode($prices); ?>;
+        var product_type = <?php echo $product_type; ?>;
         total_amount = 0 ;//total price
-        jQuery("input[name*='quantity']").each(function() {
-            var index_id_begin = this.name.indexOf('[')+1;
-            var index_id_end = this.name.indexOf(']'); 
-            var id = this.name.substring(index_id_begin,index_id_end);
-            total_amount = total_amount + (this.value*prices[id]);
-        });
+        if(product_type === grouped){
+            jQuery("input[name*='quantity']").each(function() {
+                var index_id_begin = this.name.indexOf('[')+1;
+                var index_id_end = this.name.indexOf(']'); 
+                var id = this.name.substring(index_id_begin,index_id_end);
+                total_amount = total_amount + (this.value * prices[id]);
+            });
+        }else if(product_type === variable){
+            //in case quantity is not set, the default value is 1
+            if(!quantity){
+                quantity =  1;
+            }
+            total_amount = total_amount + (quantity * prices[variation_id]);
+        }
+        
         return total_amount;
     }
 
