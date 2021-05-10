@@ -428,7 +428,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Get Customer data
         $current_user = wp_get_current_user();
         $dni_key = !empty($this->custom_dni) ? $this->custom_dni : '_billing_dni';
-        
+
         $customer = [
             'name' => $current_user->display_name ? : $order->get_formatted_billing_full_name(),
             'email' => $current_user->user_email ? : $order->get_billing_email(),
@@ -436,7 +436,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'uid' => $current_user->ID ? : null,
             'identification' => get_post_meta($order->get_id(), $dni_key, true),
         ];
-        
+
         $checkout_body = [
             'reference' => $this->get_reference($order->get_id()),
             'description' => 'Orden #' . $order->get_id(),
@@ -942,86 +942,71 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
      */
     public function get_installments($order)
     {
+        $installments = $all_common_plans = $all_advanced_plans = [];
 
-        $installments = [];
+        // Get products and categories from order
+        $products = MobbexHelper::get_product_ids($order);
+        $categories = MobbexHelper::get_category_ids($order);
 
-        $ahora = array(
-            'ahora_3'  => 'Ahora 3',
-            'ahora_6'  => 'Ahora 6',
-            'ahora_12' => 'Ahora 12',
-            'ahora_18' => 'Ahora 18',
-        );
+        $ahora = [
+            'ahora_3',
+            'ahora_6',
+            'ahora_12',
+            'ahora_18',
+        ];
 
-        
-        // Check "Ahora" custom fields in categories
-        $categories_ids = $this->get_categories_ids($order->get_items());
-        foreach ($ahora as $key => $value) {
-            //check if any of the product's categories have the plan selected
-            //Have one or more categories
-            foreach($categories_ids as $cat_id){
-                if (get_term_meta($cat_id, $key, true) === 'yes') {
-                    //Plan is checked in the category
-                    $installments[] = '-' . $key;
-                    unset($ahora[$key]);
-                    break;
-                }
-            }
-        }
-        
-        foreach ($order->get_items() as $item) {
-
-            foreach ($ahora as $key => $value) {
-                
-                if (get_post_meta($item->get_product_id(), $key, true) === 'yes') {
-                    //the product have $ahora[$key] plan selected
-                    $installments[] = '-' . $key;
+        foreach ($ahora as $key => $plan) {
+            // Get 'ahora' plans from categories
+            foreach($categories as $cat_id){
+                // If category has plan selected
+                if (get_term_meta($cat_id, $plan, true) === 'yes') {
+                    // Add to installments
+                    $installments[] = '-' . $plan;
                     unset($ahora[$key]);
                 }
             }
 
-            $checked_common_plans = unserialize(get_post_meta($item->get_product_id(), 'common_plans', true));
-            $checked_advanced_plans = unserialize(get_post_meta($item->get_product_id(), 'advanced_plans', true));
-
-            if (!empty($checked_common_plans)) {
-                foreach ($checked_common_plans as $key => $common_plan) {
-                    $installments[] = '-' . $common_plan;
-                    unset($checked_common_plans[$key]);
-                }
-            }
-
-            if (!empty($checked_advanced_plans)) {
-                foreach ($checked_advanced_plans as $key => $advanced_plan) {
-                    $installments[] = '+uid:' . $advanced_plan;
-                    unset($checked_advanced_plans[$key]);
+            // Get 'ahora' plans from products
+            foreach ($products as $product_id) {
+                // If product has plan selected
+                if (get_post_meta($product_id, $plan, true) === 'yes') {
+                    // Add to installments
+                    $installments[] = '-' . $plan;
+                    unset($ahora[$key]);
                 }
             }
         }
 
-        return $installments;
+        foreach ($products as $product_id) {
+            // Get common and advanced plans from products
+            $product_common_plans   = unserialize(get_post_meta($product_id, 'common_plans', true)) ?: [];
+            $product_advanced_plans = unserialize(get_post_meta($product_id, 'advanced_plans', true)) ?: [];
 
-    }
+            // Merge into unique arrays
+            $all_common_plans   = array_merge($all_common_plans, $product_common_plans);
+            $all_advanced_plans = array_merge($all_advanced_plans, $product_advanced_plans);
+        }
 
-    /**
-     * Return categories ids of products
-     * @param $products : array
-     * @return $categories_id : array
-     */
-    private function get_categories_ids($products)
-    {
-        $categories_ids = array();
+        // Common plans
+        foreach ($all_common_plans as $plan) {
+            // Add to installments
+            $installments[] = '-' . $plan;
+        }
 
-        foreach($products as $product){
-            $categories = get_the_terms( $product->get_product_id(), 'product_cat' );//retrieve categories
-            //Have one or more categories
-            foreach($categories as $category){
-                //Plan is checked in the category
-                if(!in_array($category->term_id, $categories_ids)){
-                    array_push($categories_ids, $category->term_id);
-                }
+        // Get all the advanced plans with their number of reps
+        $counted_advanced_plans = array_count_values($all_advanced_plans);
+
+        // Advanced plans
+        foreach ($counted_advanced_plans as $plan => $reps) {
+            // Only if the plan is active on all products
+            if ($reps == count($products)) {
+                // Add to installments
+                $installments[] = '+uid:' . $plan;
             }
         }
 
-        return $categories_ids;
+        // Remove duplicated plans and return
+        return array_values(array_unique($installments));
     }
 
     public function get_reference($order_id)

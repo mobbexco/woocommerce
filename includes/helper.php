@@ -88,4 +88,41 @@ class MobbexHelper
 
         return [];
     }
+
+    /**
+     * Get all product IDs from Order.
+     * 
+     * @param WP_Order $order
+     * @return array $products
+     */
+    public static function get_product_ids($order)
+    {
+        $products = [];
+
+        foreach ($order->get_items() as $item)
+            $products[] = $item->get_product_id();
+
+        return $products;
+    }
+
+    /**
+     * Get all category IDs from Order.
+     * Duplicates are removed.
+     * 
+     * @param WP_Order $order
+     * @return array $categories
+     */
+    public static function get_category_ids($order)
+    {
+        $categories = [];
+
+        // Get Products Ids
+        $products = self::get_product_ids($order);
+
+        foreach($products as $product)
+            $categories[] = wp_get_post_terms($product, 'product_cat', ['fields' => 'ids']);
+
+        // Remove duplicated IDs and return
+        return array_unique($categories);
+    }
 }
