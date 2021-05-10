@@ -47,7 +47,7 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
-### 3.1.7 :: 2021-04-20
+### 3.2.0 :: 2021-04-20
 - Fix own DNI field validation
 - Add webhook API permission callback
 - Fix helper instancing on install (set default options empty)
