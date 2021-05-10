@@ -283,23 +283,37 @@ class MobbexGateway
      */
     public function additional_button_add_to_cart() {
             
-            global $product;
-            //Get the Tax_id(CUIT) from plugin settings
-            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-            $is_active = $mobbexGateway->financial_info_active;
+        global $post;
+        global $product;
+        //Get the Tax_id(CUIT) from plugin settings
+        $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+        $is_active = $mobbexGateway->financial_info_active;
 
-            // Only for simple product type
-            if( ! $product->is_type('simple') ) return;
-            // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
-            if($is_active && $mobbexGateway->tax_id){
-                //Set Financial info URL
-                $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$product->get_price();
-                
-                echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+        // Get the component Id
+        $total_price = 0;
+        if($product->is_type('simple') || $product->is_type('variable')) 
+        {
+            // Only for simple and variable product type
+            $total_price = $product->get_price();
+        }elseif($product->is_type('grouped')){
+            $product = wc_get_product($post->ID); //composite product
+            $children = $product->get_children();//get all the children
+            foreach($children as $child){
+                $total_price = $total_price + wc_get_product($child)->get_price();
             }
-            include 'assets/html/mobbex_product.php';
-        
-    }
+        }else{
+            return false;
+        }
+
+        // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
+        if($is_active && $mobbexGateway->tax_id){
+            //Set Financial info URL
+            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$total_price;
+            echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+        }
+        include 'assets/html/mobbex_product.php';
+    
+}
 
     public function mobbex_product_settings_tabs($tabs)
     {
