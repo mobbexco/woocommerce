@@ -15,6 +15,11 @@ class MobbexGateway
 {
 
     /**
+     * Shortcode tax_id
+     */
+    private static $shortcode_tax_id_button = "";
+
+    /**
      * Errors Array
      */
     static $errors = [];
@@ -34,6 +39,15 @@ class MobbexGateway
      */
     public static $github_url = "https://github.com/mobbexco/woocommerce";
     public static $github_issues_url = "https://github.com/mobbexco/woocommerce/issues";
+
+    /**
+     * Use for shortcode dynamically
+     * shortcode definition and creation
+     */
+    function __construct()
+    {
+        add_shortcode('mobbex_button', [ $this, 'shortcode_mobbex_button' ]);
+    }
 
     public function init()
     {
@@ -93,6 +107,10 @@ class MobbexGateway
                 'permission_callback' => '__return_true',
             ]);
         });
+
+        //set shortcode variables
+        $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+        $shortcode_tax_id_button = $mobbexGateway->tax_id;
     }
 
     /**
@@ -274,6 +292,37 @@ class MobbexGateway
                 wp_enqueue_style('mobbex_product_style');
             }
         }
+    }
+
+    /**
+     * Shortcode function, return button html
+     */
+    function shortcode_mobbex_button( $atts ) {
+        global $post;
+        global $product;
+        global $shortcode_financing_button;// use helper data (not working dynamically)
+        try{
+            //Get the Tax_id(CUIT) from plugin settings
+            //$mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+            //$is_active = $mobbexGateway->financial_info_active;
+            
+            $a = shortcode_atts( array(
+            'link' => "https://mobbex.com/p/sources/widget/arg/".$shortcode_financing_button."/?total=100",
+            'id' => 'salcodes',
+            'color' => 'blue',
+            'size' => '',
+            'label' => 'Ver Financiación',
+            'target' => '_self'
+            ), $atts );
+            $output = '<p><a href="' . esc_url( $a['link'] ) . '" id="mbbxProductBtn" class="single_add_to_cart_button button alt ' . esc_attr( $a['color'] ) . ' ' . esc_attr( $a['size'] ). '">' . esc_attr( $a['label'] ) . '</a></p>';
+            //include 'assets/html/mobbex_product.php';
+
+        }catch(Exeption $e){
+            //error_log("Llega!  ".$e->getMessage(), 3, "/var/www/html/wp-content/plugins/mwoocommerce/my-errors.log");
+            echo print_r("Error in shortcode: ".$e->getMessage());
+        }
+        
+        return $output;
     }
 
     /**
