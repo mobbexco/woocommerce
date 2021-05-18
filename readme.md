@@ -47,6 +47,10 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.2.1 :: 2021-05-18
+- Fix get plans by category in checkout creation
+- Add cache constants defined condition
+
 ### 3.2.0 :: 2021-05-10
 - Add finnancing button to grouped and variable products
 - Fix advanced plans condition (must now be active on all products in a payment)
