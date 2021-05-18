@@ -120,7 +120,7 @@ class MobbexHelper
         $products = self::get_product_ids($order);
 
         foreach($products as $product)
-            $categories[] = wp_get_post_terms($product, 'product_cat', ['fields' => 'ids']);
+            $categories = array_merge($categories, wp_get_post_terms($product, 'product_cat', ['fields' => 'ids']));
 
         // Remove duplicated IDs and return
         return array_unique($categories);
