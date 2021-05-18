@@ -784,8 +784,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         // Exclude scripts from cache plugins minification
-        define('DONOTCACHEPAGE', true);
-        define('DONOTMINIFY', true);
+        if (!defined('DONOTCACHEPAGE')) define('DONOTCACHEPAGE', true);
+        if (!defined('DONOTMINIFY'))    define('DONOTMINIFY', true);
 
         $order_url = home_url('/mobbex?wc-ajax=checkout');
         $update_url = home_url('/wc-api/mobbex_checkout_update');
