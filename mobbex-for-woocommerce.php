@@ -100,6 +100,8 @@ class MobbexGateway
 
         //set shortcode
         add_shortcode( 'mobbex_button', array( $this, 'shortcode_mobbex_button' ) );
+        add_shortcode( 'mobbex_assets', 'include_file_shortcode' );
+        
     }
 
 
@@ -296,22 +298,65 @@ class MobbexGateway
             $is_active = $mobbexGateway->financial_info_active;
             $helper = new MobbexHelper();
 
-            $a = shortcode_atts( array(
-            'link' => "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=100",
-            'id' => 'salcodes',
-            'color' => 'blue',
-            'size' => '',
-            'label' => 'Ver Financiación',
-            'target' => '_self'
-            ), $atts );
-            $output = '<p><a href="' . esc_url( $a['link'] ) . '" id="mbbxProductBtn" class="single_add_to_cart_button button alt ' . esc_attr( $a['color'] ) . ' ' . esc_attr( $a['size'] ). '">' . esc_attr( $a['label'] ) . '</a></p>';
+            $product = wc_get_product($post->ID); //composite product
+            //$response = $helper->get_list_source($mobbexGateway->tax_id,"100");
             
-
+            error_log("Llega!  ".print_r($product,true), 3, "/var/www/html/wp-content/plugins/mwoocommerce/shortcode_mobbex_c.log");
+            if($product)
+            {
+                //error_log("Llega!  ".print_r($product,true), 3, "/var/www/html/wp-content/plugins/mwoocommerce/shortcode_mobbex_button.log");  
+                $payment_methods = $helper->get_list_source($mobbexGateway->tax_id,$product->get_price(),$post->ID);
+                $final_html = $this->build_button_shortocde_html($payment_methods);
+                //error_log(print_r($final_html,true), 3, "/var/www/html/wp-content/plugins/mwoocommerce/shortcode_mobbex_button_html.log");  
+                $shortcode_data = shortcode_atts( array(
+                'link' => "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=100",
+                'id' => 'salcodes',
+                'color' => 'blue',
+                'size' => '',
+                'label' => 'Ver Financiaciones',
+                'target' => '_self'
+                ), $atts );
+                //include( get_stylesheet_directory() . 'assets/html/mobbex_product.php');
+                $output = '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';//$final_html;
+            }
         }catch(Exeption $e){
+            //error_log("Llega!  ".$e->getMessage(), 3, "/var/www/html/wp-content/plugins/mwoocommerce/my-errors.log");
             echo print_r("Error in shortcode: ".$e->getMessage());
         }
         
         return $output;
+    }
+
+    public function include_file_shortcode($atts = []){
+        $atts = shortcode_atts(
+            array(
+            'path' => 'assets/html/mobbex_product.php',
+            ), $atts, 'include' );
+        ob_start();
+        get_template_part($atts['path']);
+        return ob_get_clean();
+    }
+
+    /**
+     * Creates html code for the shortcode
+     */
+    private function build_button_shortocde_html($payment_methods){
+
+        $html = '<table style="width:40%">';
+
+        foreach($payment_methods as $method)
+        {
+            $html =$html.'<tr> <th>'.$method['name'].'<img src="data:image/png;base64,' . base64_encode($method['image']) .'" style="max-width:10%;height:10%;border-radius:50%;"></th></tr>';
+            foreach($method['installments'] as $installment){
+                $html = $html.'<tr>';
+                $html = $html.'<td>'.$installment['name'].' </td><td>$'.$installment['amount'].' </td>';
+                $html = $html.'</tr>';
+            }
+        }
+        $html = $html.'</table>';
+
+        return $html;
+
     }
 
 
@@ -347,9 +392,9 @@ class MobbexGateway
             if($is_active && $mobbexGateway->tax_id){
                 //Set Financial info URL
                 $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$total_price;
-                echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+                //echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
             }
-            include 'assets/html/mobbex_product.php';
+          include 'assets/html/mobbex_product.php';
     }
 
 
