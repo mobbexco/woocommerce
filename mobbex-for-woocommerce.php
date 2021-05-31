@@ -62,6 +62,7 @@ class MobbexGateway
 
         // Enqueue assets
         add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
+        add_action('admin_enqueue_scripts', [$this, 'load_admin_scripts']);
 
         // Add some useful things
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_action_links']);
@@ -258,7 +259,8 @@ class MobbexGateway
 
     }
 
-    public function mobbex_assets_enqueue() {
+    public function mobbex_assets_enqueue()
+    {
         $helper = new MobbexHelper();
         $dir_url = plugin_dir_url(__FILE__);
 
@@ -270,9 +272,25 @@ class MobbexGateway
                 !empty($helper->tax_id) &&
                 $helper->financial_info_active === 'yes'
             ) {
-                wp_register_style('mobbex_product_style', $dir_url . 'assets/css/mobbex_product.css');
+                wp_register_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
                 wp_enqueue_style('mobbex_product_style');
             }
+        }
+    }
+
+    /**
+     * Load all admin scripts and styles.
+     * 
+     * @param string $hook
+     */
+    public function load_admin_scripts($hook)
+    {
+        global $post;
+
+        // Product admin page
+        if (($hook == 'post-new.php' || $hook == 'post.php') && $post->post_type == 'product') {
+            wp_enqueue_style('mbbx-product-style', plugin_dir_url(__FILE__) . 'assets/css/product-admin.css');
+            wp_enqueue_script('mbbx-product-js', plugin_dir_url(__FILE__) . 'assets/js/product-admin.js');
         }
     }
 
@@ -281,8 +299,8 @@ class MobbexGateway
      * only if the checkbox of financial information is checked
      * @access public
      */
-    public function additional_button_add_to_cart() {
-            
+    public function additional_button_add_to_cart()
+    {
         global $post;
         global $product;
         //Get the Tax_id(CUIT) from plugin settings
@@ -313,7 +331,7 @@ class MobbexGateway
         }
         include 'assets/html/mobbex_product.php';
     
-}
+    }
 
     public function mobbex_product_settings_tabs($tabs)
     {
@@ -330,153 +348,224 @@ class MobbexGateway
     public function mobbex_product_panels()
     {
         $helper = new MobbexHelper();
+        $id     = get_the_ID();
 
-        echo '<div id="mobbex_product_data" class="panel woocommerce_options_panel hidden">';
+        $common_fields = $advanced_fields = [];
 
-        // Hook for other own plugins
-        do_action('mbbx_product_options');
+        // Get sources with common and advanced rule plans
+        $sources                = $helper->get_sources();
+        $sources_advanced       = $helper->get_sources_advanced();
+        $checked_common_plans   = get_post_meta($id, 'common_plans', true) ?: [];
+        $checked_advanced_plans = get_post_meta($id, 'advanced_plans', true) ?: [];
 
-        echo '<h2>' . __('Enable for plans to NOT appear at checkout for this product', MOBBEX_WC_TEXT_DOMAIN) . ':</h2>';
-        echo '<p>' . __('Common plans in all payment methods', MOBBEX_WC_TEXT_DOMAIN) . ':</p>';
+        // Support previus save method
+        $checked_common_plans   = is_string($checked_common_plans)   ? unserialize($checked_common_plans)   : $checked_common_plans;
+        $checked_advanced_plans = is_string($checked_advanced_plans) ? unserialize($checked_advanced_plans) : $checked_advanced_plans;
 
-        $ahora = array(
-            'ahora_3'  => 'Ahora 3',
-            'ahora_6'  => 'Ahora 6',
-            'ahora_12' => 'Ahora 12',
-            'ahora_18' => 'Ahora 18',
-        );
-
-        // Set rendered plans so there are no duplicates
-        $rendered_plans = [];
-
-        foreach ($ahora as $key => $value) {
-            $checkbox_data = array(
-                'id'      => $key,
-                'value'   => get_post_meta(get_the_ID(), $key, true),
-                'label'   => $value,
-            );
-
-            if (get_post_meta(get_the_ID(), $key, true) === 'yes') {
-                $checkbox_data['custom_attributes'] = 'checked';
-            }
-
-            woocommerce_wp_checkbox($checkbox_data);
-            $rendered_plans[] = $key;
-        }
-
-        // Get sources with common plans
-        $sources = $helper->get_sources();
-        $checked_common_plans = unserialize(get_post_meta(get_the_ID(), 'common_plans', true));
-
+        // Create common plan fields
         foreach ($sources as $source) {
-            // If source has plans render checkboxes
-            if (!empty($source['installments']['list'])) {
-                $installments = $source['installments']['list'];
+            $plans = !empty($source['installments']['list']) ? $source['installments']['list'] : [];
 
-                foreach ($installments as $installment) {
-                    // If it hasn't been rendered yet
-                    if (!in_array($installment['reference'], $rendered_plans)) {
-                        $is_checked = is_array($checked_common_plans) ? in_array($installment['reference'], $checked_common_plans) : false;
+            foreach ($plans as $plan) {
+                // Get value from common_plans post meta and check if it's saved using previus method
+                $is_checked = !in_array($plan['reference'], $checked_common_plans) ? get_post_meta($id, $plan['reference'], true) !== 'yes' : false;
 
-                        $checkbox_data = [
-                            'id'      => 'common_plan_' . $installment['reference'],
-                            'value'   => $is_checked ? 'yes' : false,
-                            'label'   => $installment['description'] ? : $installment['name'],
-                        ];
-
-                        if ($is_checked) {
-                            $checkbox_data['custom_attributes'] = 'checked';
-                        }
-
-                        woocommerce_wp_checkbox($checkbox_data);
-                        $rendered_plans[] = $installment['reference'];
-                    }
-                }
+                // Create field array data
+                $common_fields[$plan['reference']] = [
+                    'id'                => 'common_plan_' . $plan['reference'],
+                    'value'             => $is_checked ? 'yes' : false,
+                    'custom_attributes' => $is_checked ? 'checked' : '', // TODO: use cbvalue instead of custom_attributes
+                    'label'             => $plan['description'] ?: $plan['name'],
+                ];
             }
         }
 
-        // Get sources with advanced rule plans
-        $sources_advanced = $helper->get_sources_advanced();
-        $checked_advanced_plans = unserialize(get_post_meta(get_the_ID(), 'advanced_plans', true));
-
-        echo '<hr><h2>' . __('Enable for plans to appear at checkout for this product', MOBBEX_WC_TEXT_DOMAIN) . ':</h2>';
-        echo '<p>' . __('Plans with advanced rules by payment method', MOBBEX_WC_TEXT_DOMAIN) . ':</p>';
-        
+        // Create advanced plan fields
         foreach ($sources_advanced as $source) {
-            if (!empty($source['installments'])) {
-                echo '
-                    <div style="display: flex; align-items: center; padding-left: 15px;">
-                        <img src="https://res.mobbex.com/images/sources/' . $source['source']['reference'] . '.png" style="border-radius: 100%; width: 40px;">
-                        <p>' . $source['source']['name'] . ':' . '</p>
-                    </div>';
+            $plans      = !empty($source['installments']) ? $source['installments'] : [];
+            $source_ref = $source['source']['reference'];
 
-                foreach ($source['installments'] as $installment) {
-                    if (!in_array($installment['uid'], $rendered_plans)) {
-                        $is_checked = is_array($checked_advanced_plans) ? in_array($installment['uid'], $checked_advanced_plans) : false;
+            // Save source name
+            $source_names[$source_ref] = $source['source']['name'];
 
-                        $checkbox_data = array(
-                            'id'      => 'advanced_plan_' . $installment['uid'],
-                            'value'   => $is_checked ? 'yes' : false,
-                            'label'   => $installment['description'] ? : $installment['name'],
-                        );
+            foreach ($plans as $plan) {
+                // Get value from advanced_plans post meta
+                $is_checked = (is_array($checked_advanced_plans) && in_array($plan['uid'], $checked_advanced_plans));
 
-                        if ($is_checked) {
-                            $checkbox_data['custom_attributes'] = 'checked';
-                        }
-
-                        woocommerce_wp_checkbox($checkbox_data);
-                        $rendered_plans[] = $installment['uid'];
-                    }
-                }
+                // Create field array data
+                $advanced_fields[$source_ref][] = [
+                    'id'                => 'advanced_plan_' . $plan['uid'],
+                    'value'             => $is_checked ? 'yes' : false,
+                    'custom_attributes' => $is_checked ? 'checked' : '',
+                    'label'             => $plan['description'] ?: $plan['name'],
+                ];
             }
         }
 
-        // Hook for other own plugins
-        do_action('mbbx_product_options_end');
+        ?>
+        <div id="mobbex_product_data" class="panel woocommerce_options_panel hidden">
+            <?php
+            do_action('mbbx_product_options');
+            ?>
+            <h2><?=  __('Plans Configuration', 'mobbex-for-woocommerce') ?></h2> <!-- Configuración de planes de pago -->
+            <p><?=  __('Select the plans you want to appear in the checkout', 'mobbex-for-woocommerce') ?></p> <!-- Seleccione los planes que quiera que aparezcan en el checkout -->
+            <div class="mbbx_plans_cont">
+                <div class="mbbx_plan_list">
+                    <p><?= __('Common plans', 'mobbex-for-woocommerce') ?></p>
+                    <?php
+                    foreach ($common_fields as $field) {
+                        echo '<input type="hidden" name="' . $field['id'] . '" value="no">';
+                        woocommerce_wp_checkbox($field);
+                    }
+                    ?>
+                </div>
+                <div class="mbbx_plan_list">
+                    <p><?= __('Plans with advanced rules', 'mobbex-for-woocommerce') ?></p>
+                    <?php
+                    foreach ($advanced_fields as $source_ref => $fields) {
+                    ?>
+                        <div class='mbbx_plan_source'>
+                            <img src='https://res.mobbex.com/images/sources/<?= $source_ref ?>.png'>
+                            <p><?= $source_names[$source_ref] ?></p>
+                        </div>
+                        <?php
+                        foreach ($fields as $field) {
+                            woocommerce_wp_checkbox($field);
+                        }
+                    }
+                    ?>
+                </div>
+            </div>
+            <hr>
+            <h2><?= __('Multisite', 'mobbex-for-woocommerce') ?></h2> <!-- Multitienda -->
+            <div>
+                <?php
+                // Render multisite fields
+                $this->multisite_fields($id);
+                ?>
+            </div>
+            <?php
+            do_action('mbbx_product_options_end')
+            ?>
+        </div>
+        <?php
+    }
 
-        echo '</div>';
+    public function multisite_fields($id)
+    {
+        // Get store saved data
+        $stores           = get_option('mbbx_stores') ?: [];
+        $current_store_id = get_post_meta($id, 'mbbx_store', true) ?: '';
 
+        // Get all store names
+        $store_names = [];
+        foreach ($stores as $store_id => $store)
+            $store_names[$store_id] = $store['name'];
+
+        // Get current store values
+        $store_name = $store_api_key = $store_access_token = '';
+        if (!empty($current_store_id) && !empty($stores[$current_store_id])) {
+            $store_name         = $store['name'];
+            $store_api_key      = $store['api_key'];
+            $store_access_token = $store['access_token'];
+        }
+
+        // Create fields
+        $enable_field = [
+            'id'          => 'mbbx_enable_multisite',
+            'cbvalue'     => true,
+            'label'       => __('Enable Multisite', 'mobbex-for-woocommerce'),
+            'description' => __('Enable it to allow payment for this product to be received by another merchant.', 'mobbex-for-woocommerce'), // Habilitelo para permitir que el pago de este producto lo reciba otro comercio
+        ];
+
+        $store_field = [
+            'id'            => 'mbbx_store',
+            'value'         => $current_store_id,
+            'label'         => __('Store', 'mobbex-for-woocommerce'),
+            'wrapper_class' => 'really-hidden',
+            'options'       => array_merge(['new' => __('New Store', 'mobbex-for-woocommerce')], $store_names),
+        ];
+
+        $store_name_field = [
+            'id'            => 'mbbx_store_name',
+            'value'         => $store_name,
+            'label'         => __('New Store Name', 'mobbex-for-woocommerce'),
+            'desc_tip'      => true,
+            'wrapper_class' => 'really-hidden',
+        ];
+
+        $store_api_key_field = [
+            'id'            => 'mbbx_api_key',
+            'value'         => $store_api_key,
+            'label'         => __('API Key', 'mobbex-for-woocommerce'),
+            'description'   => __('Your Mobbex API key.', 'mobbex-for-woocommerce'),
+            'desc_tip'      => true,
+            'wrapper_class' => 'really-hidden',
+        ];
+
+        $store_access_token_field = [
+            'id'            => 'mbbx_access_token',
+            'value'         => $store_access_token,
+            'label'         => __('Access Token', 'mobbex-for-woocommerce'),
+            'description'   => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
+            'desc_tip'      => true,
+            'wrapper_class' => 'really-hidden',
+        ];
+
+        woocommerce_wp_checkbox($enable_field);
+        woocommerce_wp_select($store_field);
+        woocommerce_wp_text_input($store_name_field);
+        woocommerce_wp_text_input($store_api_key_field);
+        woocommerce_wp_text_input($store_access_token_field);
     }
 
     public function mobbex_product_save($post_id)
     {
-        $product = wc_get_product($post_id);
+        $common_plans = $advanced_plans = [];
+        $post_fields  = $_POST;
 
-        $ahora = array(
-            'ahora_3'  => false,
-            'ahora_6'  => false,
-            'ahora_12' => false,
-            'ahora_18' => false,
-        );
-
-        foreach ($ahora as $key => $value) {
-            if (isset($_POST[$key]) && $_POST[$key] === 'yes') {
-                $value = 'yes';
-            }
-
-            $product->update_meta_data($key, $value);
-        }
-
-        $common_plans = [];
-        $advanced_plans = [];
-        $post_fields = $_POST;
-
-        // Get plans selected and save as meta data
+        // Get plans selected
         foreach ($post_fields as $id => $value) {
-            if (strpos($id, 'common_plan_') !== false && $value === 'yes') {
+            if (strpos($id, 'common_plan_') !== false && $value === 'no') {
                 $uid = explode('common_plan_', $id)[1];
                 $common_plans[] = $uid;
             } else if (strpos($id, 'advanced_plan_') !== false && $value === 'yes'){
                 $uid = explode('advanced_plan_', $id)[1];
                 $advanced_plans[] = $uid;
-            } else {
-                unset($post_fields[$id]);
             }
         }
-        $product->update_meta_data('common_plans', serialize($common_plans));
-        $product->update_meta_data('advanced_plans', serialize($advanced_plans));
 
-        $product->save();
+        // Get multisite options
+        $enable_ms    = !empty($post_fields['mbbx_enable_multisite']) ? $post_fields['mbbx_enable_multisite'] : false;
+        $store        = !empty($post_fields['mbbx_store']) ? $post_fields['mbbx_store'] : false;
+        $store_name   = !empty($post_fields['mbbx_store_name']) ? $post_fields['mbbx_store_name'] : false;
+        $api_key      = !empty($post_fields['mbbx_api_key']) ? $post_fields['mbbx_api_key'] : false;
+        $access_token = !empty($post_fields['mbbx_access_token']) ? $post_fields['mbbx_access_token'] : false;
+
+        // Save all data as post meta
+        update_post_meta($post_id, 'common_plans', $common_plans);
+        update_post_meta($post_id, 'advanced_plans', $advanced_plans);
+        update_post_meta($post_id, 'mbbx_enable_multisite', $enable_ms);
+
+        // Get current stores
+        $stores = get_option('mbbx_stores') ?: [];
+
+        if ($store === 'new') {
+            // Create and save new store
+            $new_store_id          = md5("$api_key|$access_token");
+            $stores[$new_store_id] = [
+                'name'         => $store_name,
+                'api_key'      => $api_key,
+                'access_token' => $access_token,
+            ];
+
+            update_option('mbbx_stores', $stores);
+            update_post_meta($post_id, 'mbbx_store', $new_store_id);
+        } else {
+            // If store exists, save selection
+            if (!empty($stores[$store]))
+                update_post_meta($post_id, 'mbbx_store', $store);
+        }
     }
 
     /**
@@ -546,8 +635,8 @@ class MobbexGateway
     }
 
     /**
-    * Save the category meta data after save/update, including the selection(check) of payment plans
-    */
+     * Save the category meta data after save/update, including the selection(check) of payment plans
+     */
     public function mobbex_category_save($term_id)
     {
         $plans = array(
