@@ -82,6 +82,9 @@ class MobbexGateway
         add_action('woocommerce_process_product_meta', [$this, 'mobbex_product_save']);
         add_action('admin_head', [$this, 'mobbex_icon']);
 
+        // Validate Cart items
+        add_filter('woocommerce_add_to_cart_validation', [$this, 'validate_cart_items'], 10, 2);
+
         // Checkout update actions
         add_action('woocommerce_api_mobbex_checkout_update', [$this, 'mobbex_checkout_update']);
         add_action('woocommerce_cart_emptied', function(){WC()->session->set('order_id', null);});
@@ -720,6 +723,34 @@ class MobbexGateway
 
     }
 
+    /**
+     * Check that the Cart does not have products from different stores.
+     * 
+     * @param bool $valid
+     * @param int $product_id
+     * 
+     * @return bool $valid
+     */
+    public static function validate_cart_items($valid, $product_id)
+    {
+        $cart_items = !empty(WC()->cart->get_cart()) ? WC()->cart->get_cart() : [];
+
+        // Get store from current product
+        $product_store = MobbexHelper::get_store_from_product($product_id);
+
+        // Get stores from cart items
+        foreach ($cart_items as $item) {
+            $item_store = MobbexHelper::get_store_from_product($item['product_id']);
+
+            // If there are different stores in the cart items
+            if ($product_store != $item_store) {
+                wc_add_notice(__('The cart cannot have products from different sellers at the same time.', 'mobbex-for-woocommerce'), 'error'); // El carrito no puede tener productos de distintos vendedores a la vez.
+                return false;
+            }
+        }
+
+        return $valid;
+    }
 }
 
 $mobbexGateway = new MobbexGateway;
