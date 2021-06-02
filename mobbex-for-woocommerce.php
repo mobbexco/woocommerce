@@ -51,6 +51,7 @@ class MobbexGateway
         }
 
         MobbexGateway::load_helper();
+        MobbexGateway::load_order_admin();
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
@@ -203,6 +204,12 @@ class MobbexGateway
     public static function load_helper()
     {
         require_once plugin_dir_path(__FILE__) . 'includes/helper.php';
+    }
+
+    public static function load_order_admin()
+    {
+        require_once plugin_dir_path(__FILE__) . 'includes/admin/order.php';
+        Mbbx_Order_Admin::init();
     }
 
     public static function load_update_checker()
