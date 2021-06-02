@@ -142,6 +142,50 @@ class MobbexHelper
     }
 
     /**
+     * Get Store configured by product/category using Multisite options.
+     * 
+     * @param WP_Order $order
+     * 
+     * @return array|null $store
+     */
+    public static function get_store($order)
+    {
+        $stores   = get_option('mbbx_stores');
+        $products = self::get_product_ids($order);
+
+        // Search store configured
+        foreach ($products as $product_id) {
+            $store_configured = self::get_store_from_product($product_id);
+
+            if (!empty($store_configured) && !empty($stores[$store_configured]))
+                return $stores[$store_configured];
+        }
+    }
+
+    /**
+     * Get Store ID from product and its categories.
+     * 
+     * @param int|string $product_id
+     * 
+     * @return string|null $store_id
+     */
+    public static function get_store_from_product($product_id)
+    {
+        // Get possible store from product
+        $store = get_post_meta($product_id, 'mbbx_store', true);
+        if (!empty($store))
+            return $store;
+
+        // Get possible stores from product categories
+        $categories = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+        foreach ($categories as $cat_id) {
+            $store = get_term_meta($cat_id, 'mbbx_store', true);
+            if (!empty($store))
+                return $store;
+        }
+    }
+
+    /**
      * Capture 'authorized' payment using Mobbex API.
      * 
      * @param string|int $payment_id

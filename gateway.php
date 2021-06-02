@@ -484,14 +484,19 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             "checkout_body" => $checkout_body,
         ]);
 
+        // Try to get credentials from store configured using multisite options
+        $store = MobbexHelper::get_store($order);
+        $api_key      = !empty($store['api_key'])      ? $store['api_key']      : $this->api_key;
+        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->access_token;
+
         // Create the Checkout
         $response = wp_remote_post(MOBBEX_CHECKOUT, [
 
             'headers' => [
                 'cache-control' => 'no-cache',
                 'content-type' => 'application/json',
-                'x-api-key' => $this->api_key,
-                'x-access-token' => $this->access_token,
+                'x-api-key' => $api_key,
+                'x-access-token' => $access_token,
             ],
 
             'body' => json_encode($checkout_body),
