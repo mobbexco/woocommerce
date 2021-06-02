@@ -4,6 +4,7 @@
 define('MOBBEX_WC_TEXT_DOMAIN', 'mobbex-for-woocommerce');
 define('MOBBEX_CHECKOUT', 'https://api.mobbex.com/p/checkout');
 define('MOBBEX_REFUND', 'https://api.mobbex.com/p/operations/{ID}/refund');
+define('MOBBEX_CAPTURE_PAYMENT', 'https://api.mobbex.com/p/operations/{id}/capture');
 
 // Sources and plans
 define('MOBBEX_SOURCES', 'https://api.mobbex.com/p/sources');

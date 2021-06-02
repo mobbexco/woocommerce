@@ -1,0 +1,14 @@
+/* Order Actions Panel */
+.mbbx_action_field {
+    display: none;
+}
+
+.mbbx_action_field input {
+    display: inline-block;
+    max-width: 100px;
+}
+
+.mbbx_action_field label {
+    display: inline-block;
+    margin: 10px 10px 10px 5px;
+}

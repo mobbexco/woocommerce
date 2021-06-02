@@ -127,6 +127,21 @@ class MobbexHelper
     }
 
     /**
+     * Get payment mode.
+     * 
+     * @return string|null $payment_mode
+     */
+    public function get_payment_mode()
+    {
+        if (defined('MOBBEX_CHECKOUT_INTENT') && !empty(MOBBEX_CHECKOUT_INTENT)) {
+            // Try to get from constant first
+            return MOBBEX_CHECKOUT_INTENT;
+        } else if (!empty($this->payment_mode) && $this->payment_mode === 'yes') {
+            return 'payment.2-step';
+        }
+    }
+
+    /**
      * Get Store configured by product/category using Multisite options.
      * 
      * @param WP_Order $order
@@ -168,5 +183,44 @@ class MobbexHelper
             if (!empty($store))
                 return $store;
         }
+    }
+
+    /**
+     * Capture 'authorized' payment using Mobbex API.
+     * 
+     * @param string|int $payment_id
+     * @param string|int $total
+     * 
+     * @return bool $result
+     */
+    public function capture_payment($payment_id, $total)
+    {
+        if (!$this->isReady())
+            throw new Exception(__('Plugin is not ready', 'mobbex-for-woocommerce'));
+
+        if (empty($payment_id) || empty($total))
+            throw new Exception(__('Empty Payment UID or params', 'mobbex-for-woocommerce'));
+
+        // Modify Subscription
+        $response = wp_remote_post(str_replace('{id}', $payment_id, MOBBEX_CAPTURE_PAYMENT), [
+            'headers' => [
+                'cache-control'  => 'no-cache',
+                'content-type'   => 'application/json',
+                'x-api-key'      => $this->api_key,
+                'x-access-token' => $this->access_token,
+            ],
+
+            'body'        => json_encode(compact('total')),
+            'data_format' => 'body',
+        ]);
+
+        if (!is_wp_error($response)) {
+            $response = json_decode($response['body'], true);
+
+            if (!empty($response['result']))
+                return true;
+        }
+
+        throw new Exception(__('An error occurred in the execution', 'mobbex-for-woocommerce'));
     }
 }
