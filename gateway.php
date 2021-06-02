@@ -9,6 +9,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         'refunds',
     );
 
+    public MobbexHelper $helper;
+
     public function __construct()
     {
         $this->id = MOBBEX_WC_GATEWAY_ID;
@@ -193,6 +195,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Enable/Disable Wallet', MOBBEX_WC_TEXT_DOMAIN),
                 'type' => 'checkbox',
                 'label' => __('Enable Mobbex Wallet experience.', MOBBEX_WC_TEXT_DOMAIN),
+                'default' => 'no',
+
+            ],
+
+            'payment_mode' => [
+
+                'title' => __('Enable/Disable 2-step Payment Mode', 'mobbex-for-woocommerce'),
+                'type' => 'checkbox',
+                'label' => __('Enable 2-step Payment Mode.', 'mobbex-for-woocommerce'),
                 'default' => 'no',
 
             ],
@@ -466,7 +477,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'total' => $order->get_total(),
             'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
             'return_url' => $return_url,
-            'intent' => defined('MOBBEX_CHECKOUT_INTENT') ? MOBBEX_CHECKOUT_INTENT : null,
+            'intent' => $this->helper->get_payment_mode(),
         ]);
 
         $this->debug([
@@ -692,7 +703,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // Check status and set
         if ($status == 2 || $status == 3 || $status == 100) {
-            $order->update_status('on-hold', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
+            if (!empty($data['payment']['operation']['type']) && $data['payment']['operation']['type'] === 'payment.2-step' && $status == 3) {
+                $order->update_status('authorized', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
+            } else {
+                $order->update_status('on-hold', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
+            }
         } else if ($status == 4 || $status >= 200 && $status < 400) {
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.

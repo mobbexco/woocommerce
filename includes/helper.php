@@ -125,4 +125,19 @@ class MobbexHelper
         // Remove duplicated IDs and return
         return array_unique($categories);
     }
+
+    /**
+     * Get payment mode.
+     * 
+     * @return string|null $payment_mode
+     */
+    public function get_payment_mode()
+    {
+        if (defined('MOBBEX_CHECKOUT_INTENT') && !empty(MOBBEX_CHECKOUT_INTENT)) {
+            // Try to get from constant first
+            return MOBBEX_CHECKOUT_INTENT;
+        } else if (!empty($this->payment_mode) && $this->payment_mode === 'yes') {
+            return 'payment.2-step';
+        }
+    }
 }
