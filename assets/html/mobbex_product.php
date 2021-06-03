@@ -99,7 +99,7 @@
     {
         // Payment Methods Filter in the modal
         select_element.onchange  = function(e) {
-            console.info(pre_build_table);
+            let pre_build_table = document.getElementById("mobbex_payment_plans_list");
             trs = pre_build_table.getElementsByTagName("tr");
             
             for (i = 0; i < trs.length; i++) {

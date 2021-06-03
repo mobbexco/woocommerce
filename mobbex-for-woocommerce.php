@@ -404,27 +404,6 @@ class MobbexGateway
         $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
         $is_active = $mobbexGateway->financial_info_active;
 
-        // Get the component Id
-        $total_price = 0;
-        if($product->is_type('simple') || $product->is_type('variable')) 
-        {
-            // Only for simple and variable product type
-            $total_price = $product->get_price();
-        }elseif($product->is_type('grouped')){
-            $product = wc_get_product($post->ID); //composite product
-            $children = $product->get_children();//get all the children
-            foreach($children as $child){
-                $total_price = $total_price + wc_get_product($child)->get_price();
-            }
-        }else{
-            return false;
-        }
-
-        // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
-        if($is_active && $mobbexGateway->tax_id){
-            //Set Financial info URL
-            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$total_price;
-        }
         include 'assets/html/mobbex_product.php';
     }
 
@@ -749,3 +728,4 @@ class MobbexGateway
 
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [ & $mobbexGateway, 'init']);
+//add_shortcode( 'mobbex_button', 'MobbexGateway::shortcode_mobbex_button' ) );
