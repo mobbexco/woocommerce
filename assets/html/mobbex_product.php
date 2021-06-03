@@ -27,6 +27,7 @@
         $product_type = "variable";
     }
 ?>
+
 <!-- The Modal -->
 <div id="mbbxProductModal" class="modal">
     <!-- Modal content -->  
@@ -40,8 +41,6 @@
         </div>
     </div>
 </div>
-
-
 
 <script>
 
@@ -58,18 +57,14 @@
     // Get the <span> element that closes the modal
     let span = document.getElementById("closembbxProduct");
 
-    let modal_content = document.getElementById("mbbxProductModalContent");
-
+    // Get the <div> element modal header
     let modal_header = document.getElementById("mbbxProductModalHeader");
 
+    // Get the <div> element modal body
     let modal_body = document.getElementById("mbbxProductModalBody");
 
+    // Get the <select> element with all the payment method avaliable
     let select_element = document.getElementById("mobbex_methods_list");
-    
-    let pre_build_table = document.getElementById("mobbex_payment_plans_list");
-
-
-    let product_id = <?php echo ($product_id); ?>;
 
     //only if the button is avalible
     if(span){
@@ -83,10 +78,15 @@
         // When the user clicks on the button, show/open the modal
         btn.onclick  = function(e) {
             e.preventDefault();
+            let select_element = document.getElementById("mobbex_methods_list");
+            let pre_build_table = document.getElementById("mobbex_payment_plans_list");
+            modal_body.innerHTML = '';//clear the modal 
             modal.style.display = "block";
             window.dispatchEvent(new Event('resize'));
+            //add the select html element
             select_element.style.display = "";
             modal_header.appendChild(select_element); 
+            //add the table html element
             pre_build_table.style.display = "";
             modal_body.appendChild(pre_build_table); 
 
@@ -97,6 +97,7 @@
 
     if(select_element)
     {
+        // Payment Methods Filter in the modal
         select_element.onchange  = function(e) {
             console.info(pre_build_table);
             trs = pre_build_table.getElementsByTagName("tr");
@@ -127,45 +128,32 @@
             let taxId = <?php echo ($mobbexGateway->tax_id > 0 ? $mobbexGateway->tax_id : 0 ); ?>;
             let currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
             let product_id = <?php echo ($product_id); ?>;
-            modal_header.appendChild(select_element); 
-            modal_body.appendChild(pre_build_table); 
-            let quant = document.getElementById("quantity_60b7e27482637");
-            
 
-            //console.info("NO CAMBIO LA CANTIDAD  " + $('[name*=quantity]').value);
             //event for all elements with quantity as part of its name.
             $('[name*=quantity]').change(function(){
                 var variation_id = $("input[name=variation_id]").val();
                 if (!(this.value < 1) && (taxId > 0)) {
                     var product_total = 0;
                     //if prices array is empty, then it is a simple product
-                    if(jQuery.isEmptyObject(prices))
-                    {
+                    if(jQuery.isEmptyObject(prices)){
                         product_total = parseFloat(price * this.value);
-                    }else
-                    {
+                    }else{
                         product_total = calculate_totals(this.value,variation_id);
                     }
-                    console.info("CAMBIO LA CANTIDAD");
-                    //change the value send to the service
-                    document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
+                    //AJAX call that retrive the payment plans table in string format
                     let data = {
                         action: 'financing',
                         method_id : 0,
                         product_id : product_id,
                         total : product_total,
                     };
-
                     jQuery.post('/wp-admin/admin-ajax.php' , data, function(response) {
                         if(response) {
-                            console.info(response.data.table);
-                            modal_body.innerHTML = '';
-                            var someDiv = document.createElement("div");
-                            someDiv.innerHTML = response.data.table;
-                            pre_build_table.remove();
-                            let pre_build_table = someDiv;
-                            pre_build_table.style.display = "";
-                            modal_body.append(someDiv);
+                            //If ajax response is completed, then add the list to the body
+                            document.getElementById("mobbex_payment_plans_list").remove();
+                            let div = document.createElement("div");
+                            div.innerHTML = response.data.table;
+                            document.body.appendChild(div);
                         } else {
                             console.info("ERROR "+response);
                         }

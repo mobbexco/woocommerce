@@ -64,18 +64,13 @@ class MobbexHelper
             return [];
         }
         $response = wp_remote_get(str_replace('{rule}', $rule, MOBBEX_ADVANCED_PLANS), [
-
             'headers' => [
                 'cache-control' => 'no-cache',
                 'content-type' => 'application/json',
                 'x-api-key' => $this->api_key,
                 'x-access-token' => $this->access_token,
             ],
-
         ]);
-
-        //error_log("Llega!  ".$response, 3, "/var/www/html/wp-content/plugins/mwoocommerce/planesAvamzados.log");
-
         if (!is_wp_error($response)) {
             $response = json_decode($response['body'], true);
             $data = $response['data'];
@@ -87,18 +82,22 @@ class MobbexHelper
         return [];
     }
 
+    /**
+     * Return all active payment methods by tax id
+     * @param $tax_id : integer  
+     * @param $total : integer
+     * @return Array
+     */
     private function get_payment_methods($tax_id,$total){
         
         $url = str_replace('{total}', $total, MOBBEX_LIST_PLANS);
         $response = wp_remote_get(str_replace('{tax_id}', $tax_id, $url), [
-
             'headers' => [
                 'cache-control' => 'no-cache',
                 'content-type' => 'application/json',
                 'x-api-key' => $this->api_key,
                 'x-access-token' => $this->access_token,
             ],
-
         ]);
         if (!is_wp_error($response)) {
             $response = json_decode($response['body'], true);
@@ -107,11 +106,14 @@ class MobbexHelper
                 return $data;
             }
         }
-
         return [];
 
     }
 
+    /**
+     * Return base 64 payment method image
+     * @param $reference
+     */
     private function get_payment_image($reference){
 
         $response = wp_remote_get(str_replace('{reference}', $reference, MOBBEX_PAYMENT_IMAGE), [
@@ -133,21 +135,22 @@ class MobbexHelper
 
 
     /**
-     * 
+     * Return the payment methods 
+     * @param $tax_id : integer
+     * @param $total : double
+     * @param $product_id : integer
+     * @param $method_id : integer
+     * @return Array 
      */
     public function get_list_source($tax_id,$total,$product_id,$method_id=0)
     {
         
-        //error_log("Llega!  ".print_r(var_dump(MOBBEX_LIST_PLANS)), 3, "/var/www/html/wp-content/plugins/mwoocommerce/planesAvamzados.log");
         $payment_methods_mobbex = $this->get_payment_methods($tax_id,$total);
         $payment_methods = array();
         if (!empty($payment_methods_mobbex)) {
             // installments view source
-            
-            $no_active_plans = $this->get_no_active_plans($product_id);
-               
+            $no_active_plans = $this->get_no_active_plans($product_id);       
             if($method_id != 0){
-                error_log("Llega!  ".print_r($method_id,true), 3, "/var/www/html/wp-content/plugins/mwoocommerce/planesAvamzados.log");
                 $method = null;
                 foreach($payment_methods_mobbex as $payment_method)
                 {
@@ -160,20 +163,21 @@ class MobbexHelper
                     $payment_methods[] = $payment_methods = $this->build_plan_array($method);
                 }
             }else{
-                foreach($payment_methods_mobbex as $payment_method)
-                {
+                foreach($payment_methods_mobbex as $payment_method){
                     $payment_methods[] = $this->build_plan_array($payment_method);
                 }
             }
-            error_log("[".print_r($payment_methods,true)."]", 3, "/var/www/html/wp-content/plugins/mwoocommerce/get_list_source.log"); 
-        }else{
-            error_log("Error!  ".print_r(var_dump($response)), 3, "/var/www/html/wp-content/plugins/mwoocommerce/planes.log");
         }
 
         return $payment_methods;
 
     }
 
+    /**
+     * Return array with payment methods and their plans
+     * @param $payment_method : array
+     * @return Array 
+     */
     private function build_plan_array($payment_method){
         //only add if payment is enabled
         if($payment_method['installments']['enabled'])
@@ -209,7 +213,11 @@ class MobbexHelper
         return $method;
     }
 
-
+    /**
+     * Return the plans that are not active in the product and categories
+     * @param $product_id: integer
+     * @return Array
+     */
     private function get_no_active_plans($product_id){
         
         $ahora = array(
@@ -242,7 +250,6 @@ class MobbexHelper
 
         foreach ($ahora as $key => $value) 
         {
-            //error_log("[".print_r($key."-".get_post_meta($product_id, $key, true),true)."]", 3, "/var/www/html/wp-content/plugins/mwoocommerce/get_no_active_plans.log");  
             if (get_post_meta($product_id, $key, true) === 'yes') {
                 //the product have $ahora[$key] plan selected
                 $no_active_plans[] = $key;
