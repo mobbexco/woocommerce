@@ -135,52 +135,35 @@ class MobbexHelper
     /**
      * 
      */
-    public function get_list_source($tax_id,$total,$product_id)
+    public function get_list_source($tax_id,$total,$product_id,$method_id=0)
     {
         
         //error_log("Llega!  ".print_r(var_dump(MOBBEX_LIST_PLANS)), 3, "/var/www/html/wp-content/plugins/mwoocommerce/planesAvamzados.log");
         $payment_methods_mobbex = $this->get_payment_methods($tax_id,$total);
-        error_log("Llega!  ".print_r($payment_methods_mobbex,true), 3, "/var/www/html/wp-content/plugins/mwoocommerce/planesAvamzados.log");
         $payment_methods = array();
         if (!empty($payment_methods_mobbex)) {
             // installments view source
             
             $no_active_plans = $this->get_no_active_plans($product_id);
                
-            
-            foreach($payment_methods_mobbex as $payment_method){
-                //only add if payment is enabled
-                if($payment_method['installments']['enabled'])
+            if($method_id != 0){
+                error_log("Llega!  ".print_r($method_id,true), 3, "/var/www/html/wp-content/plugins/mwoocommerce/planesAvamzados.log");
+                $method = null;
+                foreach($payment_methods_mobbex as $payment_method)
                 {
-                    $included_plans= array();
-                    foreach($payment_method['installments']['list'] as $installment)
-                    {
-                        $plan = array();
-                        //if it is a 'ahora' plan then use the reference 
-                        if(strpos($installment['reference'],'ahora')!== false){
-                            if(!in_array($installment['reference'],$no_active_plans)){
-                                $plan['name'] = $installment['name'];
-                                $plan['amount'] = $installment['totals']['total'];    
-                            }
-                        }else{
-                            $plan['name'] = $installment['name'];
-                            $plan['amount'] = $installment['totals']['total'];
-                        }
-                        if(!empty($plan)){
-                            $included_plans[] = $plan;
-                        }
-                    }       
-                    if(!empty($included_plans)){
-                        $method = array();
-                        $method['id'] = $payment_method['source']['id'];
-                        $method['reference'] = $payment_method['source']['reference'];
-                        $method['name'] = $payment_method['source']['name'];
-                        $method['installments'] = $included_plans;
-                        $method['image'] = $this->get_payment_image($payment_method['source']['reference']);
-                        $payment_methods[] = $method;
+                    if($payment_method['source']['id'] == $method_id){
+                        $method = $payment_method;
+                        break;
                     }
                 }
-
+                if($method != null){
+                    $payment_methods[] = $payment_methods = $this->build_plan_array($method);
+                }
+            }else{
+                foreach($payment_methods_mobbex as $payment_method)
+                {
+                    $payment_methods[] = $this->build_plan_array($payment_method);
+                }
             }
             error_log("[".print_r($payment_methods,true)."]", 3, "/var/www/html/wp-content/plugins/mwoocommerce/get_list_source.log"); 
         }else{
@@ -189,6 +172,41 @@ class MobbexHelper
 
         return $payment_methods;
 
+    }
+
+    private function build_plan_array($payment_method){
+        //only add if payment is enabled
+        if($payment_method['installments']['enabled'])
+        {
+            $included_plans= array();
+            foreach($payment_method['installments']['list'] as $installment)
+            {
+                $plan = array();
+                //if it is a 'ahora' plan then use the reference 
+                if(strpos($installment['reference'],'ahora')!== false){
+                    if(!in_array($installment['reference'],$no_active_plans)){
+                        $plan['name'] = $installment['name'];
+                        $plan['amount'] = $installment['totals']['total'];    
+                    }
+                }else{
+                    $plan['name'] = $installment['name'];
+                    $plan['amount'] = $installment['totals']['total'];
+                }
+                if(!empty($plan)){
+                    $included_plans[] = $plan;
+                }
+            }       
+            if(!empty($included_plans)){
+                $method = array();
+                $method['id'] = $payment_method['source']['id'];
+                $method['reference'] = $payment_method['source']['reference'];
+                $method['name'] = $payment_method['source']['name'];
+                $method['installments'] = $included_plans;
+                $method['image'] = $this->get_payment_image($payment_method['source']['reference']);
+                
+            }
+        }
+        return $method;
     }
 
 
