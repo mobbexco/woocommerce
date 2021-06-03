@@ -62,7 +62,7 @@ class MobbexGateway
         $helper = new MobbexHelper();
         if (!empty($helper->financial_info_active) && !empty($helper->tax_id) && $helper->financial_info_active === 'yes') {
             // Add a new button after the "add to cart" button
-            add_action('woocommerce_after_add_to_cart_form', [$this, 'additional_button_add_to_cart'], 20 );
+            add_action('woocommerce_after_single_product_summary', [$this, 'additional_button_add_to_cart'], 40 );
         }
 
         // Enqueue assets
@@ -294,6 +294,8 @@ class MobbexGateway
     /**
      * Shortcode function, return button html
      * and a hidden table with plans
+     * in woocommerce echo do_shortcode('[mobbex_button]'); in content-single-product.php
+     * or [mobbex_button] in wordpress pages
      */
     public function shortcode_mobbex_button( $atts = [], $content = null ) {
         global $post;
