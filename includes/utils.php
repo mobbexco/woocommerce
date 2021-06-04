@@ -19,6 +19,10 @@ define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
 define('MOBBEX_VERSION', '3.2.1');
 define('MOBBEX_EMBED_VERSION', '1.0.17');
 
+define('MOBBEX_LIST_PLANS', 'https://api.mobbex.com/p/sources/list/arg/{tax_id}?total={total}');
+
+define('MOBBEX_PAYMENT_IMAGE', 'https://res.mobbex.com/images/sources/{reference}.png');
+
 if (!function_exists('mobbex_debug')) {
     // https://github.com/bonny/WordPress-Simple-History/
 
