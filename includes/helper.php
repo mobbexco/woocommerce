@@ -284,4 +284,139 @@ class MobbexHelper
 
 
     
+
+    /**
+     * Get all product IDs from Order.
+     * 
+     * @param WP_Order $order
+     * @return array $products
+     */
+    public static function get_product_ids($order)
+    {
+        $products = [];
+
+        foreach ($order->get_items() as $item)
+            $products[] = $item->get_product_id();
+
+        return $products;
+    }
+
+    /**
+     * Get all category IDs from Order.
+     * Duplicates are removed.
+     * 
+     * @param WP_Order $order
+     * @return array $categories
+     */
+    public static function get_category_ids($order)
+    {
+        $categories = [];
+
+        // Get Products Ids
+        $products = self::get_product_ids($order);
+
+        foreach($products as $product)
+            $categories = array_merge($categories, wp_get_post_terms($product, 'product_cat', ['fields' => 'ids']));
+
+        // Remove duplicated IDs and return
+        return array_unique($categories);
+    }
+
+    /**
+     * Get payment mode.
+     * 
+     * @return string|null $payment_mode
+     */
+    public function get_payment_mode()
+    {
+        if (defined('MOBBEX_CHECKOUT_INTENT') && !empty(MOBBEX_CHECKOUT_INTENT)) {
+            // Try to get from constant first
+            return MOBBEX_CHECKOUT_INTENT;
+        } else if (!empty($this->payment_mode) && $this->payment_mode === 'yes') {
+            return 'payment.2-step';
+        }
+    }
+
+    /**
+     * Get Store configured by product/category using Multisite options.
+     * 
+     * @param WP_Order $order
+     * 
+     * @return array|null $store
+     */
+    public static function get_store($order)
+    {
+        $stores   = get_option('mbbx_stores');
+        $products = self::get_product_ids($order);
+
+        // Search store configured
+        foreach ($products as $product_id) {
+            $store_configured = self::get_store_from_product($product_id);
+
+            if (!empty($store_configured) && !empty($stores[$store_configured]))
+                return $stores[$store_configured];
+        }
+    }
+
+    /**
+     * Get Store ID from product and its categories.
+     * 
+     * @param int|string $product_id
+     * 
+     * @return string|null $store_id
+     */
+    public static function get_store_from_product($product_id)
+    {
+        // Get possible store from product
+        $store = get_post_meta($product_id, 'mbbx_store', true);
+        if (!empty($store))
+            return $store;
+
+        // Get possible stores from product categories
+        $categories = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+        foreach ($categories as $cat_id) {
+            $store = get_term_meta($cat_id, 'mbbx_store', true);
+            if (!empty($store))
+                return $store;
+        }
+    }
+
+    /**
+     * Capture 'authorized' payment using Mobbex API.
+     * 
+     * @param string|int $payment_id
+     * @param string|int $total
+     * 
+     * @return bool $result
+     */
+    public function capture_payment($payment_id, $total)
+    {
+        if (!$this->isReady())
+            throw new Exception(__('Plugin is not ready', 'mobbex-for-woocommerce'));
+
+        if (empty($payment_id) || empty($total))
+            throw new Exception(__('Empty Payment UID or params', 'mobbex-for-woocommerce'));
+
+        // Modify Subscription
+        $response = wp_remote_post(str_replace('{id}', $payment_id, MOBBEX_CAPTURE_PAYMENT), [
+            'headers' => [
+                'cache-control'  => 'no-cache',
+                'content-type'   => 'application/json',
+                'x-api-key'      => $this->api_key,
+                'x-access-token' => $this->access_token,
+            ],
+
+            'body'        => json_encode(compact('total')),
+            'data_format' => 'body',
+        ]);
+
+        if (!is_wp_error($response)) {
+            $response = json_decode($response['body'], true);
+
+            if (!empty($response['result']))
+                return true;
+        }
+
+        throw new Exception(__('An error occurred in the execution', 'mobbex-for-woocommerce'));
+    }
 }

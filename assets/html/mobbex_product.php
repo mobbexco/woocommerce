@@ -1,9 +1,8 @@
 <?php    
     $prices = array();//store children prices
     $product_type = "simple";//set product type default to simple
-    $product_id = $post->ID;
     if($product->is_type('grouped')){
-        $product = wc_get_product($product_id); //composite product
+        $product = wc_get_product($post->ID); //composite product
         $children = $product->get_children();//get all the children
         
         foreach($children as $child){
@@ -13,7 +12,6 @@
         }
         $product_type = "grouped";
     }elseif($product->is_type('variable')){ 
-        //echo print_r(wc_get_product($product->get_children()[1])->get_price_html());
         global $woocommerce;
         $children_id = $product->get_children();//get all the children ids
         foreach($children_id as $child_id){
@@ -27,18 +25,12 @@
         $product_type = "variable";
     }
 ?>
-
 <!-- The Modal -->
 <div id="mbbxProductModal" class="modal">
     <!-- Modal content -->  
-    <div id="mbbxProductModalContent" class="modal-content" style="overflow: scroll;">
-        <div id="mbbxProductModalHeader" class="modal-content">
-            <span id="closembbxProduct" class="close">&times;</span>
-            <label for="methods">Seleccione un método de pago:</label>
-        </div>
-        <div id="mbbxProductModalBody" class="modal-content">
-
-        </div>
+    <div id="mbbxProductModalContent" class="modal-content">
+        <span id="closembbxProduct" class="close">&times;</span>
+        <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
     </div>
 </div>
 
@@ -123,45 +115,28 @@
 
     //acumulate poduct price based in the quantity only if the button is active
     jQuery(function($){    
-            let prices = <?php echo json_encode($prices); ?>;
-            let price = <?php echo $product->get_price(); ?>;
-            let taxId = <?php echo ($mobbexGateway->tax_id > 0 ? $mobbexGateway->tax_id : 0 ); ?>;
-            let currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
-            let product_id = <?php echo ($product_id); ?>;
-
+            var prices = <?php echo json_encode($prices); ?>;
+            var price = <?php echo $product->get_price(); ?>;
+            var taxId = <?php echo ($mobbexGateway->tax_id > 0 ? $mobbexGateway->tax_id : 0 ); ?>;
+            var currency = '<?php echo get_woocommerce_currency_symbol(); ?>';
             //event for all elements with quantity as part of its name.
             $('[name*=quantity]').change(function(){
                 var variation_id = $("input[name=variation_id]").val();
                 if (!(this.value < 1) && (taxId > 0)) {
                     var product_total = 0;
-                    //if prices array is empty, then it is a simple product
-                    if(jQuery.isEmptyObject(prices)){
+                    //if prices array is empty, then it is a simple product, else it is a grouped or variable product
+                    if(jQuery.isEmptyObject(prices))
+                    {
                         product_total = parseFloat(price * this.value);
-                    }else{
+                    }else
+                    {
                         product_total = calculate_totals(this.value,variation_id);
                     }
-                    //AJAX call that retrive the payment plans table in string format
-                    let data = {
-                        action: 'financing',
-                        method_id : 0,
-                        product_id : product_id,
-                        total : product_total,
-                    };
-                    jQuery.post('/wp-admin/admin-ajax.php' , data, function(response) {
-                        if(response) {
-                            //If ajax response is completed, then add the list to the body
-                            document.getElementById("mobbex_payment_plans_list").remove();
-                            let div = document.createElement("div");
-                            div.innerHTML = response.data.table;
-                            document.body.appendChild(div);
-                        } else {
-                            console.info("ERROR "+response);
-                        }
-                    });
+                    //change the value send to the service
+                    document.getElementById("iframe").src = "https://mobbex.com/p/sources/widget/arg/"+ taxId +'?total='+product_total;
 
                 }   
            });   
-
     });
 
     /**
