@@ -47,6 +47,14 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.3.0 :: 2021-06-04
+- Added Multisite settings to product and category admin pages.
+- New Shortcode functionality for financing widget.
+- Inactive plans are no longer displayed in the financing widget.
+- New 2-step payment mode.
+- New Action to capture a payment from the order admin page.
+- Improves plans filter and financing widget views.
+
 ### 3.2.1 :: 2021-05-18
 - Fix get plans by category in checkout creation
 - Add cache constants defined condition

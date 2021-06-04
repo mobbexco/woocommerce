@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.2.1
+Version:      3.3.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -122,30 +122,30 @@ class MobbexGateway
     public static function check_dependencies()
     {
         if (!class_exists('WooCommerce')) {
-            MobbexGateway::$errors[] = __('WooCommerce needs to be installed and activated.', MOBBEX_WC_TEXT_DOMAIN);
+            MobbexGateway::$errors[] = __('WooCommerce needs to be installed and activated.', 'mobbex-for-woocommerce');
         }
 
         if (!function_exists('WC')) {
-            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce to be activated', MOBBEX_WC_TEXT_DOMAIN);
+            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce to be activated', 'mobbex-for-woocommerce');
         }
 
         if (!is_ssl()) {
-            MobbexGateway::$errors[] = __('Your site needs to be served via HTTPS to comunicate securely with Mobbex.', MOBBEX_WC_TEXT_DOMAIN);
+            MobbexGateway::$errors[] = __('Your site needs to be served via HTTPS to comunicate securely with Mobbex.', 'mobbex-for-woocommerce');
         }
 
         if (version_compare(WC_VERSION, '2.6', '<')) {
-            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce version 2.6 or greater', MOBBEX_WC_TEXT_DOMAIN);
+            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce version 2.6 or greater', 'mobbex-for-woocommerce');
         }
 
         if (!function_exists('curl_init')) {
-            MobbexGateway::$errors[] = __('Mobbex requires the cURL PHP extension to be installed on your server', MOBBEX_WC_TEXT_DOMAIN);
+            MobbexGateway::$errors[] = __('Mobbex requires the cURL PHP extension to be installed on your server', 'mobbex-for-woocommerce');
         }
 
         if (!function_exists('json_decode')) {
-            MobbexGateway::$errors[] = __('Mobbex requires the JSON PHP extension to be installed on your server', MOBBEX_WC_TEXT_DOMAIN);
+            MobbexGateway::$errors[] = __('Mobbex requires the JSON PHP extension to be installed on your server', 'mobbex-for-woocommerce');
         }
 
-        $openssl_warning = __('Mobbex requires OpenSSL >= 1.0.1 to be installed on your server', MOBBEX_WC_TEXT_DOMAIN);
+        $openssl_warning = __('Mobbex requires OpenSSL >= 1.0.1 to be installed on your server', 'mobbex-for-woocommerce');
         if (!defined('OPENSSL_VERSION_TEXT')) {
             MobbexGateway::$errors[] = $openssl_warning;
         }
@@ -163,7 +163,7 @@ class MobbexGateway
     public function add_action_links($links)
     {
         $plugin_links = [
-            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex') . '">' . __('Settings', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
+            '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex') . '">' . __('Settings', 'mobbex-for-woocommerce') . '</a>',
         ];
 
         $links = array_merge($plugin_links, $links);
@@ -183,10 +183,10 @@ class MobbexGateway
     {
         if (strpos($file, plugin_basename(__FILE__)) !== false) {
             $plugin_links = [
-                '<a href="' . esc_url(MobbexGateway::$site_url) . '" target="_blank">' . __('Website', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
-                '<a href="' . esc_url(MobbexGateway::$doc_url) . '" target="_blank">' . __('Documentation', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
-                '<a href="' . esc_url(MobbexGateway::$github_url) . '" target="_blank">' . __('Contribute', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
-                '<a href="' . esc_url(MobbexGateway::$github_issues_url) . '" target="_blank">' . __('Report Issues', MOBBEX_WC_TEXT_DOMAIN) . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$site_url) . '" target="_blank">' . __('Website', 'mobbex-for-woocommerce') . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$doc_url) . '" target="_blank">' . __('Documentation', 'mobbex-for-woocommerce') . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$github_url) . '" target="_blank">' . __('Contribute', 'mobbex-for-woocommerce') . '</a>',
+                '<a href="' . esc_url(MobbexGateway::$github_issues_url) . '" target="_blank">' . __('Report Issues', 'mobbex-for-woocommerce') . '</a>',
             ];
 
             $links = array_merge($links, $plugin_links);
@@ -215,7 +215,7 @@ class MobbexGateway
     public static function load_textdomain()
     {
 
-        load_plugin_textdomain(MOBBEX_WC_TEXT_DOMAIN, false, dirname(plugin_basename(__FILE__)) . '/languages/');
+        load_plugin_textdomain('mobbex-for-woocommerce', false, dirname(plugin_basename(__FILE__)) . '/languages/');
 
     }
 
@@ -435,7 +435,8 @@ class MobbexGateway
      * Add asset file to product page
      * @access public
      */
-    public function additional_button_add_to_cart() {
+    public function additional_button_add_to_cart() 
+    {
         global $post;
         global $product;
         //Get the Tax_id(CUIT) from plugin settings
@@ -449,14 +450,13 @@ class MobbexGateway
 
     public function mobbex_product_settings_tabs($tabs)
     {
-
         $tabs['mobbex'] = array(
             'label'    => 'Mobbex',
             'target'   => 'mobbex_product_data',
             'priority' => 21,
         );
-        return $tabs;
 
+        return $tabs;
     }
 
     public function mobbex_product_panels()
@@ -521,8 +521,8 @@ class MobbexGateway
             <?php
             do_action('mbbx_product_options');
             ?>
-            <h2><?=  __('Plans Configuration', 'mobbex-for-woocommerce') ?></h2> <!-- Configuración de planes de pago -->
-            <p><?=  __('Select the plans you want to appear in the checkout', 'mobbex-for-woocommerce') ?></p> <!-- Seleccione los planes que quiera que aparezcan en el checkout -->
+            <h2><?=  __('Plans Configuration', 'mobbex-for-woocommerce') ?></h2>
+            <p><?=  __('Select the plans you want to appear in the checkout', 'mobbex-for-woocommerce') ?></p>
             <div class="mbbx_plans_cont">
                 <div class="mbbx_plan_list">
                     <p><?= __('Common plans', 'mobbex-for-woocommerce') ?></p>
@@ -551,7 +551,7 @@ class MobbexGateway
                 </div>
             </div>
             <hr>
-            <h2><?= __('Multisite', 'mobbex-for-woocommerce') ?></h2> <!-- Multitienda -->
+            <h2><?= __('Multisite', 'mobbex-for-woocommerce') ?></h2>
             <div>
                 <?php
                 // Render multisite fields
@@ -594,7 +594,7 @@ class MobbexGateway
             'id'          => 'mbbx_enable_multisite',
             'cbvalue'     => true,
             'label'       => __('Enable Multisite', 'mobbex-for-woocommerce'),
-            'description' => __('Enable it to allow payment for this product to be received by another merchant.', 'mobbex-for-woocommerce'), // Habilitelo para permitir que el pago de este producto lo reciba otro comercio
+            'description' => __('Enable it to allow payment for this product to be received by another merchant.', 'mobbex-for-woocommerce'),
         ];
 
         $store_field = [
@@ -697,7 +697,7 @@ class MobbexGateway
         $term_id = $term->term_id;
 
         echo '<div id="mobbex_category_data" class="form-field">';
-        echo '<h2><b>' . __('Choose the plans you want NOT to appear during the purchase', MOBBEX_WC_TEXT_DOMAIN) . ':</b></h2>';
+        echo '<h2><b>' . __('Choose the plans you want NOT to appear during the purchase', 'mobbex-for-woocommerce') . ':</b></h2>';
 
         // All 'ahora' plans
         $plans = array(
@@ -943,7 +943,7 @@ class MobbexGateway
 
             // If there are different stores in the cart items
             if ($product_store != $item_store) {
-                wc_add_notice(__('The cart cannot have products from different sellers at the same time.', 'mobbex-for-woocommerce'), 'error'); // El carrito no puede tener productos de distintos vendedores a la vez.
+                wc_add_notice(__('The cart cannot have products from different sellers at the same time.', 'mobbex-for-woocommerce'), 'error');
                 return false;
             }
         }
@@ -954,4 +954,3 @@ class MobbexGateway
 
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [ & $mobbexGateway, 'init']);
-//add_shortcode( 'mobbex_button', 'MobbexGateway::shortcode_mobbex_button' ) );

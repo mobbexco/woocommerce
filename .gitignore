@@ -1,11 +1,14 @@
 .DS_Store
 
-mobbex.*.zip
-wc-mobbex*.zip
-deploy/*
+deploy/
+.vscode/
 
 copy.js
 build.js
+build.bat
+
+mobbex.*.zip
+wc-mobbex*.zip
 
 package.json
 package-lock.json

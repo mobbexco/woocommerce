@@ -9,14 +9,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         'refunds',
     );
 
-    public MobbexHelper $helper;
+    /** @var MobbexHelper */
+    public $helper;
 
     public function __construct()
     {
         $this->id = MOBBEX_WC_GATEWAY_ID;
 
-        $this->method_title = __('Mobbex', MOBBEX_WC_TEXT_DOMAIN);
-        $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', MOBBEX_WC_TEXT_DOMAIN);
+        $this->method_title = __('Mobbex', 'mobbex-for-woocommerce');
+        $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', 'mobbex-for-woocommerce');
 
         // Icon
         $this->icon = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
@@ -68,7 +69,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         if (empty($this->api_key) || empty($this->access_token)) {
 
             $this->error = true;
-            MobbexGateway::notice('error', __('You need to specify an API Key and an Access Token.', MOBBEX_WC_TEXT_DOMAIN));
+            MobbexGateway::notice('error', __('You need to specify an API Key and an Access Token.', 'mobbex-for-woocommerce'));
 
         }
 
@@ -130,27 +131,27 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'enabled' => [
 
-                'title' => __('Enable/Disable', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Enable/Disable', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
-                'label' => __('Enable checking out with Mobbex.', MOBBEX_WC_TEXT_DOMAIN),
+                'label' => __('Enable checking out with Mobbex.', 'mobbex-for-woocommerce'),
                 'default' => 'yes',
 
             ],
 
             'title' => [
 
-                'title' => __('Title', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Title', 'mobbex-for-woocommerce'),
                 'type' => 'text',
-                'description' => __('This title will be shown on user checkout.', MOBBEX_WC_TEXT_DOMAIN),
-                'default' => __('Pay with Mobbex', MOBBEX_WC_TEXT_DOMAIN),
+                'description' => __('This title will be shown on user checkout.', 'mobbex-for-woocommerce'),
+                'default' => __('Pay with Mobbex', 'mobbex-for-woocommerce'),
                 'desc_tip' => true,
 
             ],
 
             'description' => [
 
-                'title' => __('Description', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('This description will be shown on user checkout.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Description', 'mobbex-for-woocommerce'),
+                'description' => __('This description will be shown on user checkout.', 'mobbex-for-woocommerce'),
                 'type' => 'textarea',
                 'default' => '',
 
@@ -158,43 +159,43 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'api-key' => [
 
-                'title' => __('API Key', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('Your Mobbex API key.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('API Key', 'mobbex-for-woocommerce'),
+                'description' => __('Your Mobbex API key.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
 
             ],
 
             'access-token' => [
 
-                'title' => __('Access Token', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('Your Mobbex access token.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Access Token', 'mobbex-for-woocommerce'),
+                'description' => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
 
             ],
 
             'test_mode' => [
 
-                'title' => __('Enable/Disable Test Mode', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Enable/Disable Test Mode', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
-                'label' => __('Enable Test Mode.', MOBBEX_WC_TEXT_DOMAIN),
+                'label' => __('Enable Test Mode.', 'mobbex-for-woocommerce'),
                 'default' => 'no',
 
             ],
 
             'button' => [
 
-                'title' => __('Enable/Disable Button', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Enable/Disable Button', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
-                'label' => __('Enable Mobbex Button experience.', MOBBEX_WC_TEXT_DOMAIN),
+                'label' => __('Enable Mobbex Button experience.', 'mobbex-for-woocommerce'),
                 'default' => 'no',
 
             ],
 
             'wallet' => [
 
-                'title' => __('Enable/Disable Wallet', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Enable/Disable Wallet', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
-                'label' => __('Enable Mobbex Wallet experience.', MOBBEX_WC_TEXT_DOMAIN),
+                'label' => __('Enable Mobbex Wallet experience.', 'mobbex-for-woocommerce'),
                 'default' => 'no',
 
             ],
@@ -210,21 +211,21 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'use_webhook_api' => [
 
-                'title' => __('Use new WebHook API', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Use new WebHook API', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
-                'label' => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', MOBBEX_WC_TEXT_DOMAIN),
+                'label' => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', 'mobbex-for-woocommerce'),
                 'default' => 'no',
 
             ],
 
             'checkout_theme' => [
 
-                'title' => __('Checkout Theme', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('You can customize your Checkout Theme from here.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Checkout Theme', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Theme from here.', 'mobbex-for-woocommerce'),
                 'type' => 'select',
                 'options' => [
-                    'light' => __('Light Theme', MOBBEX_WC_TEXT_DOMAIN),
-                    'dark' => __('Dark Theme', MOBBEX_WC_TEXT_DOMAIN),
+                    'light' => __('Light Theme', 'mobbex-for-woocommerce'),
+                    'dark' => __('Dark Theme', 'mobbex-for-woocommerce'),
                 ],
                 'default' => 'light',
 
@@ -232,8 +233,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'checkout_title' => [
 
-                'title' => __('Checkout Title', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('You can customize your Checkout Title from here.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Checkout Title', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Title from here.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
                 'default' => '',
 
@@ -241,8 +242,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'checkout_logo' => [
 
-                'title' => __('Checkout Logo URL', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('You can customize your Checkout Logo from here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on Mobbex will be used. Dimensions: 250x250 pixels', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Checkout Logo URL', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Logo from here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on Mobbex will be used. Dimensions: 250x250 pixels', 'mobbex-for-woocommerce'),
                 'type' => 'text',
                 'default' => '',
 
@@ -250,8 +251,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'checkout_background_color' => [
 
-                'title' => __('Checkout Background Color', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('You can customize your Checkout Background Color from here.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Checkout Background Color', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Background Color from here.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
                 'class' => 'colorpick',
                 'default' => '#ECF2F6',
@@ -260,8 +261,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'checkout_primary_color' => [
 
-                'title' => __('Checkout Primary Color', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('You can customize your Checkout Primary Color for Buttons and TextFields from here.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Checkout Primary Color', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Primary Color for Buttons and TextFields from here.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
                 'class' => 'colorpick',
                 'default' => '#6f00ff',
@@ -270,8 +271,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'custom_dni' => [
 
-                'title' => __('Use custom DNI field', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('If you ask for DNI field on checkout please provide the custom field.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Use custom DNI field', 'mobbex-for-woocommerce'),
+                'description' => __('If you ask for DNI field on checkout please provide the custom field.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
                 'default' => '',
 
@@ -279,8 +280,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'own_dni' => [
 
-                'title' => __('Add DNI field', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('Add DNI field on checkout.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Add DNI field', 'mobbex-for-woocommerce'),
+                'description' => __('Add DNI field on checkout.', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => '',
 
@@ -288,8 +289,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'reseller_id' => [
 
-                'title' => __('Reseller ID', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('You can customize your Reseller ID from here. This field is optional and must be used only if was specified by the main seller.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Reseller ID', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Reseller ID from here. This field is optional and must be used only if was specified by the main seller.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
                 'default' => '',
 
@@ -297,8 +298,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             
             'financial_info_active' => [
 
-                'title' => __('Financial Information', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('Show financial information in all products, Tax_id need to be set.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Financial Information', 'mobbex-for-woocommerce'),
+                'description' => __('Show financial information in all products, Tax_id need to be set.', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
                 'default' => '',
 
@@ -306,8 +307,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'tax_id' => [
 
-                'title' => __('Tax ID', MOBBEX_WC_TEXT_DOMAIN),
-                'description' => __('You can customize your Tax ID from here. This field is optional and must be used only if was specified by the main seller to show financial plans in the product.', MOBBEX_WC_TEXT_DOMAIN),
+                'title' => __('Tax ID', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Tax ID from here. This field is optional and must be used only if was specified by the main seller to show financial plans in the product.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
                 'default' => '',
 
@@ -356,7 +357,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return ['result' => 'error'];
         }
 
-        $order->update_status('pending', __('Awaiting Mobbex Webhook', MOBBEX_WC_TEXT_DOMAIN));
+        $order->update_status('pending', __('Awaiting Mobbex Webhook', 'mobbex-for-woocommerce'));
 
         if ($this->use_button) {
             $this->debug([
@@ -558,7 +559,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             foreach ($shipping_items as $item) {
                 $mobbex_items[] = [
                     // TODO: Use a translate key here for "Shipping"
-                    'description' => __('Shipping: ') . $item->get_name(),
+                    'description' => __('Shipping: ', 'mobbex-for-woocommerce') . $item->get_name(),
                     'total' => $item->get_total(),
                 ];
             }
@@ -709,9 +710,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Check status and set
         if ($status == 2 || $status == 3 || $status == 100) {
             if (!empty($data['payment']['operation']['type']) && $data['payment']['operation']['type'] === 'payment.2-step' && $status == 3) {
-                $order->update_status('authorized', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
+                $order->update_status('authorized', __('Awaiting payment', 'mobbex-for-woocommerce'));
             } else {
-                $order->update_status('on-hold', __('Awaiting payment', MOBBEX_WC_TEXT_DOMAIN));
+                $order->update_status('on-hold', __('Awaiting payment', 'mobbex-for-woocommerce'));
             }
         } else if ($status == 4 || $status >= 200 && $status < 400) {
             // Set as completed and reduce stock
@@ -720,7 +721,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $this->add_fee_or_discount($data['payment']['total'], $order);
             $order->payment_complete($id);
         } else {
-            $order->update_status('failed', __('Order failed', MOBBEX_WC_TEXT_DOMAIN));
+            $order->update_status('failed', __('Order failed', 'mobbex-for-woocommerce'));
         }
         
         // Set Total Paid
