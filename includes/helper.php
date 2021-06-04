@@ -107,16 +107,16 @@ class MobbexHelper
                 return $data;
             }
         }
-        return [];
 
+        return [];
     }
 
     /**
      * Return base 64 payment method image
      * @param $reference
      */
-    private function get_payment_image($reference){
-
+    private function get_payment_image($reference)
+    {
         $response = wp_remote_get(str_replace('{reference}', $reference, MOBBEX_PAYMENT_IMAGE), [
 
             'headers' => [
@@ -134,7 +134,6 @@ class MobbexHelper
         return [];
     }
 
-
     /**
      * Return the payment methods 
      * @param $tax_id : integer
@@ -145,9 +144,9 @@ class MobbexHelper
      */
     public function get_list_source($tax_id,$total,$product_id,$method_id=0)
     {
-        
         $payment_methods_mobbex = $this->get_payment_methods($tax_id,$total);
         $payment_methods = array();
+
         if (!empty($payment_methods_mobbex)) {
             // installments view source
             $no_active_plans = $this->get_no_active_plans($product_id);       
@@ -171,7 +170,6 @@ class MobbexHelper
         }
 
         return $payment_methods;
-
     }
 
     /**
@@ -179,7 +177,8 @@ class MobbexHelper
      * @param $payment_method : array
      * @return Array 
      */
-    private function build_plan_array($payment_method){
+    private function build_plan_array($payment_method)
+    {
         //only add if payment is enabled
         if($payment_method['installments']['enabled'])
         {
@@ -211,6 +210,7 @@ class MobbexHelper
                 
             }
         }
+
         return $method;
     }
 
@@ -219,8 +219,8 @@ class MobbexHelper
      * @param $product_id: integer
      * @return Array
      */
-    private function get_no_active_plans($product_id){
-        
+    private function get_no_active_plans($product_id)
+    {
         $ahora = array(
             'ahora_3'  => 'Ahora 3',
             'ahora_6'  => 'Ahora 6',
@@ -276,15 +276,9 @@ class MobbexHelper
                 unset($checked_advanced_plans[$key]);
             }
         }
-        
 
         return $no_active_plans;
     }
-
-    
-
-
-    
 
     /**
      * Get all product IDs from Order.
@@ -398,7 +392,7 @@ class MobbexHelper
         if (empty($payment_id) || empty($total))
             throw new Exception(__('Empty Payment UID or params', 'mobbex-for-woocommerce'));
 
-        // Modify Subscription
+        // Capture payment
         $response = wp_remote_post(str_replace('{id}', $payment_id, MOBBEX_CAPTURE_PAYMENT), [
             'headers' => [
                 'cache-control'  => 'no-cache',
