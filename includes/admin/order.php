@@ -2,7 +2,8 @@
 
 class Mbbx_Order_Admin
 {
-    public static MobbexHelper $helper;
+    /** @var MobbexHelper */
+    public static $helper;
 
     public static function init()
     {
@@ -78,7 +79,7 @@ class Mbbx_Order_Admin
 
         // Only add actions if order has 'Authorized' status
         if ($theorder->get_payment_method() == 'mobbex' && $theorder->has_status('authorized'))
-            $actions['mbbx_capture_payment'] = __('Capture payment', 'mobbex-for-woocommerce'); // Capturar pago
+            $actions['mbbx_capture_payment'] = __('Capture payment', 'mobbex-for-woocommerce');
 
         return $actions;
     }
