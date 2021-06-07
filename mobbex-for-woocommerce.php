@@ -482,7 +482,7 @@ class MobbexGateway
 
             foreach ($plans as $plan) {
                 // Get value from common_plans post meta and check if it's saved using previus method
-                $is_checked = !in_array($plan['reference'], $checked_common_plans) ? get_post_meta($id, $plan['reference'], true) !== 'yes' : false;
+                $is_checked = (!in_array($plan['reference'], $checked_common_plans) && get_post_meta($id, $plan['reference'], true) !== 'yes');
 
                 // Create field array data
                 $common_fields[$plan['reference']] = [
@@ -642,6 +642,12 @@ class MobbexGateway
     {
         $common_plans = $advanced_plans = [];
         $post_fields  = $_POST;
+
+        // Remove values saved with previus method
+        foreach (MobbexHelper::$ahora as $plan) {
+            if (get_post_meta($post_id, $plan, true))
+                delete_post_meta($post_id, $plan);
+        }
 
         // Get plans selected
         foreach ($post_fields as $id => $value) {

@@ -1000,8 +1000,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         foreach ($products as $product_id) {
             // Get common and advanced plans from products
-            $product_common_plans   = unserialize(get_post_meta($product_id, 'common_plans', true)) ?: [];
-            $product_advanced_plans = unserialize(get_post_meta($product_id, 'advanced_plans', true)) ?: [];
+            $product_common_plans   = get_post_meta($product_id, 'common_plans', true) ?: [];
+            $product_advanced_plans = get_post_meta($product_id, 'advanced_plans', true) ?: [];
+
+            // Support previus save method
+            $product_common_plans   = is_string($product_common_plans)   ? unserialize($product_common_plans)   : $product_common_plans;
+            $product_advanced_plans = is_string($product_advanced_plans) ? unserialize($product_advanced_plans) : $product_advanced_plans;
 
             // Merge into unique arrays
             $all_common_plans   = array_merge($all_common_plans, $product_common_plans);

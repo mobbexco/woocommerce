@@ -3,6 +3,10 @@ require_once 'utils.php';
 
 class MobbexHelper
 {
+    /**
+     * All 'ahora' plans.
+     */
+    public static $ahora = ['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'];
 
     public function __construct()
     {
@@ -149,7 +153,7 @@ class MobbexHelper
 
         if (!empty($payment_methods_mobbex)) {
             // installments view source
-            $no_active_plans = $this->get_no_active_plans($product_id);       
+            $no_active_plans = self::get_inactive_plans($product_id);       
             if($method_id != 0){
                 $method = null;
                 foreach($payment_methods_mobbex as $payment_method)
@@ -216,68 +220,45 @@ class MobbexHelper
 
     /**
      * Return the plans that are not active in the product and categories
-     * @param $product_id: integer
-     * @return Array
+     * 
+     * @param int $product_id
+     * 
+     * @return array $inactive_plans
      */
-    private function get_no_active_plans($product_id)
+    public static function get_inactive_plans($product_id)
     {
-        $ahora = array(
-            'ahora_3'  => 'Ahora 3',
-            'ahora_6'  => 'Ahora 6',
-            'ahora_12' => 'Ahora 12',
-            'ahora_18' => 'Ahora 18',
-        );
-        $no_active_plans = array();
-        
-        // Check "Ahora" custom fields in categories
-        $categories_ids = array();
-        $categories = get_the_terms( $product_id, 'product_cat' );//retrieve categories
-        foreach($categories as $category){
-            array_push($categories_ids, $category->term_id);
-        }
-        
-        foreach ($ahora as $key => $value) {
-            //check if any of the product's categories have the plan selected
-            //Have one or more categories
-            foreach($categories_ids as $cat_id){
-                if (get_term_meta($cat_id, $key, true) === 'yes') {
-                    //Plan is checked in the category
-                    $no_active_plans[] = $key;
-                    unset($ahora[$key]);
+        $inactive_ahora_plans = [];
+        $categories = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+
+        // Get inactive 'ahora' plans
+        foreach (self::$ahora as $plan) {
+            // Get from product
+            if (get_post_meta($product_id, $plan, true) === 'yes') {
+                $inactive_ahora_plans[] = $plan;
+                continue;
+            }
+
+            // Get from product categories
+            foreach ($categories as $cat_id) {
+                if (get_term_meta($cat_id, $plan, true) === 'yes') {
+                    $inactive_ahora_plans[] = $plan;
                     break;
                 }
             }
         }
 
-        foreach ($ahora as $key => $value) 
-        {
-            if (get_post_meta($product_id, $key, true) === 'yes') {
-                //the product have $ahora[$key] plan selected
-                $no_active_plans[] = $key;
-                unset($ahora[$key]);
-            }
-        }
+        // Get inactive common and advanced plans
+        $inactive_common_plans   = get_post_meta($product_id, 'common_plans', true) ?: [];
+        $inactive_advanced_plans = get_post_meta($product_id, 'advanced_plans', true) ?: [];
 
-        $checked_common_plans = unserialize(get_post_meta($product_id, 'common_plans', true));
-        $checked_advanced_plans = unserialize(get_post_meta($product_id, 'advanced_plans', true));
+        // Support previus save method
+        $inactive_common_plans   = is_string($inactive_common_plans)   ? unserialize($inactive_common_plans)   : $inactive_common_plans;
+        $inactive_advanced_plans = is_string($inactive_advanced_plans) ? unserialize($inactive_advanced_plans) : $inactive_advanced_plans;
 
-        if (!empty($checked_common_plans)) 
-        {
-            foreach ($checked_common_plans as $key => $common_plan) {
-                $no_active_plans[] = $common_plan;
-                unset($checked_common_plans[$key]);
-            }
-        }
+        // Merge and remove duplicated plans
+        $inactive_plans = array_unique(array_merge($inactive_common_plans, $inactive_advanced_plans, $inactive_ahora_plans));
 
-        if (!empty($checked_advanced_plans)) 
-        {
-            foreach ($checked_advanced_plans as $key => $advanced_plan) {
-                $no_active_plans[] =$advanced_plan;
-                unset($checked_advanced_plans[$key]);
-            }
-        }
-
-        return $no_active_plans;
+        return $inactive_plans;
     }
 
     /**
