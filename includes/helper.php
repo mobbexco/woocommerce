@@ -164,11 +164,11 @@ class MobbexHelper
                     }
                 }
                 if($method != null){
-                    $payment_methods[] = $payment_methods = $this->build_plan_array($method);
+                    $payment_methods[] = $payment_methods = $this->build_plan_array($method,$no_active_plans);
                 }
             }else{
                 foreach($payment_methods_mobbex as $payment_method){
-                    $payment_methods[] = $this->build_plan_array($payment_method);
+                    $payment_methods[] = $this->build_plan_array($payment_method,$no_active_plans);
                 }
             }
         }
@@ -181,7 +181,7 @@ class MobbexHelper
      * @param $payment_method : array
      * @return Array 
      */
-    private function build_plan_array($payment_method)
+    private function build_plan_array($payment_method,$no_active_plans)
     {
         //only add if payment is enabled
         if($payment_method['installments']['enabled'])
