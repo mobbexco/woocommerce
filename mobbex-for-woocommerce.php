@@ -474,7 +474,7 @@ class MobbexGateway
             echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
             
         }
-        //include 'assets/html/mobbex_product.php';
+        include 'assets/html/mobbex_product.php';
     
     }
 
