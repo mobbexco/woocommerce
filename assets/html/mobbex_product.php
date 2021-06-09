@@ -39,7 +39,7 @@
 </div>
 
 <div id="mbbxProductModalShortcode" class="modal" > 
-    <div id="mbbxProductModalContentShortcode" class="modal-content" style="overflow: scroll;">
+    <div id="mbbxProductModalContentShortcode" class="modal-content">
         <div id="mbbxProductModalHeaderShortcode" class="modal-content">
             <span id="closembbxProductShortcode" class="close">&times;</span>
             <label for="methods">Seleccione un método de pago:</label>
@@ -117,7 +117,7 @@
             var select_element = document.getElementById("mobbex_methods_list");
             var pre_build_table = document.getElementById("mobbex_payment_plans_list");
             modal_body.innerHTML = '';//clear the modal 
-            modalShortcode.style.display = "block";
+            modalShortcode.style.display = "grid";
             window.dispatchEvent(new Event('resize'));
             //add the select html element
             select_element.style.display = "";

@@ -375,7 +375,7 @@ class MobbexGateway
         {
             if(strlen($method['name']) > 1)
             {
-                $html =$html.'<tr id="'.$method['id'].'" style=" border: none;"> <th style=" border: none;">'.$method['name'].'<img src="data:image/png;base64,' . base64_encode($method['image']) .'" style="max-width:10%;height:10%;border-radius:50%;"></th></tr>';
+                $html =$html.'<tr id="'.$method['id'].'" class="shortcodePaymentMethod"><th colspan="2"><div><img src="data:image/png;base64,' . base64_encode($method['image']) .'">'.$method['name'].'</div></th></tr>';
                 foreach($method['installments'] as $installment){
                     $html = $html.'<tr id="'.$method['id'].'">';
                     $html = $html.'<td>'.$installment['name'].' </td><td style="text-align: center; ">$ '.$installment['amount'].' </td>';
