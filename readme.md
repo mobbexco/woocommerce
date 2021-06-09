@@ -47,6 +47,9 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.3.1 :: 2021-06-09
+- Structure improvements and some fixes.
+
 ### 3.3.0 :: 2021-06-04
 - Added Multisite settings to product and category admin pages.
 - New Shortcode functionality for financing widget.
