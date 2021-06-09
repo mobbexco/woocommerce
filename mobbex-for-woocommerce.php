@@ -63,8 +63,11 @@ class MobbexGateway
         $helper = new MobbexHelper();
         if (!empty($helper->financial_info_active) && !empty($helper->tax_id) && $helper->financial_info_active === 'yes') {
             // Add a new button after the "add to cart" button
-            add_action('woocommerce_after_single_product_summary', [$this, 'additional_button_add_to_cart'], 40 );
+            add_action('woocommerce_after_add_to_cart_form', [$this, 'additional_button_add_to_cart'], 20 );
         }
+        
+        //Add Mobbex Assets in product page
+        add_action('woocommerce_after_single_product_summary', [$this, 'additional_assets_product'], 40 );
 
         // Enqueue assets
         add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
@@ -293,8 +296,7 @@ class MobbexGateway
             // Product page
             if (is_product() &&
                 !empty($helper->financial_info_active) && 
-                !empty($helper->tax_id) &&
-                $helper->financial_info_active === 'yes'
+                !empty($helper->tax_id) 
             ) {
                 wp_register_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
                 wp_enqueue_style('mobbex_product_style');
@@ -344,10 +346,11 @@ class MobbexGateway
             $product = wc_get_product($post->ID); //composite product
             if($product)
             {
-                $payment_methods = $helper->get_list_source($mobbexGateway->tax_id,$product->get_price(),$post->ID);
+                $total_price = $this->get_final_price($product);
+                $payment_methods = $helper->get_list_source($mobbexGateway->tax_id,$total_price,$post->ID);
                 $table_html = $this->build_table_shortocde_html($payment_methods);//list with the payment methods and plans
                 $list_html = $this->build_list_shortcode_html($payment_methods);
-                $output = $list_html.''.$table_html.' <button  id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+                $output = $list_html.''.$table_html.' <button  id="mbbxProductBtnShortcode" class="single_add_to_cart_button button alt">Ver Financiación</button>';
             }
         }catch(Exeption $e){
             echo print_r("Error in shortcode: ".$e->getMessage());
@@ -372,7 +375,7 @@ class MobbexGateway
         {
             if(strlen($method['name']) > 1)
             {
-                $html =$html.'<tr id="'.$method['id'].'" style=" border: none;"> <th style=" border: none;">'.$method['name'].'<img src="data:image/png;base64,' . base64_encode($method['image']) .'" style="max-width:10%;height:10%;border-radius:50%;"></th></tr>';
+                $html =$html.'<tr id="'.$method['id'].'" class="shortcodePaymentMethod"><th colspan="2"><div><img src="data:image/png;base64,' . base64_encode($method['image']) .'">'.$method['name'].'</div></th></tr>';
                 foreach($method['installments'] as $installment){
                     $html = $html.'<tr id="'.$method['id'].'">';
                     $html = $html.'<td>'.$installment['name'].' </td><td style="text-align: center; ">$ '.$installment['amount'].' </td>';
@@ -435,7 +438,7 @@ class MobbexGateway
      * Add asset file to product page
      * @access public
      */
-    public function additional_button_add_to_cart() 
+    public function additional_assets_product() 
     {
         global $post;
         global $product;
@@ -444,6 +447,57 @@ class MobbexGateway
         $is_active = $mobbexGateway->financial_info_active;
 
         include 'assets/html/mobbex_product.php';
+    }
+
+
+    /**
+     * Add new button to show a modal with financial information
+     * only if the checkbox of financial information is checked
+     * @access public
+     */
+    public function additional_button_add_to_cart() 
+    {
+        global $post;
+        global $product;
+        //Get the Tax_id(CUIT) from plugin settings
+        $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+        $is_active = $mobbexGateway->financial_info_active;
+
+        // Get the price 
+        $total_price = $this->get_final_price($product);
+        
+
+        // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
+        if($is_active && $mobbexGateway->tax_id){
+            //Set Financial info URL
+            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$total_price;
+            echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+            
+        }
+        include 'assets/html/mobbex_product.php';
+    
+    }
+
+    /**
+     * Return the final price of a simple/composite/variable product 
+     * @param Product $procuct
+     * @return double $price
+     */
+    private function get_final_price($product)
+    {
+        $total_price = 0;
+        if($product->is_type('simple') || $product->is_type('variable')) 
+        {
+            // Only for simple and variable product type
+            $total_price = $product->get_price();
+        }elseif($product->is_type('grouped')){
+            //$product = wc_get_product($post->ID); //composite product
+            $children = $product->get_children();//get all the children
+            foreach($children as $child){
+                $total_price = $total_price + wc_get_product($child)->get_price();
+            }
+        }
+        return $total_price;
     }
 
 
@@ -482,7 +536,7 @@ class MobbexGateway
 
             foreach ($plans as $plan) {
                 // Get value from common_plans post meta and check if it's saved using previus method
-                $is_checked = !in_array($plan['reference'], $checked_common_plans) ? get_post_meta($id, $plan['reference'], true) !== 'yes' : false;
+                $is_checked = (!in_array($plan['reference'], $checked_common_plans) && get_post_meta($id, $plan['reference'], true) !== 'yes');
 
                 // Create field array data
                 $common_fields[$plan['reference']] = [
@@ -642,6 +696,12 @@ class MobbexGateway
     {
         $common_plans = $advanced_plans = [];
         $post_fields  = $_POST;
+
+        // Remove values saved with previus method
+        foreach (MobbexHelper::$ahora as $plan) {
+            if (get_post_meta($post_id, $plan, true))
+                delete_post_meta($post_id, $plan);
+        }
 
         // Get plans selected
         foreach ($post_fields as $id => $value) {
