@@ -32,19 +32,19 @@
 <!-- The Modal -->
 <div id="mbbxProductModal" class="modal">
     <!-- Modal content -->  
-    <div id="mbbxProductModalContent" class="modal-content">
+    <div id="mbbxProductModalContent" class="modal-content" style="display: none;">>
         <span id="closembbxProduct" class="close">&times;</span>
         <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
     </div>
 </div>
 
 <div id="mbbxProductModalShortcode" class="modal" > 
-    <div id="mbbxProductModalContentShortcode" class="modal-content">
-        <div id="mbbxProductModalHeaderShortcode" class="modal-content">
+    <div id="mbbxProductModalContentShortcode" class="modal-content" style="overflow: scroll;">
+        <div id="mbbxProductModalHeaderShortcode" class="modal-content" style="display: none;">
             <span id="closembbxProductShortcode" class="close">&times;</span>
             <label for="methods">Seleccione un método de pago:</label>
         </div>
-        <div id="mbbxProductModalBodyShortcode" class="modal-content">
+        <div id="mbbxProductModalBodyShortcode" class="modal-content" style="display: none;">
         </div>
     </div>
 </div>
@@ -101,6 +101,8 @@
             // Get the content
             var modal_hook_content = document.getElementById("mbbxProductModalContent");
             modal.style.display = "block";
+            var modalContent = document.getElementById("mbbxProductModalContent");
+            modalContent.style.display = "";
             window.dispatchEvent(new Event('resize'));
             document.getElementById('iframe').style.width = "100%"; 
             document.getElementById('iframe').style.height = "100%"; 
@@ -117,7 +119,9 @@
             var select_element = document.getElementById("mobbex_methods_list");
             var pre_build_table = document.getElementById("mobbex_payment_plans_list");
             modal_body.innerHTML = '';//clear the modal 
-            modalShortcode.style.display = "grid";
+            modal_body.style.display = "";
+            modal_header.style.display = "";
+            modalShortcode.style.display = "block";
             window.dispatchEvent(new Event('resize'));
             //add the select html element
             select_element.style.display = "";

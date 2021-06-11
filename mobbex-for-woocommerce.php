@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.3.1
+Version:      3.3.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -342,15 +342,17 @@ class MobbexGateway
             $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
             $is_active = $mobbexGateway->financial_info_active;
             $helper = new MobbexHelper();
-
+            $output = "";
             $product = wc_get_product($post->ID); //composite product
-            if($product)
+            if($product && $mobbexGateway->tax_id)
             {
                 $total_price = $this->get_final_price($product);
                 $payment_methods = $helper->get_list_source($mobbexGateway->tax_id,$total_price,$post->ID);
                 $table_html = $this->build_table_shortocde_html($payment_methods);//list with the payment methods and plans
                 $list_html = $this->build_list_shortcode_html($payment_methods);
                 $output = $list_html.''.$table_html.' <button  id="mbbxProductBtnShortcode" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+            }else{
+                return false;
             }
         }catch(Exeption $e){
             echo print_r("Error in shortcode: ".$e->getMessage());
@@ -375,7 +377,7 @@ class MobbexGateway
         {
             if(strlen($method['name']) > 1)
             {
-                $html =$html.'<tr id="'.$method['id'].'" class="shortcodePaymentMethod"><th colspan="2"><div><img src="data:image/png;base64,' . base64_encode($method['image']) .'">'.$method['name'].'</div></th></tr>';
+                $html =$html.'<tr id="'.$method['id'].'" style=" border: none;"> <th style=" border: none;">'.$method['name'].'<img src="data:image/png;base64,' . base64_encode($method['image']) .'" style="max-width:10%;height:10%;border-radius:50%;"></th></tr>';
                 foreach($method['installments'] as $installment){
                     $html = $html.'<tr id="'.$method['id'].'">';
                     $html = $html.'<td>'.$installment['name'].' </td><td style="text-align: center; ">$ '.$installment['amount'].' </td>';
@@ -422,7 +424,7 @@ class MobbexGateway
             $total_amount = $product->get_price();
         }
         $payment_methods = $helper->get_list_source($mobbexGateway->tax_id,$total_amount,$product_id,$method_id);
-        $table_html = $this->build_table_shortocde_html($payment_methods,true);
+        $table_html = $this->build_table_shortocde_html($payment_methods,false);
 
         //return string table
         wp_send_json_success(array(
@@ -491,7 +493,6 @@ class MobbexGateway
             // Only for simple and variable product type
             $total_price = $product->get_price();
         }elseif($product->is_type('grouped')){
-            //$product = wc_get_product($post->ID); //composite product
             $children = $product->get_children();//get all the children
             foreach($children as $child){
                 $total_price = $total_price + wc_get_product($child)->get_price();
