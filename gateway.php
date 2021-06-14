@@ -305,15 +305,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
-            'tax_id' => [
-
-                'title' => __('Tax ID', 'mobbex-for-woocommerce'),
-                'description' => __('You can customize your Tax ID from here. This field is optional and must be used only if was specified by the main seller to show financial plans in the product.', 'mobbex-for-woocommerce'),
-                'type' => 'text',
-                'default' => '',
-
-            ],
-
         ];
 
     }
