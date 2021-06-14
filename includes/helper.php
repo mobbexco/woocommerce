@@ -395,4 +395,29 @@ class MobbexHelper
 
         throw new Exception(__('An error occurred in the execution', 'mobbex-for-woocommerce'));
     }
+
+    /**
+     * Return the Cuit/Tax_id using the ApiKey to request via web service
+     * @return String Cuit
+     */
+    public function getCuit(){
+        $cuit = null;
+
+        // Create the Checkout
+        $response = wp_remote_get(MOBBEX_TAX_ID, [
+            'headers' => [
+                'cache-control' => 'no-cache',
+                'content-type' => 'application/json',
+                'x-api-key' => $this->api_key,
+                'x-access-token' => $this->access_token,
+            ],
+            'data_format' => 'body',
+        ]);
+
+        if (!is_wp_error($response)) {
+            $response = json_decode($response['body'], true);
+            $cuit = $response['data']['tax_id'];
+        }
+        return $cuit;
+    }
 }
