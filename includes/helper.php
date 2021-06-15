@@ -93,22 +93,25 @@ class MobbexHelper
      * @param $total : integer
      * @return Array
      */
-    private function get_payment_methods($tax_id,$total){
+    private function get_payment_methods($total){
         
         $url = str_replace('{total}', $total, MOBBEX_LIST_PLANS);
-        $response = wp_remote_get(str_replace('{tax_id}', $tax_id, $url), [
-            'headers' => [
-                'cache-control' => 'no-cache',
-                'content-type' => 'application/json',
-                'x-api-key' => $this->api_key,
-                'x-access-token' => $this->access_token,
-            ],
-        ]);
-        if (!is_wp_error($response)) {
-            $response = json_decode($response['body'], true);
-            $data = $response['data'];
-            if ($data) {
-                return $data;
+        $tax_id = $this->getCuit();
+        if($tax_id){            
+            $response = wp_remote_get(str_replace('{tax_id}', $tax_id, $url), [
+                'headers' => [
+                    'cache-control' => 'no-cache',
+                    'content-type' => 'application/json',
+                    'x-api-key' => $this->api_key,
+                    'x-access-token' => $this->access_token,
+                ],
+            ]);
+            if (!is_wp_error($response)) {
+                $response = json_decode($response['body'], true);
+                $data = $response['data'];
+                if ($data) {
+                    return $data;
+                }
             }
         }
 
@@ -146,9 +149,9 @@ class MobbexHelper
      * @param $method_id : integer
      * @return Array 
      */
-    public function get_list_source($tax_id,$total,$product_id,$method_id=0)
+    public function get_list_source($total,$product_id,$method_id=0)
     {
-        $payment_methods_mobbex = $this->get_payment_methods($tax_id,$total);
+        $payment_methods_mobbex = $this->get_payment_methods($total);
         $payment_methods = array();
 
         if (!empty($payment_methods_mobbex)) {
