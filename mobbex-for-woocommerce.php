@@ -67,7 +67,7 @@ class MobbexGateway
         }
         
         //Add Mobbex Assets in product page
-        add_action('woocommerce_after_single_product_summary', [$this, 'additional_assets_product'], 40 );
+        add_action('woocommerce_after_single_product', [$this, 'additional_assets_product'], 40 );
 
         // Enqueue assets
         add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
