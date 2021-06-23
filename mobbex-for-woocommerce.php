@@ -465,7 +465,7 @@ class MobbexGateway
             $total_amount = $product->get_price();
         }
         $payment_methods = $helper->get_list_source($total_amount,$product_id,$method_id);
-        $table_html = $this->build_table_shortocde_html($payment_methods,true);
+        $table_html = $this->build_table_shortocde_html($payment_methods);
 
         //return string table
         wp_send_json_success(array(
