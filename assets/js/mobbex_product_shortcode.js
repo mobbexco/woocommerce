@@ -39,11 +39,15 @@ jQuery(function($){
                 e.preventDefault();
                 var select_element = document.getElementById("mobbex_methods_list");
                 var pre_build_table = document.getElementById("mobbex_payment_plans_list");
+                var close_button = document.getElementById("closembbxProductShortcode");
+                var label_title = document.getElementById("select_title");
                 modal_body.innerHTML = '';//clear the modal 
                 modalShortcode.style.display = "grid";
                 window.dispatchEvent(new Event('resize'));
                 //add the select html element
                 select_element.style.display = "";
+                close_button.style.display = "";
+                label_title.style.display = "";
                 modal_header.appendChild(select_element); 
                 //add the table html element
                 pre_build_table.style.display = "";
@@ -72,12 +76,20 @@ jQuery(function($){
             // When the user clicks on <span> (x), close the modal
             spanShortcode.onclick = function() {
                 modalShortcode.style.display = "none";
+                var close_button = document.getElementById("closembbxProductShortcode");
+                var label_title = document.getElementById("select_title");
+                close_button.style.display = "none";
+                label_title.style.display = "none";
             }
         }
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
             if (event.target == modalShortcode) {
                 modalShortcode.style.display = "none";
+                var close_button = document.getElementById("closembbxProductShortcode");
+                var label_title = document.getElementById("select_title");
+                close_button.style.display = "none";
+                label_title.style.display = "none";
             }
         } 
 
