@@ -293,16 +293,15 @@ class MobbexGateway
         // If dir url looks good
         if (!empty($dir_url) && substr($dir_url, -1) === '/') {
             // Product page
-            if (is_product() &&
-                !empty($helper->financial_info_active)
-            ) {
-                wp_register_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
-                wp_enqueue_style('mobbex_product_style');
+            if (is_product()) 
+            {
+                wp_register_script('mmbbx-product-button-shortcode-js', plugin_dir_url(__FILE__) . 'assets/js/mobbex_product_shortcode.js');
+                if(!empty($helper->financial_info_active)){
+                    wp_register_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
+                    wp_enqueue_style('mobbex_product_style');
+                    wp_register_script('mmbbx-product-button-hook-js', plugin_dir_url(__FILE__) . 'assets/js/mobbex_product_hook.js');
+                }
             }
-             if ( has_shortcode( $post->post_content, 'mobbex_button' ) ) {
-                //not working
-            }
-            wp_register_script('mmbbx-product-button-shortcode-js', plugin_dir_url(__FILE__) . 'assets/js/mobbex_product_shortcode.js');
         }
     }
 
@@ -495,13 +494,23 @@ class MobbexGateway
         $total_price = $this->get_final_price($product);
         // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
         if($is_active && $tax_id){
+            //Localize Assets
+            $data_array = array();
+            $data_array['price'] = $total_price;
+            $data_array['product_id'] = $post->ID;
+            $data_array['product_type'] = $product->get_type();
+            $data_array['tax_id'] = $tax_id;
+            $array_prices = $this->calculates_special_price($product);
+            $data_array = $array_prices + $data_array;
+            //send variables to mobbex_product_hook
+            wp_localize_script( 'mmbbx-product-button-hook-js', 'global_data_assets', $data_array );
+            wp_enqueue_script('mmbbx-product-button-hook-js');
             //Set Financial info URL
             $url_information = "https://mobbex.com/p/sources/widget/arg/".$tax_id."/?total=".$total_price;
             echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
             
         }
-        include 'assets/html/mobbex_product.php';
-    
+        include 'assets/html/mobbex_product_hook.php';
     }
 
     /**

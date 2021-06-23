@@ -149,8 +149,6 @@ function calculate_totals(quantity,variation_id)
             quantity =  1;
         }
         total_amount = total_amount + (quantity * global_data_assets[variation_id]);
-        console.info(variation_id);
-        console.info(global_data_assets[variation_id]);
     }
     
     return total_amount;
