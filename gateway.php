@@ -138,25 +138,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
-            'title' => [
-
-                'title' => __('Title', 'mobbex-for-woocommerce'),
-                'type' => 'text',
-                'description' => __('This title will be shown on user checkout.', 'mobbex-for-woocommerce'),
-                'default' => __('Pay with Mobbex', 'mobbex-for-woocommerce'),
-                'desc_tip' => true,
-
-            ],
-
-            'description' => [
-
-                'title' => __('Description', 'mobbex-for-woocommerce'),
-                'description' => __('This description will be shown on user checkout.', 'mobbex-for-woocommerce'),
-                'type' => 'textarea',
-                'default' => '',
-
-            ],
-
             'api-key' => [
 
                 'title' => __('API Key', 'mobbex-for-woocommerce'),
@@ -200,80 +181,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
-            'payment_mode' => [
+            'financial_info_active' => [
 
-                'title' => __('Enable/Disable 2-step Payment Mode', 'mobbex-for-woocommerce'),
+                'title' => __('Financial Information', 'mobbex-for-woocommerce'),
+                'description' => __('Show financial information in all products, Tax_id need to be set.', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
-                'label' => __('Enable 2-step Payment Mode.', 'mobbex-for-woocommerce'),
-                'default' => 'no',
-
-            ],
-
-            'use_webhook_api' => [
-
-                'title' => __('Use new WebHook API', 'mobbex-for-woocommerce'),
-                'type' => 'checkbox',
-                'label' => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', 'mobbex-for-woocommerce'),
-                'default' => 'no',
-
-            ],
-
-            'checkout_theme' => [
-
-                'title' => __('Checkout Theme', 'mobbex-for-woocommerce'),
-                'description' => __('You can customize your Checkout Theme from here.', 'mobbex-for-woocommerce'),
-                'type' => 'select',
-                'options' => [
-                    'light' => __('Light Theme', 'mobbex-for-woocommerce'),
-                    'dark' => __('Dark Theme', 'mobbex-for-woocommerce'),
-                ],
-                'default' => 'light',
-
-            ],
-
-            'checkout_title' => [
-
-                'title' => __('Checkout Title', 'mobbex-for-woocommerce'),
-                'description' => __('You can customize your Checkout Title from here.', 'mobbex-for-woocommerce'),
-                'type' => 'text',
-                'default' => '',
-
-            ],
-
-            'checkout_logo' => [
-
-                'title' => __('Checkout Logo URL', 'mobbex-for-woocommerce'),
-                'description' => __('You can customize your Checkout Logo from here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on Mobbex will be used. Dimensions: 250x250 pixels', 'mobbex-for-woocommerce'),
-                'type' => 'text',
-                'default' => '',
-
-            ],
-
-            'checkout_background_color' => [
-
-                'title' => __('Checkout Background Color', 'mobbex-for-woocommerce'),
-                'description' => __('You can customize your Checkout Background Color from here.', 'mobbex-for-woocommerce'),
-                'type' => 'text',
-                'class' => 'colorpick',
-                'default' => '#ECF2F6',
-
-            ],
-
-            'checkout_primary_color' => [
-
-                'title' => __('Checkout Primary Color', 'mobbex-for-woocommerce'),
-                'description' => __('You can customize your Checkout Primary Color for Buttons and TextFields from here.', 'mobbex-for-woocommerce'),
-                'type' => 'text',
-                'class' => 'colorpick',
-                'default' => '#6f00ff',
-
-            ],
-
-            'custom_dni' => [
-
-                'title' => __('Use custom DNI field', 'mobbex-for-woocommerce'),
-                'description' => __('If you ask for DNI field on checkout please provide the custom field.', 'mobbex-for-woocommerce'),
-                'type' => 'text',
                 'default' => '',
 
             ],
@@ -287,21 +199,137 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
+            'custom_dni' => [
+
+                'title' => __('Use custom DNI field', 'mobbex-for-woocommerce'),
+                'description' => __('If you ask for DNI field on checkout please provide the custom field.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => '',
+
+            ],
+
+            /* Appearance Configuration */
+
+            'appearance_tab' => [
+
+                'title' => __('Appearance'),
+                'type'  => 'title',
+                'class' => 'mbbx-tab mbbx-tab-appearance',
+
+            ],
+
+            'title' => [
+
+                'title' => __('Title', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'description' => __('This title will be shown on user checkout.', 'mobbex-for-woocommerce'),
+                'default' => __('Pay with Mobbex', 'mobbex-for-woocommerce'),
+                'desc_tip' => true,
+                'class' => 'mbbx-into-appearance',
+
+            ],
+
+            'description' => [
+
+                'title' => __('Description', 'mobbex-for-woocommerce'),
+                'description' => __('This description will be shown on user checkout.', 'mobbex-for-woocommerce'),
+                'type' => 'textarea',
+                'default' => '',
+                'class' => 'mbbx-into-appearance',
+
+            ],
+
+            'checkout_theme' => [
+
+                'title' => __('Checkout Theme', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Theme from here.', 'mobbex-for-woocommerce'),
+                'type' => 'select',
+                'options' => [
+                    'light' => __('Light Theme', 'mobbex-for-woocommerce'),
+                    'dark' => __('Dark Theme', 'mobbex-for-woocommerce'),
+                ],
+                'default' => 'light',
+                'class' => 'mbbx-into-appearance',
+
+            ],
+
+            'checkout_title' => [
+
+                'title' => __('Checkout Title', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Title from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => '',
+                'class' => 'mbbx-into-appearance',
+
+            ],
+
+            'checkout_logo' => [
+
+                'title' => __('Checkout Logo URL', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Logo from here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on Mobbex will be used. Dimensions: 250x250 pixels', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => '',
+                'class' => 'mbbx-into-appearance',
+
+            ],
+
+            'checkout_background_color' => [
+
+                'title' => __('Checkout Background Color', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Background Color from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => '#ECF2F6',
+                'class' => 'colorpick mbbx-into-appearance',
+
+            ],
+
+            'checkout_primary_color' => [
+
+                'title' => __('Checkout Primary Color', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Checkout Primary Color for Buttons and TextFields from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'class' => 'colorpick mbbx-into-appearance',
+                'default' => '#6f00ff',
+
+            ],
+
+            /* Advanced Configuration */
+
+            'advanced_configuration_tab' => [
+
+                'title' => __('Advanced Configuration'),
+                'type'  => 'title',
+                'class' => 'mbbx-tab mbbx-tab-advanced',
+
+            ],
+            
+            'payment_mode' => [
+
+                'title' => __('Enable/Disable 2-step Payment Mode', 'mobbex-for-woocommerce'),
+                'type' => 'checkbox',
+                'label' => __('Enable 2-step Payment Mode.', 'mobbex-for-woocommerce'),
+                'default' => 'no',
+                'class' => 'mbbx-into-advanced',
+
+            ],
+
+            'use_webhook_api' => [
+
+                'title' => __('Use new WebHook API', 'mobbex-for-woocommerce'),
+                'type' => 'checkbox',
+                'label' => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', 'mobbex-for-woocommerce'),
+                'default' => 'no',
+                'class' => 'mbbx-into-advanced',
+
+            ],
+
             'reseller_id' => [
 
                 'title' => __('Reseller ID', 'mobbex-for-woocommerce'),
                 'description' => __('You can customize your Reseller ID from here. This field is optional and must be used only if was specified by the main seller.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
                 'default' => '',
-
-            ],
-            
-            'financial_info_active' => [
-
-                'title' => __('Financial Information', 'mobbex-for-woocommerce'),
-                'description' => __('Show financial information in all products, Tax_id need to be set.', 'mobbex-for-woocommerce'),
-                'type' => 'checkbox',
-                'default' => '',
+                'class' => 'mbbx-into-advanced',
 
             ],
 
