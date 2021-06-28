@@ -6,22 +6,12 @@ jQuery(function($){
         var btn = document.getElementById("mbbxProductBtn");
         // Get the <span> element that closes the modal
         var span = document.getElementById("closembbxProduct");
-            
-        // Get the shortcode button that opens the modal
-        var btnShortcode = document.getElementById("mbbxProductBtnShortcode");
         // Get the <select> element with all the payment method avaliable
         var select_element = document.getElementById("mobbex_methods_list");
-            
-        // Get the <span> element that closes the modal
-        var spanShortcode = document.getElementById("closembbxProductShortcode");
-        // Get the modal
-        var modalShortcode = document.getElementById("mbbxProductModalShortcode");
         // Get the <div> element modal header
-        var modal_header = document.getElementById("mbbxProductModalHeaderShortcode");
+        var modal_header = document.getElementById("mbbxProductModalHeader");
         // Get the <div> element modal body
-        var modal_body = document.getElementById("mbbxProductModalBodyShortcode");
-        // Get the <span> element that closes the modal
-        var spanShortcode = document.getElementById("closembbxProductShortcode");
+        var modal_body = document.getElementById("mbbxProductModalBody");
         
         //only if the button is avalible
         if(span){
@@ -32,17 +22,17 @@ jQuery(function($){
         }
 
         //Only if the SHORTCODE button is avalible then add click event
-        if(btnShortcode)
+        if(btn)
         {
             // When the user clicks on the button, show/open the modal
-            btnShortcode.onclick  = function(e) {
+            btn.onclick  = function(e) {
                 e.preventDefault();
                 var select_element = document.getElementById("mobbex_methods_list");
                 var pre_build_table = document.getElementById("mobbex_payment_plans_list");
-                var close_button = document.getElementById("closembbxProductShortcode");
+                var close_button = document.getElementById("closembbxProduct");
                 var label_title = document.getElementById("select_title");
                 modal_body.innerHTML = '';//clear the modal 
-                modalShortcode.style.display = "grid";
+                modal.style.display = "grid";
                 window.dispatchEvent(new Event('resize'));
                 //add the select html element
                 select_element.style.display = "";
@@ -72,11 +62,11 @@ jQuery(function($){
             }
         }
         //only if the button is avalible
-        if(spanShortcode){
+        if(span){
             // When the user clicks on <span> (x), close the modal
-            spanShortcode.onclick = function() {
-                modalShortcode.style.display = "none";
-                var close_button = document.getElementById("closembbxProductShortcode");
+            span.onclick = function() {
+                modal.style.display = "none";
+                var close_button = document.getElementById("closembbxProduct");
                 var label_title = document.getElementById("select_title");
                 close_button.style.display = "none";
                 label_title.style.display = "none";
@@ -84,9 +74,9 @@ jQuery(function($){
         }
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
-            if (event.target == modalShortcode) {
-                modalShortcode.style.display = "none";
-                var close_button = document.getElementById("closembbxProductShortcode");
+            if (event.target == modal) {
+                modal.style.display = "none";
+                var close_button = document.getElementById("closembbxProduct");
                 var label_title = document.getElementById("select_title");
                 close_button.style.display = "none";
                 label_title.style.display = "none";

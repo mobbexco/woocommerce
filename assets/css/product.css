@@ -43,61 +43,16 @@
 }
 
 
-#mbbxProductBtnShortcode{
-    padding: 20px;
-    margin-top: 5%;
-}
-/* Modal Content/Box */
-#mbbxProductModalContentShortcode {
-    background-color: #fefefe;
-    padding: 20px;
-    border: 1px solid #888;
-    max-width: 650px; /* Could be more or less, depending on screen size */
-    width: 100%;
-    height: 80%;
-    z-index: 10000;
-    overflow-y: scroll;
-}
-
-/* The Close Button */
-#closembbxProductShortcode {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-#closembbxProductShortcode:hover,
-#closembbxProductShortcode:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-} 
-
-/* The Modal (background) */
-#mbbxProductModalShortcode {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-    z-index: 9999;
-    place-items: center;
-}
-
-.shortcodePaymentMethod, .shortcodePaymentMethod th {
+.mobbexPaymentMethod, .mobbexPaymentMethod th {
     border: none;
 }
 
-.shortcodePaymentMethod div {
+.mobbexPaymentMethod div {
     display: flex;
     align-items: center;
 }
 
-.shortcodePaymentMethod img {
+.mobbexPaymentMethod img {
     height: 40px;
     border-radius: 100%;
     margin-right: 10px;
