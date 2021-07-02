@@ -47,6 +47,10 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.3.2 :: 2021-07-02
+- Unify and improve financing widget view.
+- Some fixes.
+
 ### 3.3.1 :: 2021-06-09
 - Structure improvements and some fixes.
 
