@@ -61,7 +61,7 @@ class MobbexGateway
         MobbexGateway::add_gateway();
             
         $helper = new MobbexHelper();
-        if (!empty($helper->financial_info_active) && !empty($helper->tax_id) && $helper->financial_info_active === 'yes') {
+        if (!empty($helper->financial_info_active) && $helper->financial_info_active === 'yes') {
             // Add a new button after the "add to cart" button
             add_action('woocommerce_after_add_to_cart_form', [$this, 'additional_button_add_to_cart'], 20 );
         }
@@ -109,8 +109,9 @@ class MobbexGateway
 
         //set shortcode
         add_shortcode( 'mobbex_button', array( $this, 'shortcode_mobbex_button' ) );
-        
-        
+
+        //error_log(json_encode($_REQUEST, JSON_PRETTY_PRINT), 3, 'mbbx_log.log');
+        error_log(json_encode($_SERVER, JSON_PRETTY_PRINT), 3, 'mbbx_log.log');
     }
 
     /**

@@ -10,24 +10,34 @@
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
     z-index: 9999;
+    place-items: center;
 }
 
 /* Modal Content/Box */
 #mbbxProductModalContent {
     background-color: #fefefe;
-    margin: 10% auto auto; /* 15% from the top and centered */
     padding: 20px;
     border: 1px solid #888;
     max-width: 650px; /* Could be more or less, depending on screen size */
-    height: 100%; /* Full height */
+    height: 90%; /* Full height */
+    width: 100%;
     z-index: 10000;
+    overflow-y: scroll;
+    border-radius: 10px;
 }
+
+#mbbxProductModalHeader {
+    display: flex;
+    justify-content: space-between;
+    flex-flow: wrap;
+    align-items: center;
+}
+
 /* The Close Button */
 #closembbxProduct {
     color: #aaa;
-    float: right;
     font-size: 28px;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 #closembbxProduct:hover,
