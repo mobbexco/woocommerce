@@ -338,7 +338,7 @@ class MobbexGateway
             $output = $this->build_mobbex_button($post);
             echo $output;
         }
-        include 'assets/html/mobbex_product_financing.html';
+        include 'templates/financing-button.html';
     }
     
     /**
@@ -358,7 +358,7 @@ class MobbexGateway
         }catch(Exeption $e){
             echo print_r("Error in shortcode: ".$e->getMessage());
         }
-        include 'assets/html/mobbex_product_financing.html';
+        include 'templates/financing-button.html';
         return $output;
     }
 
