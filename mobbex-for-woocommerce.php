@@ -59,7 +59,7 @@ class MobbexGateway
         MobbexGateway::load_order_admin();
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
-            
+
         $helper = new MobbexHelper();
         if (!empty($helper->financial_info_active) && $helper->financial_info_active === 'yes') {
             // Add a new button after the "add to cart" button
@@ -109,9 +109,6 @@ class MobbexGateway
 
         //set shortcode
         add_shortcode( 'mobbex_button', array( $this, 'shortcode_mobbex_button' ) );
-
-        //error_log(json_encode($_REQUEST, JSON_PRETTY_PRINT), 3, 'mbbx_log.log');
-        error_log(json_encode($_SERVER, JSON_PRETTY_PRINT), 3, 'mbbx_log.log');
     }
 
     /**
@@ -310,11 +307,13 @@ class MobbexGateway
     public function load_admin_scripts($hook)
     {
         global $post, $current_screen;
+
         // Product admin page
         if (($hook == 'post-new.php' || $hook == 'post.php') && $post->post_type == 'product') {
             wp_enqueue_style('mbbx-product-style', plugin_dir_url(__FILE__) . 'assets/css/product-admin.css');
             wp_enqueue_script('mbbx-product-js', plugin_dir_url(__FILE__) . 'assets/js/product-admin.js');
         }
+
         // Category admin page
         if (isset($current_screen->id) && $current_screen->id == 'edit-product_cat') {
             wp_enqueue_style('mbbx-category-style', plugin_dir_url(__FILE__) . 'assets/css/category-admin.css');
@@ -496,8 +495,6 @@ class MobbexGateway
         wp_die();
     }
 
-    
-
     /**
      * Return the final price of a simple/composite/variable product 
      * @param Product $procuct
@@ -518,8 +515,6 @@ class MobbexGateway
         }
         return $total_price;
     }
-
-
 
     public function mobbex_product_settings_tabs($tabs)
     {
