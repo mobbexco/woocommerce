@@ -23,6 +23,8 @@ define('MOBBEX_LIST_PLANS', 'https://api.mobbex.com/p/sources/list/arg/{tax_id}?
 
 define('MOBBEX_PAYMENT_IMAGE', 'https://res.mobbex.com/images/sources/{reference}.png');
 
+define('MOBBEX_TAX_ID', 'https://api.mobbex.com/p/entity/validate');
+
 if (!function_exists('mobbex_debug')) {
     // https://github.com/bonny/WordPress-Simple-History/
 

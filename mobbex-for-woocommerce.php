@@ -61,13 +61,10 @@ class MobbexGateway
         MobbexGateway::add_gateway();
 
         $helper = new MobbexHelper();
-        if (!empty($helper->financial_info_active) && !empty($helper->tax_id) && $helper->financial_info_active === 'yes') {
+        if (!empty($helper->financial_info_active) && $helper->financial_info_active === 'yes') {
             // Add a new button after the "add to cart" button
             add_action('woocommerce_after_add_to_cart_form', [$this, 'additional_button_add_to_cart'], 20 );
         }
-        
-        //Add Mobbex Assets in product page
-        add_action('woocommerce_after_single_product_summary', [$this, 'additional_assets_product'], 40 );
 
         // Enqueue assets
         add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
@@ -112,10 +109,7 @@ class MobbexGateway
 
         //set shortcode
         add_shortcode( 'mobbex_button', array( $this, 'shortcode_mobbex_button' ) );
-        
     }
-
-
 
     /**
      * Check dependencies.
@@ -288,18 +282,19 @@ class MobbexGateway
 
     public function mobbex_assets_enqueue()
     {
+        global $post;
         $helper = new MobbexHelper();
         $dir_url = plugin_dir_url(__FILE__);
-
         // If dir url looks good
         if (!empty($dir_url) && substr($dir_url, -1) === '/') {
             // Product page
-            if (is_product() &&
-                !empty($helper->financial_info_active) && 
-                !empty($helper->tax_id) 
-            ) {
-                wp_register_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
-                wp_enqueue_style('mobbex_product_style');
+            if (is_product()) 
+            {
+                wp_register_script('mmbbx-product-button-js', plugin_dir_url(__FILE__) . 'assets/js/mobbex_product_financing.js');
+                if(!empty($helper->financial_info_active)){
+                    wp_register_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
+                    wp_enqueue_style('mobbex_product_style');
+                }
             }
         }
     }
@@ -330,39 +325,105 @@ class MobbexGateway
      * Add new button to show a modal with financial information
      * only if the checkbox of financial information is checked
      * @access public
+     */
+    public function additional_button_add_to_cart(){
+        global $post;
+        //Get Tax_id(CUIT) 
+        $helper = new MobbexHelper();
+        $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+        $is_active = $mobbexGateway->financial_info_active;
+        // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
+        if($is_active){
+            $output = $this->build_mobbex_button($post);
+            echo $output;
+        }
+        include 'templates/financing-button.html';
+    }
+    
+    /**
+     * Add new button to show a modal with financial information
+     * only if the checkbox of financial information is checked
+     * @access public
      * Shortcode function, return button html
      * and a hidden table with plans
      * in woocommerce echo do_shortcode('[mobbex_button]'); in content-single-product.php
      * or [mobbex_button] in wordpress pages
      */
-    public function shortcode_mobbex_button( $atts = [], $content = null ) {
+    public function shortcode_mobbex_button() {
         global $post;
         try{
-            //Get the Tax_id(CUIT) from plugin settings
-            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-            $is_active = $mobbexGateway->financial_info_active;
-            $helper = new MobbexHelper();
-
             $product = wc_get_product($post->ID); //composite product
-            if($product)
-            {
-                $total_price = $this->get_final_price($product);
-                $payment_methods = $helper->get_list_source($mobbexGateway->tax_id,$total_price,$post->ID);
-                $table_html = $this->build_table_shortocde_html($payment_methods);//list with the payment methods and plans
-                $list_html = $this->build_list_shortcode_html($payment_methods);
-                $output = $list_html.''.$table_html.' <button  id="mbbxProductBtnShortcode" class="single_add_to_cart_button button alt">Ver Financiación</button>';
-            }
+            $output = $this->build_mobbex_button($post);
         }catch(Exeption $e){
             echo print_r("Error in shortcode: ".$e->getMessage());
         }
-        
+        include 'templates/financing-button.html';
+        return $output;
+    }
+
+    private function build_mobbex_button($post){
+        //Get the Tax_id(CUIT) from plugin settings
+        $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
+        $helper = new MobbexHelper();
+        $output = "";
+        $product = wc_get_product($post->ID); //composite product
+        if($product)
+        {
+            $total_price = $this->get_final_price($product);
+            $payment_methods = $helper->get_list_source($total_price,$post->ID);
+            $table_html = $this->build_table_html($payment_methods);//list with the payment methods and plans
+            $list_html = $this->build_list_html($payment_methods);
+            $output = $list_html.''.$table_html.' <button  id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+            //Localize Assets
+            $data_array = array();
+            $data_array['price'] = $total_price;
+            $data_array['product_id'] = $post->ID;
+            $data_array['product_type'] = $product->get_type();
+            $array_prices = $this->calculate_special_price($product);
+            $data_array = $array_prices + $data_array;
+            //send variables to mobbex_product_shortcode
+            wp_localize_script( 'mmbbx-product-button-js', 'global_data_assets', $data_array );
+            wp_enqueue_script('mmbbx-product-button-js');
+        }
         return $output;
     }
 
     /**
-     * Creates html code for the plans table
+     * Return array with variation/composite products
+     * returned format array['id_child']
+     * @param Product $procuct
+     * @return Array $prices
      */
-    private function build_table_shortocde_html($payment_methods,$display = false){
+    private function calculate_special_price($product){
+
+        $prices = array();//store children prices
+        if($product->is_type('grouped')){
+            $children = $product->get_children();//get all the children
+            
+            foreach($children as $child){
+                $price = wc_get_product($child)->get_price();
+                $id = wc_get_product($child)->get_id();
+                $prices[$id] = $price;
+            }
+        }elseif($product->is_type('variable')){ 
+            global $woocommerce;
+            $children_id = $product->get_children();//get all the children ids
+            foreach($children_id as $child_id){
+                $product = new WC_Product_Variation($child_id);
+                $price = $product->get_price();
+                if(!$price){
+                    $price = 0;
+                }
+                $prices[$child_id] = $price;
+            }
+        } 
+        return $prices;
+    }
+
+    /**
+     * Creates html code for plans table
+     */
+    private function build_table_html($payment_methods,$display = false){
 
         //if table needs to be diplayed 
         if($display){
@@ -375,9 +436,9 @@ class MobbexGateway
         {
             if(strlen($method['name']) > 1)
             {
-                $html =$html.'<tr id="'.$method['id'].'" class="shortcodePaymentMethod"><th colspan="2"><div><img src="data:image/png;base64,' . base64_encode($method['image']) .'">'.$method['name'].'</div></th></tr>';
+                $html =$html.'<tr id="'.$method['reference'].'" class="mobbexPaymentMethod"><th colspan="2"><div><img src="data:image/png;base64,' . base64_encode($method['image']) .'">'.$method['name'].'</div></th></tr>';
                 foreach($method['installments'] as $installment){
-                    $html = $html.'<tr id="'.$method['id'].'">';
+                    $html = $html.'<tr id="'.$method['reference'].'">';
                     $html = $html.'<td>'.$installment['name'].' </td><td style="text-align: center; ">$ '.$installment['amount'].' </td>';
                     $html = $html.'</tr>';
                 }
@@ -391,14 +452,14 @@ class MobbexGateway
     /**
      * Return the select html element with all the payment methods
      */
-    private function build_list_shortcode_html($payment_methods){
+    private function build_list_html($payment_methods){
 
         $html='<select name="methods" id="mobbex_methods_list" style="width:100%;display:none;">';
         $html= $html.'<option id="0" value="0">Todos</option>';
         foreach($payment_methods as $method)
         {
             if(strlen($method['name']) > 1){
-               $html= $html.'<option id="'.$method['id'].'" value="'.$method['id'].'">'.$method['name'].'</option>';
+               $html= $html.'<option id="'.$method['reference'].'" value="'.$method['reference'].'">'.$method['name'].'</option>';
             }
         }
         $html= $html.'</select>';
@@ -410,6 +471,7 @@ class MobbexGateway
      * is call when the amount is changed
      */
     function ajax_button_mobbex(){
+        $table_html = "";
         $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
         $is_active = $mobbexGateway->financial_info_active;
         $helper = new MobbexHelper();
@@ -421,8 +483,8 @@ class MobbexGateway
         if($total_amount == 0){
             $total_amount = $product->get_price();
         }
-        $payment_methods = $helper->get_list_source($mobbexGateway->tax_id,$total_amount,$product_id,$method_id);
-        $table_html = $this->build_table_shortocde_html($payment_methods,true);
+        $payment_methods = $helper->get_list_source($total_amount,$product_id,$method_id);
+        $table_html = $this->build_table_html($payment_methods);
 
         //return string table
         wp_send_json_success(array(
@@ -431,51 +493,6 @@ class MobbexGateway
         
         //needed by wp_ajax
         wp_die();
-    }
-
-
-    /**
-     * Add asset file to product page
-     * @access public
-     */
-    public function additional_assets_product() 
-    {
-        global $post;
-        global $product;
-        //Get the Tax_id(CUIT) from plugin settings
-        $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-        $is_active = $mobbexGateway->financial_info_active;
-
-        include 'assets/html/mobbex_product.php';
-    }
-
-
-    /**
-     * Add new button to show a modal with financial information
-     * only if the checkbox of financial information is checked
-     * @access public
-     */
-    public function additional_button_add_to_cart() 
-    {
-        global $post;
-        global $product;
-        //Get the Tax_id(CUIT) from plugin settings
-        $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-        $is_active = $mobbexGateway->financial_info_active;
-
-        // Get the price 
-        $total_price = $this->get_final_price($product);
-        
-
-        // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
-        if($is_active && $mobbexGateway->tax_id){
-            //Set Financial info URL
-            $url_information = "https://mobbex.com/p/sources/widget/arg/".$mobbexGateway->tax_id."/?total=".$total_price;
-            echo '<button id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
-            
-        }
-        include 'assets/html/mobbex_product.php';
-    
     }
 
     /**
@@ -491,7 +508,6 @@ class MobbexGateway
             // Only for simple and variable product type
             $total_price = $product->get_price();
         }elseif($product->is_type('grouped')){
-            //$product = wc_get_product($post->ID); //composite product
             $children = $product->get_children();//get all the children
             foreach($children as $child){
                 $total_price = $total_price + wc_get_product($child)->get_price();
@@ -499,8 +515,6 @@ class MobbexGateway
         }
         return $total_price;
     }
-
-
 
     public function mobbex_product_settings_tabs($tabs)
     {
