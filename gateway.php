@@ -212,7 +212,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'appearance_tab' => [
 
-                'title' => __('Appearance'),
+                'title' => __('Appearance', 'mobbex-for-woocommerce'),
                 'type'  => 'title',
                 'class' => 'mbbx-tab mbbx-tab-appearance',
 
@@ -297,7 +297,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             'advanced_configuration_tab' => [
 
-                'title' => __('Advanced Configuration'),
+                'title' => __('Advanced Configuration', 'mobbex-for-woocommerce'),
                 'type'  => 'title',
                 'class' => 'mbbx-tab mbbx-tab-advanced',
 

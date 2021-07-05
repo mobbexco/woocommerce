@@ -58,7 +58,7 @@
         var customDni = document.getElementById('woocommerce_mobbex_custom_dni');
 
         // If own dni option is active, hide custom dni option
-        if (!ownDni.value) hideElements(customDni);
+        if (ownDni.value) hideElements(customDni);
         ownDni.onchange = function () { hideElements(customDni); }
     }
 
