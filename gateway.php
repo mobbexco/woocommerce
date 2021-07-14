@@ -379,18 +379,19 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order->update_status('pending', __('Awaiting Mobbex Webhook', 'mobbex-for-woocommerce'));
 
         if ($this->use_button) {
-            $this->debug([
-                'result' => 'success',
-                'data' => $checkout_data,
-                'return_url' => $return_url,
-            ], "Reply for button");
-
-            return [
+            $result = [
                 'result' => 'success',
                 'data' => $checkout_data,
                 'return_url' => $return_url,
                 'redirect' => false,
             ];
+
+            // Make sure to use json in pay for order page
+            if (!empty($_GET['pay_for_order'])) {
+                wp_send_json($result); exit;
+            }
+
+            return $result;
         } else {
             $return_url = $checkout_data['url'];
 
@@ -399,7 +400,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'redirect' => $return_url,
             ];
         }
-
     }
 
     public function getPlatform()
@@ -812,7 +812,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function payment_scripts()
     {
         // we need JavaScript to process a token only on cart/checkout pages, right?
-        if (is_wc_endpoint_url('order-received') || (!is_cart() && !is_checkout() && !isset($_GET['pay_for_order']))) {
+        if (is_order_received_page() || (!is_cart() && !is_checkout())) {
             $this->debug([], "Not checkout page");
             return;
         }
@@ -845,6 +845,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'order_url' => $order_url,
             'update_url' => $update_url,
             'is_wallet' => $is_wallet,
+            'is_pay_for_order' => !empty($_GET['pay_for_order']),
         );
 
         // If using wallet, create Order previously
