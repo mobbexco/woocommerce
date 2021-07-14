@@ -83,7 +83,7 @@ jQuery(function ($) {
         $.ajax({
             dataType: "json",
             method: "POST",
-            url: mobbex_data.order_url,
+            url: mobbex_data.is_pay_for_order ? form[0].action : mobbex_data.order_url,
             data: form.serializeArray(),
             success: function (response) {
                 // WC will send the error contents in a normal request
