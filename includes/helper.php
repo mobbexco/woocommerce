@@ -209,7 +209,6 @@ class MobbexHelper
             }       
             if(!empty($included_plans)){
                 $method = array();
-                $method['id'] = $payment_method['source']['id'];
                 $method['reference'] = $payment_method['source']['reference'];
                 $method['name'] = $payment_method['source']['name'];
                 $method['installments'] = $included_plans;
