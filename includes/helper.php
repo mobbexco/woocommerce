@@ -65,9 +65,9 @@ class MobbexHelper
      */
     public function get_sources_advanced($rule = 'externalMatch')
     {
-        if (!$this->isReady()) {
+        if (!$this->isReady())
             return [];
-        }
+
         $response = wp_remote_get(str_replace('{rule}', $rule, MOBBEX_ADVANCED_PLANS), [
             'headers' => [
                 'cache-control' => 'no-cache',
@@ -76,66 +76,13 @@ class MobbexHelper
                 'x-access-token' => $this->access_token,
             ],
         ]);
+
         if (!is_wp_error($response)) {
             $response = json_decode($response['body'], true);
             $data = $response['data'];
             if ($data) {
                 return $data;
             }
-        }
-
-        return [];
-    }
-
-    /**
-     * Return all active payment methods by tax id
-     * @param $tax_id : integer  
-     * @param $total : integer
-     * @return Array
-     */
-    private function get_payment_methods($total){
-        
-        $url = str_replace('{total}', $total, MOBBEX_LIST_PLANS);
-        $tax_id = $this->getCuit();
-        if($tax_id){            
-            $response = wp_remote_get(str_replace('{tax_id}', $tax_id, $url), [
-                'headers' => [
-                    'cache-control' => 'no-cache',
-                    'content-type' => 'application/json',
-                    'x-api-key' => $this->api_key,
-                    'x-access-token' => $this->access_token,
-                ],
-            ]);
-            if (!is_wp_error($response)) {
-                $response = json_decode($response['body'], true);
-                $data = $response['data'];
-                if ($data) {
-                    return $data;
-                }
-            }
-        }
-
-        return [];
-    }
-
-    /**
-     * Return base 64 payment method image
-     * @param $reference
-     */
-    private function get_payment_image($reference)
-    {
-        $response = wp_remote_get(str_replace('{reference}', $reference, MOBBEX_PAYMENT_IMAGE), [
-
-            'headers' => [
-                'cache-control' => 'no-cache',
-                'content-type' => 'application/json',
-                'x-api-key' => $this->api_key,
-                'x-access-token' => $this->access_token,
-            ],
-
-        ]);
-        if (!is_wp_error($response)) {
-            return $response['body'];
         }
 
         return [];
@@ -151,7 +98,7 @@ class MobbexHelper
      */
     public function get_list_source($total,$product_id,$method_id=0)
     {
-        $payment_methods_mobbex = $this->get_payment_methods($total);
+        $payment_methods_mobbex = $this->get_sources($total);
         $payment_methods = array();
 
         if (!empty($payment_methods_mobbex)) {
@@ -212,8 +159,6 @@ class MobbexHelper
                 $method['reference'] = $payment_method['source']['reference'];
                 $method['name'] = $payment_method['source']['name'];
                 $method['installments'] = $included_plans;
-                $method['image'] = $this->get_payment_image($payment_method['source']['reference']);
-                
             }
         }
 
@@ -396,30 +341,5 @@ class MobbexHelper
         }
 
         throw new Exception(__('An error occurred in the execution', 'mobbex-for-woocommerce'));
-    }
-
-    /**
-     * Return the Cuit/Tax_id using the ApiKey to request via web service
-     * @return String Cuit
-     */
-    public function getCuit(){
-        $cuit = null;
-
-        // Create the Checkout
-        $response = wp_remote_get(MOBBEX_TAX_ID, [
-            'headers' => [
-                'cache-control' => 'no-cache',
-                'content-type' => 'application/json',
-                'x-api-key' => $this->api_key,
-                'x-access-token' => $this->access_token,
-            ],
-            'data_format' => 'body',
-        ]);
-
-        if (!is_wp_error($response)) {
-            $response = json_decode($response['body'], true);
-            $cuit = $response['data']['tax_id'];
-        }
-        return $cuit;
     }
 }
