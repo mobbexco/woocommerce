@@ -52,6 +52,25 @@
     margin-top: 5%;
 }
 
+/* Modal Scrollbar */
+#mbbxProductModalContent::-webkit-scrollbar {
+    width: 20px;
+}
+
+#mbbxProductModalContent::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+#mbbxProductModalContent::-webkit-scrollbar-thumb {
+    background-color: #d6dee1;
+    border-radius: 20px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+}
+
+#mbbxProductModalContent::-webkit-scrollbar-thumb:hover {
+    background-color: #a8bbbf;
+}
 
 .mobbexPaymentMethod, .mobbexPaymentMethod th {
     border: none;
