@@ -47,6 +47,12 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.3.3 :: 2021-07-16
+- Organize plugin settings by groups.
+- Fix user pending orders endpoint url and response format.
+- Fix financing widget images rendering.
+- Fix financing widget plans obtaining loop when using ajax.
+
 ### 3.3.2 :: 2021-07-02
 - Unify and improve financing widget view.
 - Some fixes.
