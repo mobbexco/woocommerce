@@ -89,88 +89,36 @@ class MobbexHelper
     }
 
     /**
-     * Return the payment methods 
-     * @param $tax_id : integer
-     * @param $total : double
-     * @param $product_id : integer
-     * @param $method_id : integer
-     * @return Array 
+     * Filter inactive plans from sources.
+     * 
+     * @param array $sources
+     * 
+     * @param array $inactive_plans
+     * 
+     * @return array 
      */
-    public function get_list_source($total,$product_id,$method_id=0)
+    public function filter_inactive_plans($sources, $inactive_plans)
     {
-        $payment_methods_mobbex = $this->get_sources($total);
-        $payment_methods = array();
+        foreach ($sources as $source) {
+            foreach ($inactive_plans as $plan) {
+                // Search inactive plan in source installments
+                $key = array_search($plan, array_column($source['installments']['list'], 'reference'));
 
-        if (!empty($payment_methods_mobbex)) {
-            // installments view source
-            $no_active_plans = self::get_inactive_plans($product_id);       
-            if($method_id != 0){
-                $method = null;
-                foreach($payment_methods_mobbex as $payment_method)
-                {
-                    if($payment_method['source']['id'] == $method_id){
-                        $method = $payment_method;
-                        break;
-                    }
-                }
-                if($method != null){
-                    $payment_methods[] = $payment_methods = $this->build_plan_array($method,$no_active_plans);
-                }
-            }else{
-                foreach($payment_methods_mobbex as $payment_method){
-                    $payment_methods[] = $this->build_plan_array($payment_method,$no_active_plans);
-                }
+                // If there is a match, remove from sources
+                if ($key !== false)
+                    unset($source['installments']['list'][$key]);
             }
         }
 
-        return $payment_methods;
+        return $sources;
     }
 
     /**
-     * Return array with payment methods and their plans
-     * @param $payment_method : array
-     * @return Array 
-     */
-    private function build_plan_array($payment_method,$no_active_plans)
-    {
-        //only add if payment is enabled
-        if($payment_method['installments']['enabled'])
-        {
-            $included_plans= array();
-            foreach($payment_method['installments']['list'] as $installment)
-            {
-                $plan = array();
-                //if it is a 'ahora' plan then use the reference 
-                if(strpos($installment['reference'],'ahora')!== false){
-                    if(!in_array($installment['reference'],$no_active_plans)){
-                        $plan['name'] = $installment['name'];
-                        $plan['amount'] = $installment['totals']['total'];    
-                    }
-                }else{
-                    $plan['name'] = $installment['name'];
-                    $plan['amount'] = $installment['totals']['total'];
-                }
-                if(!empty($plan)){
-                    $included_plans[] = $plan;
-                }
-            }       
-            if(!empty($included_plans)){
-                $method = array();
-                $method['reference'] = $payment_method['source']['reference'];
-                $method['name'] = $payment_method['source']['name'];
-                $method['installments'] = $included_plans;
-            }
-        }
-
-        return $method;
-    }
-
-    /**
-     * Return the plans that are not active in the product and categories
+     * Retrive inactive common plans from a product and its categories.
      * 
      * @param int $product_id
      * 
-     * @return array $inactive_plans
+     * @return array
      */
     public static function get_inactive_plans($product_id)
     {
@@ -194,18 +142,12 @@ class MobbexHelper
             }
         }
 
-        // Get inactive common and advanced plans
-        $inactive_common_plans   = get_post_meta($product_id, 'common_plans', true) ?: [];
-        $inactive_advanced_plans = get_post_meta($product_id, 'advanced_plans', true) ?: [];
+        // Get inactive common plans supporting previus save method
+        $inactive_common_plans = get_post_meta($product_id, 'common_plans', true) ?: [];
+        $inactive_common_plans = is_string($inactive_common_plans) ? unserialize($inactive_common_plans) : $inactive_common_plans;
 
-        // Support previus save method
-        $inactive_common_plans   = is_string($inactive_common_plans)   ? unserialize($inactive_common_plans)   : $inactive_common_plans;
-        $inactive_advanced_plans = is_string($inactive_advanced_plans) ? unserialize($inactive_advanced_plans) : $inactive_advanced_plans;
-
-        // Merge and remove duplicated plans
-        $inactive_plans = array_unique(array_merge($inactive_common_plans, $inactive_advanced_plans, $inactive_ahora_plans));
-
-        return $inactive_plans;
+        // Merge, remove duplicated plans and return
+        return array_unique(array_merge($inactive_common_plans, $inactive_ahora_plans));
     }
 
     /**

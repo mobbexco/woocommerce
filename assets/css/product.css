@@ -72,13 +72,16 @@
     background-color: #a8bbbf;
 }
 
-.mobbexPaymentMethod, .mobbexPaymentMethod th {
-    border: none;
-}
-
-.mobbexPaymentMethod div {
+.mobbexPaymentMethod {
     display: flex;
     align-items: center;
+    padding: 1em;
+    margin: 0;
+    font-weight: bold;
+}
+
+#mbbxProductModalBody td {
+    width: 65%;
 }
 
 .mobbexPaymentMethod img {
