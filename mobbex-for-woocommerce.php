@@ -98,6 +98,9 @@ class MobbexGateway
 
         // Create financial widget shortcode
         add_shortcode('mobbex_button', [$this, 'shortcode_mobbex_button']);
+
+        //support 'custon-logo' enable the usage of wp_get_attachment_image_src in gateway:getTheme()
+        add_theme_support( 'custom-logo' );
     }
 
     /**

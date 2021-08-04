@@ -46,6 +46,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Theme
         $this->checkout_title = $this->get_option('checkout_title');
         $this->checkout_logo = $this->get_option('checkout_logo');
+        
         $this->checkout_theme = $this->get_option('checkout_theme');
         $this->checkout_background_color = $this->get_option('checkout_background_color');
         $this->checkout_primary_color = $this->get_option('checkout_primary_color');
@@ -124,6 +125,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         mobbex_debug($message, $log);
     }
 
+    /**
+     * Define form fields of setting page
+     */
     public function init_form_fields()
     {
 
@@ -151,16 +155,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Access Token', 'mobbex-for-woocommerce'),
                 'description' => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
-
             ],
 
             'test_mode' => [
-
                 'title' => __('Enable/Disable Test Mode', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
                 'label' => __('Enable Test Mode.', 'mobbex-for-woocommerce'),
                 'default' => 'no',
-
             ],
 
             'button' => [
@@ -168,7 +169,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Enable/Disable Button', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
                 'label' => __('Enable Mobbex Button experience.', 'mobbex-for-woocommerce'),
-                'default' => 'no',
+                'default' => 'yes',//set to yes/true by default
 
             ],
 
@@ -266,7 +267,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'checkout_logo' => [
 
                 'title' => __('Checkout Logo URL', 'mobbex-for-woocommerce'),
-                'description' => __('You can customize your Checkout Logo from here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on Mobbex will be used. Dimensions: 250x250 pixels', 'mobbex-for-woocommerce'),
+                'description' => __('Customize your Checkout Logo here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on wordpress appearence or Mobbex panel will be used. Dimensions: 250x250 pixels', 'mobbex-for-woocommerce. If URL is not set, then the logo set in wordpress or mobbex console will be use'),
                 'type' => 'text',
                 'default' => '',
                 'class' => 'mbbx-into-appearance',
@@ -412,12 +413,14 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function getTheme()
     {
-        // Get logo from ecommerce
-        $logo_id = get_theme_mod('custom_logo');
+        
         $shop_logo = null;
-        // TODO: Switch for use logo configured in mobbex
-        //$logo_url = wp_get_attachment_image_src($logo_id , 'full')[0];
+        // Get logo url from wordpress settings 
+        $custom_logo_id = get_theme_mod('custom_logo');
+        $logo = wp_get_attachment_image_src($custom_logo_id , 'full');
 
+        error_log("¡Lo echaste a perder!".print_r($logo[0],true), 3, "/var/www/html/wp-content/plugins/mwoocommerce/my-errors.log");
+        
         $theme = [
             "type" => $this->checkout_theme,
             "background" => $this->checkout_background_color,
@@ -426,7 +429,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             ],
             'header' => [
                 'name' => !empty($this->checkout_title) ? $this->checkout_title : get_bloginfo('name'),
-                'logo' => !empty($this->checkout_logo) ? $this->checkout_logo : $shop_logo,
+                'logo' =>  !empty($this->checkout_logo) ? $this->checkout_logo : (!empty($logo[0]) ?  $logo[0] : $shop_logo),
             ]
         ];
 
