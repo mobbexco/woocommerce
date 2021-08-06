@@ -287,7 +287,7 @@ class MobbexHelper
      */
     public static function get_store($order)
     {
-        $stores   = get_option('mbbx_stores');
+        $stores   = get_option('mbbx_stores') ?: [];
         $products = self::get_product_ids($order);
 
         // Search store configured
@@ -308,16 +308,21 @@ class MobbexHelper
      */
     public static function get_store_from_product($product_id)
     {
-        // Get possible store from product
-        $store = get_post_meta($product_id, 'mbbx_store', true);
-        if (!empty($store))
+        $stores     = get_option('mbbx_stores') ?: [];
+        $store      = get_post_meta($product_id, 'mbbx_store', true);
+        $ms_enabled = get_post_meta($product_id, 'mbbx_enable_multisite', true);
+
+        if ($ms_enabled && !empty($store) && !empty($stores[$store]) )
             return $store;
 
-        // Get possible stores from product categories
+        // Get stores from product categories
         $categories = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+
         foreach ($categories as $cat_id) {
-            $store = get_term_meta($cat_id, 'mbbx_store', true);
-            if (!empty($store))
+            $store      = get_term_meta($cat_id, 'mbbx_store', true);
+            $ms_enabled = get_term_meta($cat_id, 'mbbx_enable_multisite', true);
+
+            if ($ms_enabled && !empty($store) && !empty($stores[$store]))
                 return $store;
         }
     }
