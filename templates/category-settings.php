@@ -4,36 +4,35 @@
 <?php endif; ?>
             <!-- Plans filter -->
             <tr class="form-field">
-                <th scope="row" valign="top" colspan="2"><h2><?=  __('Common plans', 'mobbex-for-woocommerce') ?></h2></th>
+                <th scope="row" valign="top"><h2><?=  __('Common plans', 'mobbex-for-woocommerce') ?></h2></th>
+                <td><h2><?= __('Plans with advanced rules', 'mobbex-for-woocommerce') ?></h2></td>
             </tr>
-            <?php foreach ($common_fields as $field) : ?>
-                <tr class="form-field mbbx-plan">
-                    <th scope="row" valign="top"><label for="<?= $field['id'] ?>"><?= $field['label'] ?></label></th>
-                    <td>
+            <tr class="form-field mbbx-plans-cont">
+                <td>
+                <?php foreach ($common_fields as $field) : ?>
+                    <div class="mbbx-plan">
                         <input type="hidden" name="<?= $field['id'] ?>" value="no">
                         <input type="checkbox" name="<?= $field['id'] ?>" id="<?= $field['id'] ?>" value="<?= $field['value'] ?>" <?= checked($field['value'], 'yes', false) ?>>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            <tr class="form-field">
-                <th scope="row" valign="top" colspan="2"><h2><?=  __('Plans with advanced rules', 'mobbex-for-woocommerce') ?></h2></th>
-            </tr>
-            <?php foreach ($advanced_fields as $source_ref => $fields) : ?>
-                <tr class="form-field">
-                    <th scope="row" valign="top" colspan="2" class="mbbx_plan_source">
-                        <img src='https://res.mobbex.com/images/sources/<?= $source_ref ?>.png'><p><?= $source_names[$source_ref] ?></p>
-                    </th>
-                </tr>
-                <?php foreach ($fields as $field) : ?>
-                    <tr class="form-field mbbx-plan mbbx-plan-advanced">
-                        <th scope="row" valign="top"><label for="<?= $field['id'] ?>"><?= $field['label'] ?></label></th>
-                        <td>
-                            <input type="hidden" name="<?= $field['id'] ?>" value="no">
-                            <input type="checkbox" name="<?= $field['id'] ?>" id="<?= $field['id'] ?>" value="<?= $field['value'] ?>" <?= checked($field['value'], 'yes', false) ?>>
-                        </td>
-                    </tr>
+                        <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
+                    </div>
                 <?php endforeach; ?>
-            <?php endforeach; ?>
+                </td>
+            </tr>
+            <tr class="form-field mbbx-plans-cont advanced">
+                <td>
+                <?php foreach ($advanced_fields as $source_ref => $fields) : ?>
+                    <div class="mbbx-plan-source">
+                        <img src='https://res.mobbex.com/images/sources/<?= $source_ref ?>.png'><p><?= $source_names[$source_ref] ?></p>
+                    </div>
+                    <?php foreach ($fields as $field) : ?>
+                        <div class="mbbx-plan">
+                            <input type="checkbox" name="<?= $field['id'] ?>" id="<?= $field['id'] ?>" value="yes" <?= checked($field['value'], 'yes', false) ?>>
+                            <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
+                </td>
+            </tr>
 
             <!-- Multisite fields -->
             <tr class="form-field">
