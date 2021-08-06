@@ -26,6 +26,11 @@
     width: 40px;
 }
 
+#woocommerce-product-data ul.wc-tabs li.mobbex_options.mobbex_tab a:before{
+    color: #7000ff;
+    content: "\f153";
+}
+
 @media only screen and (max-width:640px) {
     .mbbx_plan_list {
         width: 100%;

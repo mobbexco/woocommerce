@@ -166,46 +166,64 @@ class MobbexHelper
     }
 
     /**
-     * Return the plans that are not active in the product and categories
+     * Retrive inactive common plans from a product and its categories.
      * 
      * @param int $product_id
      * 
-     * @return array $inactive_plans
+     * @return array
      */
     public static function get_inactive_plans($product_id)
     {
-        $inactive_ahora_plans = [];
-        $categories = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+        $categories     = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+        $inactive_plans = [];
 
-        // Get inactive 'ahora' plans
+        // Get inactive 'ahora' plans (previus save method)
         foreach (self::$ahora as $plan) {
             // Get from product
             if (get_post_meta($product_id, $plan, true) === 'yes') {
-                $inactive_ahora_plans[] = $plan;
+                $inactive_plans[] = $plan;
                 continue;
             }
 
             // Get from product categories
             foreach ($categories as $cat_id) {
                 if (get_term_meta($cat_id, $plan, true) === 'yes') {
-                    $inactive_ahora_plans[] = $plan;
+                    $inactive_plans[] = $plan;
                     break;
                 }
             }
         }
 
-        // Get inactive common and advanced plans
-        $inactive_common_plans   = get_post_meta($product_id, 'common_plans', true) ?: [];
-        $inactive_advanced_plans = get_post_meta($product_id, 'advanced_plans', true) ?: [];
+        // Get plans from product and product categories
+        $inactive_plans = array_merge($inactive_plans, self::unserialize_array(get_post_meta($product_id, 'common_plans', true)));
 
-        // Support previus save method
-        $inactive_common_plans   = is_string($inactive_common_plans)   ? unserialize($inactive_common_plans)   : $inactive_common_plans;
-        $inactive_advanced_plans = is_string($inactive_advanced_plans) ? unserialize($inactive_advanced_plans) : $inactive_advanced_plans;
+        foreach ($categories as $cat_id)
+            $inactive_plans = array_merge($inactive_plans, self::unserialize_array(get_term_meta($cat_id, 'common_plans', true)));
 
-        // Merge and remove duplicated plans
-        $inactive_plans = array_unique(array_merge($inactive_common_plans, $inactive_advanced_plans, $inactive_ahora_plans));
+        // Remove duplicated and return
+        return array_unique($inactive_plans);
+    }
 
-        return $inactive_plans;
+    /**
+     * Retrive active advanced plans from a product and its categories.
+     * 
+     * @param int $product_id
+     * 
+     * @return array
+     */
+    public static function get_active_plans($product_id)
+    {
+        $categories     = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+        $active_plans = [];
+
+        // Get plans from product and product categories
+        $active_plans = array_merge($active_plans, self::unserialize_array(get_post_meta($product_id, 'advanced_plans', true)));
+
+        foreach ($categories as $cat_id)
+            $active_plans = array_merge($active_plans, self::unserialize_array(get_term_meta($cat_id, 'advanced_plans', true)));
+
+        // Remove duplicated and return
+        return array_unique($active_plans);
     }
 
     /**
@@ -269,7 +287,7 @@ class MobbexHelper
      */
     public static function get_store($order)
     {
-        $stores   = get_option('mbbx_stores');
+        $stores   = get_option('mbbx_stores') ?: [];
         $products = self::get_product_ids($order);
 
         // Search store configured
@@ -290,16 +308,21 @@ class MobbexHelper
      */
     public static function get_store_from_product($product_id)
     {
-        // Get possible store from product
-        $store = get_post_meta($product_id, 'mbbx_store', true);
-        if (!empty($store))
+        $stores     = get_option('mbbx_stores') ?: [];
+        $store      = get_post_meta($product_id, 'mbbx_store', true);
+        $ms_enabled = get_post_meta($product_id, 'mbbx_enable_multisite', true);
+
+        if ($ms_enabled && !empty($store) && !empty($stores[$store]) )
             return $store;
 
-        // Get possible stores from product categories
+        // Get stores from product categories
         $categories = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+
         foreach ($categories as $cat_id) {
-            $store = get_term_meta($cat_id, 'mbbx_store', true);
-            if (!empty($store))
+            $store      = get_term_meta($cat_id, 'mbbx_store', true);
+            $ms_enabled = get_term_meta($cat_id, 'mbbx_enable_multisite', true);
+
+            if ($ms_enabled && !empty($store) && !empty($stores[$store]))
                 return $store;
         }
     }
@@ -341,5 +364,20 @@ class MobbexHelper
         }
 
         throw new Exception(__('An error occurred in the execution', 'mobbex-for-woocommerce'));
+    }
+
+    /**
+     * Try unserialize a string forcing an array as return.
+     * 
+     * @param mixed $var
+     * 
+     * @return array
+     */
+    public static function unserialize_array($var)
+    {
+        if (is_string($var))
+            $var = unserialize($var);
+
+        return is_array($var) ? $var : [];
     }
 }
