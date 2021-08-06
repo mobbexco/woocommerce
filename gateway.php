@@ -983,71 +983,23 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
      */
     public function get_installments($order)
     {
-        $installments = $all_common_plans = $all_advanced_plans = [];
-
-        // Get products and categories from order
+        $installments = $inactive_plans = $active_plans = [];
         $products = MobbexHelper::get_product_ids($order);
-        $categories = MobbexHelper::get_category_ids($order);
 
-        $ahora = [
-            'ahora_3',
-            'ahora_6',
-            'ahora_12',
-            'ahora_18',
-        ];
-
-        foreach ($ahora as $key => $plan) {
-            // Get 'ahora' plans from categories
-            foreach($categories as $cat_id){
-                // If category has plan selected
-                if (get_term_meta($cat_id, $plan, true) === 'yes') {
-                    // Add to installments
-                    $installments[] = '-' . $plan;
-                    unset($ahora[$key]);
-                }
-            }
-
-            // Get 'ahora' plans from products
-            foreach ($products as $product_id) {
-                // If product has plan selected
-                if (get_post_meta($product_id, $plan, true) === 'yes') {
-                    // Add to installments
-                    $installments[] = '-' . $plan;
-                    unset($ahora[$key]);
-                }
-            }
-        }
-
+        // Get plans from order products
         foreach ($products as $product_id) {
-            // Get common and advanced plans from products
-            $product_common_plans   = get_post_meta($product_id, 'common_plans', true) ?: [];
-            $product_advanced_plans = get_post_meta($product_id, 'advanced_plans', true) ?: [];
-
-            // Support previus save method
-            $product_common_plans   = is_string($product_common_plans)   ? unserialize($product_common_plans)   : $product_common_plans;
-            $product_advanced_plans = is_string($product_advanced_plans) ? unserialize($product_advanced_plans) : $product_advanced_plans;
-
-            // Merge into unique arrays
-            $all_common_plans   = array_merge($all_common_plans, $product_common_plans);
-            $all_advanced_plans = array_merge($all_advanced_plans, $product_advanced_plans);
+            $inactive_plans = array_merge($inactive_plans, MobbexHelper::get_inactive_plans($product_id));
+            $active_plans   = array_merge($active_plans, MobbexHelper::get_active_plans($product_id));
         }
 
-        // Common plans
-        foreach ($all_common_plans as $plan) {
-            // Add to installments
+        // Add inactive (common) plans to installments
+        foreach ($inactive_plans as $plan)
             $installments[] = '-' . $plan;
-        }
 
-        // Get all the advanced plans with their number of reps
-        $counted_advanced_plans = array_count_values($all_advanced_plans);
-
-        // Advanced plans
-        foreach ($counted_advanced_plans as $plan => $reps) {
-            // Only if the plan is active on all products
-            if ($reps == count($products)) {
-                // Add to installments
+        // Add active (advanced) plans to installments only if the plan is active on all products
+        foreach (array_count_values($active_plans) as $plan => $reps) {
+            if ($reps == count($products))
                 $installments[] = '+uid:' . $plan;
-            }
         }
 
         // Remove duplicated plans and return
