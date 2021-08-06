@@ -5,3 +5,26 @@
 .mbbx_multisite_table {
     text-align: left;
 }
+
+.mbbx_plan_source {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+.mbbx_plan_source img {
+    border-radius: 100%;
+    width: 40px;
+}
+
+.mbbx_plan_source p {
+    margin-left: 10px;
+}
+
+.mbbx-plan th, .mbbx-plan td {
+    padding: 5px !important;
+}
+
+.mbbx-plan-advanced th label {
+    padding-left: 10px;
+}
