@@ -101,6 +101,9 @@ class MobbexHelper
     {
         foreach ($sources as $source) {
             foreach ($inactive_plans as $plan) {
+                if (empty($source['installments']['list']))
+                    break;
+
                 // Search inactive plan in source installments
                 $key = array_search($plan, array_column($source['installments']['list'], 'reference'));
 
