@@ -1,8 +1,8 @@
 <div id="mbbxProductModal"> 
     <div id="mbbxProductModalContent">
         <div id="mbbxProductModalHeader">
-            <label id="select_title" for="methods" style="display:none;">Seleccione un método de pago:</label>
-            <span id="closembbxProduct" style="display:none;">&times;</span>
+            <label id="mobbex_select_title" for="methods">Seleccione un método de pago:</label>
+            <span id="closembbxProduct">&times;</span>
             <select name="methods" id="mobbex_methods_list">
                 <option id="0" value="0">Todos</option>
                 <?php foreach($data['sources'] as $source) : ?>
