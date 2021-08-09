@@ -9,25 +9,28 @@
     }
 
     window.addEventListener('load', function () {
+        // First move modal to the beginning of the file
+        var modal = document.getElementById('mbbxProductModal');
+        document.body.prepend(modal);
+
         // Get modal action buttons
-        var modal    = document.getElementById('mbbxProductModal');
         var openBtn  = document.getElementById('mbbxProductBtn');
         var closeBtn = document.getElementById('closembbxProduct');
 
-        // Toggle modal
+        // Add events to toggle modal
         document.querySelector('body').addEventListener('click', function(e) {
             if (e.target == openBtn || e.target == closeBtn || e.target == modal && !e.target.closest('#mbbxProductModalContent'))
                 toggleElement(modal);
         });
 
         // Get sources and payment method selector 
-        var sources        = document.querySelectorAll('.mobbexSource');
-        var methodSelector = document.getElementById('mobbex_methods_list');
+        var sources      = document.querySelectorAll('.mobbexSource');
+        var methodSelect = document.getElementById('mbbx-method-select');
 
         // Filter payment methods in the modal
-        methodSelector.addEventListener('change', function() {
+        methodSelect.addEventListener('change', function() {
             for (source of sources)
-                source.style.display = source.id != methodSelector.value && methodSelector.value != 0 ? 'none' : '';
+                source.style.display = source.id != methodSelect.value && methodSelect.value != 0 ? 'none' : '';
         });
     });
 }) (window);
