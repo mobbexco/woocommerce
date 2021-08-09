@@ -89,80 +89,75 @@ class MobbexHelper
     }
 
     /**
-     * Return the payment methods 
-     * @param $tax_id : integer
-     * @param $total : double
-     * @param $product_id : integer
-     * @param $method_id : integer
-     * @return Array 
+     * Merge common sources with sources obtained by advanced rules.
+     * 
+     * @param mixed $sources
+     * @param mixed $advanced_sources
+     * 
+     * @return array
      */
-    public function get_list_source($total,$product_id,$method_id=0)
+    public function merge_sources($sources, $advanced_sources)
     {
-        $payment_methods_mobbex = $this->get_sources($total);
-        $payment_methods = array();
+        foreach ($advanced_sources as $advanced_source) {
+            $key = array_search($advanced_source['sourceReference'], array_column(array_column($sources, 'source'), 'reference'));
 
-        if (!empty($payment_methods_mobbex)) {
-            // installments view source
-            $no_active_plans = self::get_inactive_plans($product_id);       
-            if($method_id != 0){
-                $method = null;
-                foreach($payment_methods_mobbex as $payment_method)
-                {
-                    if($payment_method['source']['id'] == $method_id){
-                        $method = $payment_method;
-                        break;
-                    }
-                }
-                if($method != null){
-                    $payment_methods[] = $payment_methods = $this->build_plan_array($method,$no_active_plans);
-                }
-            }else{
-                foreach($payment_methods_mobbex as $payment_method){
-                    $payment_methods[] = $this->build_plan_array($payment_method,$no_active_plans);
-                }
+            // If source exists in common sources array
+            if ($key !== false) {
+                // Only add installments
+                $sources[$key]['installments']['list'] = array_merge($sources[$key]['installments']['list'], $advanced_source['installments']);
+            } else {
+                $sources[] = [
+                    'source'       => $advanced_source['source'],
+                    'installments' => [
+                        'list' => $advanced_source['installments']
+                    ]
+                ];
             }
         }
 
-        return $payment_methods;
+        return $sources;
     }
 
     /**
-     * Return array with payment methods and their plans
-     * @param $payment_method : array
-     * @return Array 
+     * Filter inactive plans from common sources.
+     * 
+     * @param array &$sources
+     * @param int $product_id Product ID to get plans.
      */
-    private function build_plan_array($payment_method,$no_active_plans)
+    public function filter_inactive_plans(&$sources, $product_id)
     {
-        //only add if payment is enabled
-        if($payment_method['installments']['enabled'])
-        {
-            $included_plans= array();
-            foreach($payment_method['installments']['list'] as $installment)
-            {
-                $plan = array();
-                //if it is a 'ahora' plan then use the reference 
-                if(strpos($installment['reference'],'ahora')!== false){
-                    if(!in_array($installment['reference'],$no_active_plans)){
-                        $plan['name'] = $installment['name'];
-                        $plan['amount'] = $installment['totals']['total'];    
-                    }
-                }else{
-                    $plan['name'] = $installment['name'];
-                    $plan['amount'] = $installment['totals']['total'];
-                }
-                if(!empty($plan)){
-                    $included_plans[] = $plan;
-                }
-            }       
-            if(!empty($included_plans)){
-                $method = array();
-                $method['reference'] = $payment_method['source']['reference'];
-                $method['name'] = $payment_method['source']['name'];
-                $method['installments'] = $included_plans;
+        $inactive_plans = self::get_inactive_plans($product_id);
+
+        foreach ($sources as $source_key => $source) {
+            if (empty($source['installments']['list']))
+                continue;
+
+            foreach ($source['installments']['list'] as $key => $installment) {
+                if (in_array($installment['reference'], $inactive_plans))
+                    unset($sources[$source_key]['installments']['list'][$key]);
             }
         }
+    }
 
-        return $method;
+    /**
+     * Filter active plans from sources obtained by advanced rules.
+     * 
+     * @param array &$advanced_sources
+     * @param int $product_id Product ID to get plans.
+     */
+    public function filter_active_plans(&$advanced_sources, $product_id)
+    {
+        $active_plans = self::get_active_plans($product_id);
+
+        foreach ($advanced_sources as $source_key => $source) {
+            if (empty($source['installments']))
+                continue;
+
+            foreach ($source['installments'] as $key => $installment) {
+                if (!in_array($installment['uid'], $active_plans))
+                    unset($advanced_sources[$source_key]['installments'][$key]);
+            }
+        }
     }
 
     /**

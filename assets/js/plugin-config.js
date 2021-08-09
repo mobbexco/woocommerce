@@ -5,11 +5,13 @@
      */
     function hideElements(options) {
         if (options instanceof NodeList) {
-            for (const option of options) {
-                option.closest('tr').classList.toggle('hidden');
-            }
+            for (const option of options)
+                hideElements(option);
         } else {
-            options.closest('tr').classList.toggle('hidden');
+            // Hide row container if exists
+            var container = options.closest('tr') != null ? options.closest('tr') : options;
+
+            container.classList.toggle('hidden');
         }
     }
 

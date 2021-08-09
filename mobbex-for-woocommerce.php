@@ -13,6 +13,9 @@ require_once 'includes/utils.php';
 
 class MobbexGateway
 {
+    /** @var MobbexHelper */
+    public static $helper;
+
     /**
      * Errors Array
      */
@@ -55,8 +58,7 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
-        $helper = new MobbexHelper();
-        if (!empty($helper->financial_info_active) && $helper->financial_info_active === 'yes') {
+        if (!empty(self::$helper->financial_info_active) && self::$helper->financial_info_active === 'yes') {
             // Add a new button after the "add to cart" button
             add_action('woocommerce_after_add_to_cart_form', [$this, 'additional_button_add_to_cart'], 20 );
         }
@@ -197,6 +199,7 @@ class MobbexGateway
     public static function load_helper()
     {
         require_once plugin_dir_path(__FILE__) . 'includes/helper.php';
+        self::$helper = new MobbexHelper();
     }
 
     public static function load_order_admin()
@@ -266,22 +269,16 @@ class MobbexGateway
 
     public function mobbex_assets_enqueue()
     {
-        global $post;
-        $helper = new MobbexHelper();
         $dir_url = plugin_dir_url(__FILE__);
-        // If dir url looks good
-        if (!empty($dir_url) && substr($dir_url, -1) === '/') {
-            // Product page
-            if (is_product()) 
-            {
-                wp_register_script('mmbbx-product-button-js', plugin_dir_url(__FILE__) . 'assets/js/mobbex_product_financing.js');
-                wp_enqueue_script('mmbbx-product-button-js');
 
-                if(!empty($helper->financial_info_active)){
-                    wp_register_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
-                    wp_enqueue_style('mobbex_product_style');
-                }
-            }
+        // Only if directory url looks good
+        if (empty($dir_url) || substr($dir_url, -1) != '/')
+            return;
+
+        // Product page
+        if (is_product()) {
+            wp_enqueue_script('mmbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
+            wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
         }
     }
 
@@ -320,10 +317,8 @@ class MobbexGateway
      */
     public function additional_button_add_to_cart()
     {
-        $helper = new MobbexHelper();
-
-        // Trigger/Open The Modal if the checkbox is true in the plugin settings and tax_id is set
-        if ($helper->financial_info_active)
+        // If financial widget is active, execute shortcode to display modal
+        if (self::$helper->financial_info_active)
             do_shortcode('[mobbex_button]');
     }
 
@@ -343,70 +338,22 @@ class MobbexGateway
         if ($post->post_type != 'product')
             return;
 
-        include_once plugin_dir_path(__FILE__) . 'templates/financing-button.html';
-
-        $helper  = new MobbexHelper();
         $product = wc_get_product($post->ID);
-        $sources = $helper->get_list_source($product->get_price(), $product->get_id());
 
-        $this->build_table_html($sources);//list with the payment methods and plans
-        $this->build_list_html($sources);
-        echo '<button  id="mbbxProductBtn" class="single_add_to_cart_button button alt">Ver Financiación</button>';
+        // Get sources
+        $sources          = self::$helper->get_sources($product->get_price());
+        $advanced_sources = self::$helper->get_sources_advanced();
 
-        // Send product data to javascript
+        // Filter configured plans
+        self::$helper->filter_inactive_plans($sources, $product->get_id());
+        self::$helper->filter_active_plans($advanced_sources, $product->get_id());
+
+        // Get data to use in template file. Don't remove these lines
         $data = [
-            'price'        => $product->get_price(),
-            'product_id'   => $product->get_id(),
-            'product_type' => $product->get_type(),
+            'sources' => self::$helper->merge_sources($sources, $advanced_sources),
         ];
 
-        wp_localize_script('mmbbx-product-button-js', 'global_data_assets', $data);
-        wp_enqueue_script('mmbbx-product-button-js');
-    }
-
-    /**
-     * Creates html code for plans table
-     */
-    private function build_table_html($payment_methods)
-    {
-        ?>
-        <table id="mobbex_payment_plans_list" style="max-width:100%;display:none;border: none;">
-        <?php foreach($payment_methods as $method) : ?>
-            <?php if (!empty($method['name'])) : ?>
-                <tr id="<?= $method['reference'] ?>" class="mobbexPaymentMethod">
-                    <th colspan="2">
-                        <div>
-                            <img src="https://res.mobbex.com/images/sources/<?= $method['reference'] ?>.jpg"><?= $method['name'] ?>
-                        </div>
-                    </th>
-                </tr>
-                <?php foreach($method['installments'] as $installment) : ?>
-                    <tr id="<?= $method['reference'] ?>">
-                        <td><?= $installment['name'] ?> </td>
-                        <td style="text-align: center; ">$ <?= $installment['amount'] ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        <?php endforeach; ?>
-        </table>
-        <?php
-    }
-
-    /**
-     * Return the select html element with all the payment methods
-     */
-    private function build_list_html($payment_methods)
-    {
-        ?>
-        <select name="methods" id="mobbex_methods_list" style="width:100%;display:none;">
-            <option id="0" value="0">Todos</option>
-            <?php foreach($payment_methods as $method) : ?>
-                <?php if (!empty($method['name'])) : ?>
-                    <option id="<?= $method['reference'] ?>" value="<?= $method['reference'] ?>"><?= $method['name'] ?></option>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </select>
-        <?php
+        include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
     }
 
     public function mobbex_checkout_update()
