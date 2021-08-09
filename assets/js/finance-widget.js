@@ -9,8 +9,12 @@
     }
 
     window.addEventListener('load', function () {
-        // First move modal to the beginning of the file
         var modal = document.getElementById('mbbxProductModal');
+
+        if (!modal)
+            return false;
+
+        // Place modal to the beginning of the document
         document.body.prepend(modal);
 
         // Get modal action buttons

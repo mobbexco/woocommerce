@@ -277,7 +277,6 @@ class MobbexGateway
 
         // Product page
         if (is_product()) {
-            // TODO: Check if page has shortcode before enqueue script
             wp_enqueue_script('mmbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
         }
