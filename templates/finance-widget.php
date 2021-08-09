@@ -1,9 +1,9 @@
 <div id="mbbxProductModal"> 
     <div id="mbbxProductModalContent">
         <div id="mbbxProductModalHeader">
-            <label id="mobbex_select_title" for="methods">Seleccione un método de pago:</label>
+            <label id="mobbex_select_title" for="mbbx-method-select">Seleccione un método de pago</label>
             <span id="closembbxProduct">&times;</span>
-            <select name="methods" id="mobbex_methods_list">
+            <select name="mbbx-method-select" id="mbbx-method-select">
                 <option id="0" value="0">Todos</option>
                 <?php foreach($data['sources'] as $source) : ?>
                     <?php if (!empty($source['source']['name'])) : ?>
@@ -19,12 +19,12 @@
                     <p class="mobbexPaymentMethod">
                         <img src="https://res.mobbex.com/images/sources/<?= $source['source']['reference'] ?>.jpg"><?= $source['source']['name'] ?>
                     </p>
-                    <?php if ($source['installments']['enabled']) : ?>
+                    <?php if (!empty($source['installments']['list'])) : ?>
                         <table>
                             <?php foreach($source['installments']['list'] as $installment) : ?>
                                 <tr>
-                                    <td><?= $installment['name'] ?> </td>
-                                    <td style="text-align: center; ">$ <?= $installment['totals']['total'] ?></td>
+                                    <td><?= $installment['name'] ?></td>
+                                    <td style="text-align: center; "><?= isset($installment['totals']['total']) ? '$ ' . $installment['totals']['total'] : '' ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </table>
@@ -35,4 +35,4 @@
         </div>
     </div>
 </div>
-<button id="mbbxProductBtn" class="button alt" style="<?= $data['button_styles'] ?>">Ver Financiación</button>
+<button id="mbbxProductBtn" class="button alt">Ver Financiación</button>

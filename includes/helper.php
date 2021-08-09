@@ -89,31 +89,75 @@ class MobbexHelper
     }
 
     /**
-     * Filter inactive plans from sources.
+     * Merge common sources with sources obtained by advanced rules.
      * 
-     * @param array $sources
+     * @param mixed $sources
+     * @param mixed $advanced_sources
      * 
-     * @param array $inactive_plans
-     * 
-     * @return array 
+     * @return array
      */
-    public function filter_inactive_plans($sources, $inactive_plans)
+    public function merge_sources($sources, $advanced_sources)
     {
-        foreach ($sources as $source) {
-            foreach ($inactive_plans as $plan) {
-                if (empty($source['installments']['list']))
-                    break;
+        foreach ($advanced_sources as $advanced_source) {
+            $key = array_search($advanced_source['sourceReference'], array_column(array_column($sources, 'source'), 'reference'));
 
-                // Search inactive plan in source installments
-                $key = array_search($plan, array_column($source['installments']['list'], 'reference'));
-
-                // If there is a match, remove from sources
-                if ($key !== false)
-                    unset($source['installments']['list'][$key]);
+            // If source exists in common sources array
+            if ($key !== false) {
+                // Only add installments
+                $sources[$key]['installments']['list'] = array_merge($sources[$key]['installments']['list'], $advanced_source['installments']);
+            } else {
+                $sources[] = [
+                    'source'       => $advanced_source['source'],
+                    'installments' => [
+                        'list' => $advanced_source['installments']
+                    ]
+                ];
             }
         }
 
         return $sources;
+    }
+
+    /**
+     * Filter inactive plans from common sources.
+     * 
+     * @param array &$sources
+     * @param int $product_id Product ID to get plans.
+     */
+    public function filter_inactive_plans(&$sources, $product_id)
+    {
+        $inactive_plans = self::get_inactive_plans($product_id);
+
+        foreach ($sources as $source_key => $source) {
+            if (empty($source['installments']['list']))
+                continue;
+
+            foreach ($source['installments']['list'] as $key => $installment) {
+                if (in_array($installment['reference'], $inactive_plans))
+                    unset($sources[$source_key]['installments']['list'][$key]);
+            }
+        }
+    }
+
+    /**
+     * Filter active plans from sources obtained by advanced rules.
+     * 
+     * @param array &$advanced_sources
+     * @param int $product_id Product ID to get plans.
+     */
+    public function filter_active_plans(&$advanced_sources, $product_id)
+    {
+        $active_plans = self::get_active_plans($product_id);
+
+        foreach ($advanced_sources as $source_key => $source) {
+            if (empty($source['installments']))
+                continue;
+
+            foreach ($source['installments'] as $key => $installment) {
+                if (!in_array($installment['uid'], $active_plans))
+                    unset($advanced_sources[$source_key]['installments'][$key]);
+            }
+        }
     }
 
     /**
