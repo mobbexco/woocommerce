@@ -25,6 +25,10 @@ class Mbbx_Order_Admin
 
         // Add some scripts
         add_action('admin_enqueue_scripts', [self::class, 'load_scripts']);
+
+        // Send emails on own statuses changes
+        add_action('woocommerce_order_status_authorized', [self::class, 'authorize_notification']);
+        add_action('woocommerce_order_status_authorized_to_processing', [self::class, 'capture_notification'], 10, 2);
     }
 
     /**
@@ -139,5 +143,31 @@ class Mbbx_Order_Admin
             $msg = $e->getMessage();
             $order->add_order_note(__('Payment Capture ERROR: ', 'mobbex-for-woocommerce') . $msg);
         }
+    }
+
+    /**
+     * Notify the customer that the order was authorized.
+     * 
+     * @param mixed $order_id
+     */
+    public static function authorize_notification($order_id)
+    {
+        $mailer = WC()->mailer()->get_emails();
+
+        // Send new order mail
+        $mailer['WC_Email_New_Order']->trigger($order_id);
+    }
+
+    /**
+     * Notify the customer that the order was captured.
+     * 
+     * @param mixed $order_id
+     */
+    public static function capture_notification($order_id)
+    {
+        $mailer = WC()->mailer()->get_emails();
+
+        // Send processing mail
+        $mailer['WC_Email_Customer_Processing_Order']->trigger($order_id);
     }
 }
