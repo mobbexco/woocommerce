@@ -45,6 +45,11 @@ jQuery(function ($) {
         }
     })
 
+    if (mobbex_data.is_pay_for_order && mobbex_data.is_wallet === "1" && !rendered) {
+        window.addEventListener('load', function () {
+            renderOptions();
+        });
+    }
 
     // Starts the overlay checkout process (returns false if we can't)
     function invokeOverlayCheckout() {
@@ -142,7 +147,8 @@ jQuery(function ($) {
     function renderOptions(){
         rendered = true
         
-        $('.payment_method_mobbex').append('<div class="payment_box payment_method_mobbex" id="walletCardsContainer"><ul class="wc_payment_methods payment_methods methods" id="walletCards"></ul></div>')
+        var display = !isMobbexPaymentMethodSelected() ? 'display: none;' : '';
+        $('.payment_method_mobbex').append(`<div class="payment_box payment_method_mobbex" id="walletCardsContainer" style="${display}"><ul class="wc_payment_methods payment_methods methods" id="walletCards"></ul></div>`)
         
         var walletDiv = $('#walletCards')
         walletDiv.append(`
@@ -161,7 +167,7 @@ jQuery(function ($) {
     
     // Process the selected credit card with Mobbex SDK
     function executeWallet() {
-        getUpdatedWallet(form.serializeArray())
+        if (!mobbex_data.is_pay_for_order) getUpdatedWallet(form.serializeArray())
         var card = $('input[name=walletOpt]:checked').val()
         // Executes this if a credit card is selected
         if (card !== 'new_card') {

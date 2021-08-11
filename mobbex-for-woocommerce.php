@@ -75,7 +75,7 @@ class MobbexGateway
         add_filter('woocommerce_add_to_cart_validation', [$this, 'validate_cart_items'], 10, 2);
 
         // Checkout update actions
-        add_action('woocommerce_api_mobbex_checkout_update', [$this, 'mobbex_checkout_update']);
+        add_action('woocommerce_api_mobbex_update_order', [$this, 'update_order']);
         add_action('woocommerce_cart_emptied', function(){WC()->session->set('order_id', null);});
         add_action('woocommerce_add_to_cart', function(){WC()->session->set('order_id', null);});
 
@@ -356,60 +356,34 @@ class MobbexGateway
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
     }
 
-    public function mobbex_checkout_update()
+    public function update_order()
     {
-        // Get Checkout and Order Id
+        // Try to get current order
         $checkout = WC()->checkout;
         $order_id = WC()->session->get('order_id');
+        $order    = $order_id ? wc_get_order($order_id) : null;
+
+        // Exit if order does not exist
+        if (!$order)
+            return false;
+
         WC()->cart->calculate_totals();
 
-        // Get Order info if exists
-        if (!$order_id) {
-            return false;
-        }
-        $order = wc_get_order($order_id);
+        // If form data is sent, only update it
+        if (!empty($_REQUEST['payment_method']))
+            wp_send_json($checkout->create_order($_REQUEST));
 
-        // If form data is sent
-        if (!empty($_REQUEST['payment_method'])) {
+        // Renew order items
+        $order->remove_order_items();
+        $order->set_cart_hash(WC()->cart->get_cart_hash());
+        $checkout->set_data_from_cart($order);
+        $order->save();
 
-            // Get billing and shipping data from Request
-            $billing = [];
-            $shipping = [];
-            foreach ($_REQUEST as $key => $value) {
+        // Create new Mobbex checkout
+        $gateway      = new WC_Gateway_Mobbex();
+        $new_checkout = $gateway->process_payment($order_id);
 
-                if (strpos($key, 'billing_') === 0) {
-                    $new_key = str_replace('billing_', '',$key);
-                    $billing[$new_key] = $value;
-                } elseif (strpos($key, 'shipping_') === 0) {
-
-                    $new_key = str_replace('billing_', '',$key);
-                    $shipping[$new_key] = $value;
-                }
-
-            }
-
-            // Save data to Order
-            $order->set_payment_method($_REQUEST['payment_method']);
-            $order->set_address($billing, 'billing');
-            $order->set_address($shipping, 'shipping');
-            echo ($order->save());
-            exit;
-        } else {
-
-            // Renew Order Items
-            $order->remove_order_items();
-            $order->set_cart_hash(WC()->cart->get_cart_hash());
-            $checkout->set_data_from_cart($order);
-
-            // Save Order
-            $order->save();
-
-            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-
-            echo json_encode($mobbexGateway->process_payment($order_id));
-            exit;
-        }
-
+        wp_send_json($new_checkout);
     }
 
     /**

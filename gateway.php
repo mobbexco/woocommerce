@@ -445,14 +445,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             die('No order was found');
         }
 
-        // Get Domain to allow comm
-        $site_url = site_url('', null);
-        $this->debug($site_url);
-
-        $domain = str_replace(["http://", "https://"], "", $site_url);
-
-        $this->debug($domain);
-
         // Get Customer data
         $current_user = wp_get_current_user();
         $dni_key = !empty($this->custom_dni) ? $this->custom_dni : '_billing_dni';
@@ -474,7 +466,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'test' => $this->test_mode,
             'options' => [
                 'button' => $this->use_button,
-                'domain' => $domain,
+                'domain' => parse_url(home_url())['host'],
                 'theme' => $this->getTheme(),
                 'redirect' => [
                     'success' => true,
@@ -780,6 +772,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         WC()->session->set('order_id', null);
+        WC()->session->set('order_awaiting_payment', null);
+
         wp_safe_redirect($redirect);
     }
 
@@ -825,9 +819,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         if (!defined('DONOTMINIFY'))    define('DONOTMINIFY', true);
 
         $order_url = home_url('/mobbex?wc-ajax=checkout');
-        $update_url = home_url('/wc-api/mobbex_checkout_update');
+        $update_url = home_url('/wc-api/mobbex_update_order');
         $is_wallet = ($this->use_wallet && wp_get_current_user()->ID);
-        $order_id = WC()->session->get('order_id');
+        $is_pay_for_order = !empty($_GET['pay_for_order']);
+        $order_id = $is_pay_for_order ? get_query_var('order-pay') : WC()->session->get('order_id');
+
+        if ($is_pay_for_order && empty($order_id))
+            $is_wallet = false;
 
         $this->debug($order_url);
 
@@ -842,7 +840,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'order_url' => $order_url,
             'update_url' => $update_url,
             'is_wallet' => $is_wallet,
-            'is_pay_for_order' => !empty($_GET['pay_for_order']),
+            'is_pay_for_order' => $is_pay_for_order,
         );
 
         // If using wallet, create Order previously
@@ -855,6 +853,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 $order_id = $checkout->create_order($_POST);
 
                 WC()->session->set('order_id', $order_id);
+                WC()->session->set('order_awaiting_payment', $order_id);
             }
 
             // Get order
