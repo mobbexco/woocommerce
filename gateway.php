@@ -780,6 +780,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         WC()->session->set('order_id', null);
+        WC()->session->set('order_awaiting_payment', null);
+
         wp_safe_redirect($redirect);
     }
 
@@ -827,7 +829,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order_url = home_url('/mobbex?wc-ajax=checkout');
         $update_url = home_url('/wc-api/mobbex_checkout_update');
         $is_wallet = ($this->use_wallet && wp_get_current_user()->ID);
-        $order_id = WC()->session->get('order_id');
+        $is_pay_for_order = !empty($_GET['pay_for_order']);
+        $order_id = $is_pay_for_order ? get_query_var('order-pay') : WC()->session->get('order_id');
+
+        if ($is_pay_for_order && empty($order_id))
+            $is_wallet = false;
 
         $this->debug($order_url);
 
@@ -842,7 +848,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'order_url' => $order_url,
             'update_url' => $update_url,
             'is_wallet' => $is_wallet,
-            'is_pay_for_order' => !empty($_GET['pay_for_order']),
+            'is_pay_for_order' => $is_pay_for_order,
         );
 
         // If using wallet, create Order previously
@@ -855,6 +861,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 $order_id = $checkout->create_order($_POST);
 
                 WC()->session->set('order_id', $order_id);
+                WC()->session->set('order_awaiting_payment', $order_id);
             }
 
             // Get order
