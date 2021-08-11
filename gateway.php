@@ -168,7 +168,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Enable/Disable Button', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
                 'label' => __('Enable Mobbex Button experience.', 'mobbex-for-woocommerce'),
-                'default' => 'yes',//set to yes/true by default
+                'default' => 'yes',
 
             ],
 
