@@ -299,7 +299,17 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'class' => 'mbbx-tab mbbx-tab-advanced',
 
             ],
-            
+
+            'multicard' => [
+
+                'title' => __('Enable/Disable Multicard', 'mobbex-for-woocommerce'),
+                'type' => 'checkbox',
+                'label' => __('Allow to pay the operation with multiple cards (incompatible with marketplace).', 'mobbex-for-woocommerce'), // Permite abonar la operación con múltiples tarjetas
+                'default' => 'no',
+                'class' => 'mbbx-into-advanced',
+
+            ],
+
             'payment_mode' => [
 
                 'title' => __('Enable/Disable 2-step Payment Mode', 'mobbex-for-woocommerce'),
@@ -475,6 +485,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'platform' => $this->getPlatform(),
             ],
             'wallet' => ($this->use_wallet && wp_get_current_user()->ID),
+            'multicard' => ($this->helper->multicard === 'yes'),
             'timeout' => 5,
         ];
 
