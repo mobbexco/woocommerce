@@ -445,14 +445,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             die('No order was found');
         }
 
-        // Get Domain to allow comm
-        $site_url = site_url('', null);
-        $this->debug($site_url);
-
-        $domain = str_replace(["http://", "https://"], "", $site_url);
-
-        $this->debug($domain);
-
         // Get Customer data
         $current_user = wp_get_current_user();
         $dni_key = !empty($this->custom_dni) ? $this->custom_dni : '_billing_dni';
@@ -474,7 +466,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'test' => $this->test_mode,
             'options' => [
                 'button' => $this->use_button,
-                'domain' => $domain,
+                'domain' => parse_url(home_url())['host'],
                 'theme' => $this->getTheme(),
                 'redirect' => [
                     'success' => true,
@@ -827,7 +819,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         if (!defined('DONOTMINIFY'))    define('DONOTMINIFY', true);
 
         $order_url = home_url('/mobbex?wc-ajax=checkout');
-        $update_url = home_url('/wc-api/mobbex_checkout_update');
+        $update_url = home_url('/wc-api/mobbex_update_order');
         $is_wallet = ($this->use_wallet && wp_get_current_user()->ID);
         $is_pay_for_order = !empty($_GET['pay_for_order']);
         $order_id = $is_pay_for_order ? get_query_var('order-pay') : WC()->session->get('order_id');
