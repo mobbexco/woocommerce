@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mobbex for Woocommerce\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-13 23:16+0000\n"
-"PO-Revision-Date: 2021-06-03 15:21+0000\n"
+"PO-Revision-Date: 2021-08-11 18:51+0000\n"
 "Last-Translator: Mobbex\n"
 "Language-Team: Español de Argentina\n"
 "Language: es_AR\n"
@@ -13,158 +13,174 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Loco-Source-Locale: es_AR\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.5.0; wp-5.6\n"
+"X-Loco-Version: 2.5.3; wp-5.8\n"
 "X-Loco-Parser: loco_parse_po"
 
 #. Description of the plugin
 msgid "A small plugin that provides Woocommerce <-> Mobbex integration."
 msgstr "Un pequeño plugin que integra Woocommerce <-> Mobbex."
 
-#: gateway.php:169 mobbex-for-woocommerce.php:528
-#: mobbex-for-woocommerce.php:696
+#: gateway.php:151 templates/category-settings.php:73
+#: templates/product-settings.php:65
 msgid "Access Token"
 msgstr "Token de Acceso"
 
-#: gateway.php:282
+#: gateway.php:192
 msgid "Add DNI field"
 msgstr "Añadir campo DNI"
 
-#: gateway.php:283
+#: gateway.php:193
 msgid "Add DNI field on checkout."
 msgstr "Añadir nuevo campo DNI al finalizar la compra."
 
-#: includes/helper.php:224
+#: gateway.php:297
+msgid "Advanced Configuration"
+msgstr "Configuración avanzada"
+
+#: gateway.php:307
+msgid ""
+"Allow to pay the operation with multiple cards (incompatible with "
+"marketplace)."
+msgstr ""
+"Permite abonar la operación con múltiples tarjetas (incompatible con "
+"marketplace)."
+
+#: includes/helper.php:361
 msgid "An error occurred in the execution"
 msgstr "Ha ocurrido un error en la ejecución"
 
-#: gateway.php:161 mobbex-for-woocommerce.php:519
-#: mobbex-for-woocommerce.php:689
+#: gateway.php:143 templates/category-settings.php:66
+#: templates/product-settings.php:56
 msgid "API Key"
 msgstr "Clave de API"
 
-#: includes/admin/order.php:35 includes/admin/order.php:54
+#: gateway.php:212
+msgid "Appearance"
+msgstr "Apariencia"
+
+#: includes/admin/order.php:40 includes/admin/order.php:59
 msgid "Authorized"
 msgstr "Autorizado"
 
-#: includes/admin/order.php:40
+#: includes/admin/order.php:45
 #, php-format
 msgid "Authorized <span class=\"count\">(%s)</span>"
 msgid_plural "Authorized <span class=\"count\">(%s)</span>"
 msgstr[0] "Autorizado <span class=\"count\">(%s)</span>"
 msgstr[1] "Autorizados <span class=\"count\">(%s)</span>"
 
-#: gateway.php:359
+#: gateway.php:386
 msgid "Awaiting Mobbex Webhook"
 msgstr "Esperando Webhook de Mobbex"
 
-#: gateway.php:712 gateway.php:714
+#: gateway.php:732 gateway.php:734
 msgid "Awaiting payment"
 msgstr "Esperando pago"
 
-#: includes/admin/order.php:81
+#: includes/admin/order.php:86
 msgid "Capture payment"
 msgstr "Capturar pago"
 
-#: gateway.php:253
+#: gateway.php:275
 msgid "Checkout Background Color"
 msgstr "Color de fondo del checkout"
 
-#: gateway.php:244
+#: gateway.php:265
 msgid "Checkout Logo URL"
 msgstr "Logo del checkout (URL)"
 
-#: gateway.php:263
+#: gateway.php:285
 msgid "Checkout Primary Color"
 msgstr "Color principal del checkout"
 
-#: gateway.php:222
+#: gateway.php:241
 msgid "Checkout Theme"
 msgstr "Tema del checkout"
 
-#: gateway.php:235
+#: gateway.php:255
 msgid "Checkout Title"
 msgstr "Título del checkout"
 
-#: mobbex-for-woocommerce.php:600
-msgid "Choose the plans you want NOT to appear during the purchase"
-msgstr "Elija los planes que NO desee que aparezcan durante la compra"
-
-#: mobbex-for-woocommerce.php:428
+#: templates/category-settings.php:7 templates/product-settings.php:7
 msgid "Common plans"
 msgstr "Planes comunes"
 
-#: mobbex-for-woocommerce.php:172
+#: mobbex-for-woocommerce.php:165
 msgid "Contribute"
 msgstr "Contribuir"
 
-#: gateway.php:227
+#: gateway.php:246
 msgid "Dark Theme"
 msgstr "Tema Oscuro"
 
-#: gateway.php:152
+#: gateway.php:231
 msgid "Description"
 msgstr "Descripción"
 
-#: mobbex-for-woocommerce.php:171
+#: mobbex-for-woocommerce.php:164
 msgid "Documentation"
 msgstr "Documentación"
 
-#: includes/helper.php:202
+#: includes/helper.php:339
 msgid "Empty Payment UID or params"
 msgstr "UID del pago o parámetros vacíos"
 
-#: gateway.php:206
+#: gateway.php:317
 msgid "Enable 2-step Payment Mode."
 msgstr "Activar operatoria en 2 pasos."
 
-#: gateway.php:135
+#: gateway.php:136
 msgid "Enable checking out with Mobbex."
 msgstr "Habilitar el checkout con Mobbex."
 
-#: mobbex-for-woocommerce.php:497 mobbex-for-woocommerce.php:668
+#: templates/category-settings.php:45 templates/product-settings.php:34
 msgid ""
 "Enable it to allow payment for this product to be received by another "
 "merchant."
 msgstr ""
 "Habilitar para permitir que el pago de este producto lo reciba otro comercio"
 
-#: gateway.php:188
+#: gateway.php:167
 msgid "Enable Mobbex Button experience."
 msgstr "Activar la Experiencia de Pago en el sitio."
 
-#: gateway.php:197
+#: gateway.php:176
 msgid "Enable Mobbex Wallet experience."
 msgstr "Activar experiencia de pago con Mobbex Wallet."
 
-#: mobbex-for-woocommerce.php:496 mobbex-for-woocommerce.php:665
+#: templates/category-settings.php:42 templates/product-settings.php:33
 msgid "Enable Multisite"
 msgstr "Activar Multitienda"
 
-#: gateway.php:179
+#: gateway.php:159
 msgid "Enable Test Mode."
 msgstr "Activar Modo de Pruebas."
 
-#: gateway.php:133
+#: gateway.php:134
 msgid "Enable/Disable"
 msgstr "Activar/Desactivar"
 
-#: gateway.php:204
+#: gateway.php:315
 msgid "Enable/Disable 2-step Payment Mode"
 msgstr "Activar/Desactivar operatoria en 2 pasos"
 
-#: gateway.php:186
+#: gateway.php:165
 msgid "Enable/Disable Button"
 msgstr "Activar/Desactivar Botón Mobbex"
 
-#: gateway.php:177
+#: gateway.php:305
+msgid "Enable/Disable Multicard"
+msgstr "Activar/Desactivar Multitarjeta"
+
+#: gateway.php:157
 msgid "Enable/Disable Test Mode"
 msgstr "Activar/Desactivar Modo de Pruebas"
 
-#: gateway.php:195
+#: gateway.php:174
 msgid "Enable/Disable Wallet"
 msgstr "Activar/Desactivar Wallet"
 
-#: gateway.php:300
+#: gateway.php:183
 msgid "Financial Information"
 msgstr "Modal de financiación"
 
@@ -172,17 +188,17 @@ msgstr "Modal de financiación"
 msgid "https://mobbex.com/"
 msgstr ""
 
-#: gateway.php:274
+#: gateway.php:202
 msgid "If you ask for DNI field on checkout please provide the custom field."
 msgstr ""
 "Si ya solicita el DNI al finalizar la compra, por favor escriba la clave del "
 "campo."
 
-#: gateway.php:226
+#: gateway.php:245
 msgid "Light Theme"
 msgstr "Tema Claro"
 
-#: gateway.php:18
+#: gateway.php:19
 msgid "Mobbex"
 msgstr "Mobbex"
 
@@ -190,7 +206,7 @@ msgstr "Mobbex"
 msgid "Mobbex for Woocommerce"
 msgstr "Mobbex para Woocommerce"
 
-#: gateway.php:19
+#: gateway.php:20
 msgid ""
 "Mobbex Payment Gateway redirects customers to Mobbex to enter their payment "
 "information."
@@ -198,25 +214,25 @@ msgstr ""
 "La Pasarela de Pago de Mobbex redirige clientes a Mobbex para que ingresen "
 "su información de pago."
 
-#: mobbex-for-woocommerce.php:132
+#: mobbex-for-woocommerce.php:125
 msgid "Mobbex requires OpenSSL >= 1.0.1 to be installed on your server"
 msgstr "Mobbex requiere OpenSSL >= 1.0.1 en tu servidor"
 
-#: mobbex-for-woocommerce.php:125
+#: mobbex-for-woocommerce.php:118
 msgid "Mobbex requires the cURL PHP extension to be installed on your server"
 msgstr ""
 "Mobbex requiere que la extensión cURL de PHP esté instalada en tu servidor"
 
-#: mobbex-for-woocommerce.php:129
+#: mobbex-for-woocommerce.php:122
 msgid "Mobbex requires the JSON PHP extension to be installed on your server"
 msgstr ""
 "Mobbex requiere que la extensión JSON de PHP esté instalada en tu servidor"
 
-#: mobbex-for-woocommerce.php:113
+#: mobbex-for-woocommerce.php:106
 msgid "Mobbex requires WooCommerce to be activated"
 msgstr "Mobbex necesita que WooCommerce esté Activo"
 
-#: mobbex-for-woocommerce.php:121
+#: mobbex-for-woocommerce.php:114
 msgid "Mobbex requires WooCommerce version 2.6 or greater"
 msgstr "Mobbex requiere WooCommerce versión 2.6 o superior"
 
@@ -224,101 +240,99 @@ msgstr "Mobbex requiere WooCommerce versión 2.6 o superior"
 msgid "mobbex.com"
 msgstr ""
 
-#: mobbex-for-woocommerce.php:454 mobbex-for-woocommerce.php:662
+#: templates/category-settings.php:39 templates/product-settings.php:27
 msgid "Multisite"
 msgstr "Multitienda"
 
-#: mobbex-for-woocommerce.php:505 mobbex-for-woocommerce.php:675
+#: templates/category-settings.php:52 templates/product-settings.php:42
 msgid "New Store"
 msgstr "Nueva Tienda"
 
-#: mobbex-for-woocommerce.php:511 mobbex-for-woocommerce.php:683
+#: templates/category-settings.php:60 templates/product-settings.php:48
 msgid "New Store Name"
 msgstr "Nombre de la tienda"
 
-#: gateway.php:723
+#: gateway.php:743
 msgid "Order failed"
 msgstr "Orden fallida"
 
-#: gateway.php:145
+#: gateway.php:223
 msgid "Pay with Mobbex"
 msgstr "Pagar con Mobbex"
 
-#: includes/admin/order.php:139
+#: includes/admin/order.php:144
 msgid "Payment Capture ERROR: "
 msgstr "Error al capturar el pago:"
 
-#: includes/admin/order.php:134
+#: includes/admin/order.php:139
 msgid "Payment Total Captured: $ "
 msgstr "Total capturado del pago: $"
 
-#: mobbex-for-woocommerce.php:424
+#: templates/product-settings.php:3
 msgid "Plans Configuration"
 msgstr "Configuración de Planes"
 
-#: mobbex-for-woocommerce.php:437
+#: templates/category-settings.php:8 templates/product-settings.php:14
 msgid "Plans with advanced rules"
 msgstr "Planes con reglas avanzadas"
 
-#: includes/helper.php:199
+#: includes/helper.php:336
 msgid "Plugin is not ready"
 msgstr "El plugin no está correctamente configurado"
 
-#: mobbex-for-woocommerce.php:173
+#: mobbex-for-woocommerce.php:166
 msgid "Report Issues"
 msgstr "Reportar fallos"
 
-#: gateway.php:291
+#: gateway.php:335
 msgid "Reseller ID"
 msgstr "ID de revendedor"
 
-#: mobbex-for-woocommerce.php:425
+#: templates/product-settings.php:4
 msgid "Select the plans you want to appear in the checkout"
 msgstr "Seleccione los planes que desee que aparezcan al finalizar la compra"
 
-#: mobbex-for-woocommerce.php:150
+#: mobbex-for-woocommerce.php:143
 msgid "Settings"
 msgstr "Ajustes"
 
-#: gateway.php:301
-msgid "Show financial information in all products, Tax_id need to be set."
-msgstr ""
-"Mostrar modal de financiación en todos los productos. Es necesario que el "
-"CUIT esté configurado."
+#: gateway.php:581
+msgid "Shipping: "
+msgstr "Envío: "
 
-#: mobbex-for-woocommerce.php:503 mobbex-for-woocommerce.php:672
+#: gateway.php:184
+msgid "Show financial information in all products."
+msgstr "Mostrar widget de información financiera en la página del producto"
+
+#: templates/category-settings.php:49 templates/product-settings.php:40
 msgid "Store"
 msgstr "Tienda"
 
-#: gateway.php:309
-msgid "Tax ID"
-msgstr "CUIT"
-
-#: mobbex-for-woocommerce.php:846
+#: mobbex-for-woocommerce.php:410
 msgid "The cart cannot have products from different sellers at the same time."
 msgstr "El carrito no puede tener productos de distintos vendedores a la vez."
 
-#: gateway.php:153
+#: gateway.php:232
 msgid "This description will be shown on user checkout."
 msgstr "Esta descripción se mostrará en el checkout del usuario."
 
-#: gateway.php:144
+#: gateway.php:222
 msgid "This title will be shown on user checkout."
 msgstr "Este título se mostrará en el checkout del usuario."
 
-#: gateway.php:142
+#: gateway.php:220
 msgid "Title"
 msgstr "Título"
 
-#: gateway.php:273
+#: gateway.php:201
 msgid "Use custom DNI field"
 msgstr "Utilizar campo de DNI existente"
 
-#: gateway.php:213
+#: gateway.php:325
 msgid "Use new WebHook API"
 msgstr "WebHook por API nueva"
 
-#: gateway.php:215
+#: gateway.php:327
 msgid ""
 "Use the WebHook by API instead of old Controller. Permalinks must be Active "
 "to use it Safely"
@@ -326,19 +340,19 @@ msgstr ""
 "Utilizar WebHook por API en lugar del controlador antiguo. Los enlaces "
 "permanentes deben estar activos para que funcione de forma segura."
 
-#: mobbex-for-woocommerce.php:170
+#: mobbex-for-woocommerce.php:163
 msgid "Website"
 msgstr "Sitio web"
 
-#: mobbex-for-woocommerce.php:109
+#: mobbex-for-woocommerce.php:102
 msgid "WooCommerce needs to be installed and activated."
 msgstr "WooCommerce debe estar instalado y activado."
 
-#: gateway.php:254
+#: gateway.php:276
 msgid "You can customize your Checkout Background Color from here."
 msgstr "Permite cambiar el color de fondo del checkout."
 
-#: gateway.php:245
+#: gateway.php:266
 msgid ""
 "You can customize your Checkout Logo from here. The logo URL must be HTTPS "
 "and must be only set if required. If not set the Logo set on Mobbex will be "
@@ -348,22 +362,22 @@ msgstr ""
 "(debe ser una URL en HTTPS). Las dimensiones deben ser de 250x250. Dejar en "
 "blanco para usar logo configurado en Mobbex."
 
-#: gateway.php:264
+#: gateway.php:286
 msgid ""
 "You can customize your Checkout Primary Color for Buttons and TextFields "
 "from here."
 msgstr ""
 "Permite cambiar el color de los botones y campos de texto del checkout."
 
-#: gateway.php:223
+#: gateway.php:242
 msgid "You can customize your Checkout Theme from here."
 msgstr "Tema visual del checkout."
 
-#: gateway.php:236
+#: gateway.php:256
 msgid "You can customize your Checkout Title from here."
 msgstr "Título que aparece en el checkout."
 
-#: gateway.php:292
+#: gateway.php:336
 msgid ""
 "You can customize your Reseller ID from here. This field is optional and "
 "must be used only if was specified by the main seller."
@@ -371,30 +385,21 @@ msgstr ""
 "Identificador de revendedor o partner (especificar sólo si se es parte de un "
 "programa de reventas)"
 
-#: gateway.php:310
-msgid ""
-"You can customize your Tax ID from here. This field is optional and must be "
-"used only if was specified by the main seller to show financial plans in the "
-"product."
-msgstr ""
-"CUIT con el que configuró el comercio en Mobbex. Este es necesario para "
-"habilitar el modal de planes en la página del producto."
-
-#: gateway.php:71
+#: gateway.php:69
 msgid "You need to specify an API Key and an Access Token."
 msgstr "Debes especificar una API Key y un Access Token."
 
-#: gateway.php:170 mobbex-for-woocommerce.php:529
-#: mobbex-for-woocommerce.php:699
+#: gateway.php:152 templates/category-settings.php:76
+#: templates/product-settings.php:66
 msgid "Your Mobbex access token."
 msgstr "Tu token de acceso de Mobbex."
 
-#: gateway.php:162 mobbex-for-woocommerce.php:520
-#: mobbex-for-woocommerce.php:692
+#: gateway.php:144 templates/category-settings.php:69
+#: templates/product-settings.php:57
 msgid "Your Mobbex API key."
 msgstr "Tu clave de API de Mobbex."
 
-#: mobbex-for-woocommerce.php:117
+#: mobbex-for-woocommerce.php:110
 msgid ""
 "Your site needs to be served via HTTPS to comunicate securely with Mobbex."
 msgstr ""
