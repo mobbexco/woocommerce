@@ -47,6 +47,20 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.4.0 :: 2021-08-11
+- Add multicard mode option
+- New common and advanced plans filter by category
+- Filter finance widget plans based on product and product categories settings
+- Make embed mode enabled by default
+- Improve category settings view
+- Improve finance widget view and performance
+- Fix get store when multisite is disabled
+- Fix order mail sending in 2step payment mode
+- Fix finance widget positioning
+- Fix wallet form rendering in pay-for-order page
+- Fix checkout form data saving when use wallet
+- Fix domain obtaining for sites installed in subfolders
+
 ### 3.3.3 :: 2021-07-16
 - Organize plugin settings by groups.
 - Fix user pending orders endpoint url and response format.
