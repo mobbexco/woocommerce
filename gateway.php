@@ -121,6 +121,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         mobbex_debug($message, $log);
     }
 
+    /**
+     * Define form fields of setting page
+     */
     public function init_form_fields()
     {
 
@@ -148,16 +151,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Access Token', 'mobbex-for-woocommerce'),
                 'description' => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
                 'type' => 'text',
-
             ],
 
             'test_mode' => [
-
                 'title' => __('Enable/Disable Test Mode', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
                 'label' => __('Enable Test Mode.', 'mobbex-for-woocommerce'),
                 'default' => 'no',
-
             ],
 
             'button' => [
@@ -165,7 +165,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'title' => __('Enable/Disable Button', 'mobbex-for-woocommerce'),
                 'type' => 'checkbox',
                 'label' => __('Enable Mobbex Button experience.', 'mobbex-for-woocommerce'),
-                'default' => 'no',
+                'default' => 'yes',
 
             ],
 
