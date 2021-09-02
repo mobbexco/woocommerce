@@ -351,6 +351,13 @@ class MobbexGateway
         // Get data to use in template file. Don't remove these lines
         $data = [
             'sources' => self::$helper->merge_sources($sources, $advanced_sources),
+            'style' => [
+                'theme' => self::$helper->financial_widget_theme,
+                'button_color' => self::$helper->financial_widget_button_color,
+                'button_font_color' => self::$helper->financial_widget_button_font_color,
+                'button_font_size' => self::$helper->financial_widget_button_font_color,
+                'button_padding' => self::$helper->financial_widget_button_padding,
+            ]
         ];
 
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
