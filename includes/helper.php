@@ -25,7 +25,7 @@ class MobbexHelper
     }
 
     /**
-     * Get sources with common plans from mobbex.
+     * Get sources with common plans and advanced plans from mobbex.
      * @param integer|null $total
      * @param array|null $inactivePlans
      * @param array|null $activePlans
