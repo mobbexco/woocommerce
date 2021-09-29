@@ -63,6 +63,35 @@ class MobbexHelper
 
         return [];
     }
+    
+    /**
+     * Get sources with advanced rule plans from mobbex.
+     * @param string $rule
+     */
+    public function get_sources_advanced($rule = 'externalMatch')
+    {
+        if (!$this->isReady())
+            return [];
+
+        $response = wp_remote_get(str_replace('{rule}', $rule, MOBBEX_ADVANCED_PLANS), [
+            'headers' => [
+                'cache-control' => 'no-cache',
+                'content-type' => 'application/json',
+                'x-api-key' => $this->api_key,
+                'x-access-token' => $this->access_token,
+            ],
+        ]);
+
+        if (!is_wp_error($response)) {
+            $response = json_decode($response['body'], true);
+            $data = $response['data'];
+            if ($data) {
+                return $data;
+            }
+        }
+
+        return [];
+    }
 
     /**
      * Returns a query param with the installments of the product.
