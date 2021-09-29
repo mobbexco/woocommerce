@@ -340,17 +340,15 @@ class MobbexGateway
 
         $product = wc_get_product($post->ID);
 
+        //Get Plans
+        $inactivePlans = self::$helper->get_inactive_plans($product->get_id());
+        $activePlans = self::$helper->get_active_plans($product->get_id());
+
         // Get sources
-        $sources          = self::$helper->get_sources($product->get_price());
-        $advanced_sources = self::$helper->get_sources_advanced();
-
-        // Filter configured plans
-        self::$helper->filter_inactive_plans($sources, $product->get_id());
-        self::$helper->filter_active_plans($advanced_sources, $product->get_id());
-
-        // Get data to use in template file. Don't remove these lines
+        $sources = self::$helper->get_sources($product->get_price(), $inactivePlans, $activePlans);
+        
         $data = [
-            'sources' => self::$helper->merge_sources($sources, $advanced_sources),
+            'sources' => $sources,
         ];
 
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
