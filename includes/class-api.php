@@ -25,7 +25,7 @@ class MobbexApi
     {
         $this->api_key      = $api_key;
         $this->access_token = $access_token;
-        $this->ready        = !empty($apiKey) && !empty($accessToken);
+        $this->ready        = !empty($api_key) && !empty($access_token);
     }
 
     /**
@@ -35,7 +35,7 @@ class MobbexApi
      * 
      * @return mixed
      * 
-     * @throws Exception
+     * @throws MobbexException
      */
     public function request($data)
     {
@@ -66,15 +66,15 @@ class MobbexApi
 
         // Throw curl errors
         if ($error)
-            throw new \Exception(curl_errno($curl), 'Curl error in Mobbex request #:' . $error);
+            throw new \MobbexException('Curl error in Mobbex request #:' . $error, curl_errno($curl), $data);
 
         $result = json_decode($response, true);
 
         // Throw request errors
         if (!$result['result'])
-            throw new \Exception($result['code'], 'Mobbex request error #:' . $result['error']);
+            throw new \MobbexException('Mobbex request error #:' . $result['error'], $result['code'], $data);
 
-        return isset($result['data']) ? $result : null;
+        return isset($result['data']) ? $result['data'] : null;
     }
 
     /**
