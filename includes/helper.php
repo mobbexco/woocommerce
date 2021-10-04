@@ -8,15 +8,40 @@ class MobbexHelper
      */
     public static $ahora = ['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'];
 
+    /** Module configuration settings */
+    public $settings = [];
+
+    /**
+     * Load plugin settings.
+     */
     public function __construct()
     {
-        // Init settings (Full List in WC_Gateway_Mobbex::init_form_fields)
-        $option_key = 'woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings';
-        $settings = get_option($option_key, null) ?: [];
-        foreach ($settings as $key => $value) {
+        $this->settings = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID .'_settings', null) ?: [];
+
+        foreach ($this->settings as $key => $value) {
             $key = str_replace('-', '_', $key);
             $this->$key = $value;
         }
+
+        // The intent constant overwrite payment mode setting
+        if (defined('MOBBEX_CHECKOUT_INTENT')) {
+            $this->settings['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
+        } else if ($this->settings['payment_mode'] == 'yes') {
+            $this->settings['payment_mode'] = 'payment.2-step';
+        }
+    }
+
+    public function debug($message = 'debug', $data = [], $force = false)
+    {
+        if ($this->settings['debug_mode'] != 'yes' && !$force)
+            return;
+
+        apply_filters(
+            'simple_history_log',
+            'Mobbex: ' . $message,
+            $data,
+            'debug'
+        );
     }
 
     public function isReady()
