@@ -12,7 +12,7 @@ class MobbexException extends \Exception
      * 
      * @param string $message 
      * @param string $code
-     * @param string $data
+     * @param mixed $data
      */
     public function __construct($message = '', $code = 0, $data = '')
     {

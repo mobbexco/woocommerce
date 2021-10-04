@@ -16,12 +16,18 @@ class MobbexCheckout
 
     public $endpoints = [];
 
-    /**  Module configuration settings */
+    /** Module configuration settings */
     public $settings = [];
 
     /** @var MobbexApi */
     public $api;
 
+    /**
+     * Constructor.
+     * 
+     * @param array $settings Module configuration settings.
+     * @param MobbexApi $api API conector.
+     */
     public function __construct($settings, $api)
     {
         $this->settings = $settings;
@@ -46,14 +52,14 @@ class MobbexCheckout
                 'description'  => 'Pedido #' . $this->relation,
                 'test'         => $this->settings['test_mode'] == 'yes',
                 'multicard'    => $this->settings['multicard'] == 'yes',
-                'wallet'       => $this->settings['use_wallet'] && wp_get_current_user()->ID,
+                'wallet'       => $this->settings['wallet'] && wp_get_current_user()->ID,
                 'intent'       => $this->settings['payment_mode'],
                 'timeout'      => 5,
                 'items'        => $this->items,
                 'installments' => $this->installments,
                 'customer'     => $this->customer,
                 'options'      => [
-                    'button'   => $this->settings['use_button'] == 'yes',
+                    'button'   => $this->settings['button'] == 'yes',
                     'domain'   => parse_url(home_url())['host'],
                     'theme'    => [
                         'type'       => $this->settings['checkout_theme'],

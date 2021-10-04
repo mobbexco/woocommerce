@@ -72,7 +72,7 @@ class MobbexApi
 
         // Throw request errors
         if (!$result['result'])
-            throw new \MobbexException('Mobbex request error #:' . $result['error'], $result['code'], $data);
+            throw new \MobbexException('Mobbex request error #' . $result['code'] . ': ' . $result['error'], 0, $data);
 
         return isset($result['data']) ? $result['data'] : null;
     }
