@@ -290,6 +290,60 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
+            'financial_widget_theme' => [
+
+                'title' => __('Financial Widget Theme', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Financial Widget Theme from here.', 'mobbex-for-woocommerce'),
+                'type' => 'select',
+                'options' => [
+                    'light' => __('Light Theme', 'mobbex-for-woocommerce'),
+                    'dark' => __('Dark Theme', 'mobbex-for-woocommerce'),
+                ],
+                'default' => 'light',
+                'class' => 'mbbx-into-appearance',
+
+            ],
+
+            'financial_widget_button_color' => [
+
+                'title' => __('Financial Widget Button Color', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your financial widget button color from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => null,
+                'class' => 'colorpick mbbx-into-appearance'
+
+            ],
+
+            'financial_widget_button_font_color' => [
+
+                'title' => __('Financial Widget Button Font Color', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your financial widget button font color from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => null,
+                'class' => 'colorpick mbbx-into-appearance'
+
+            ],
+
+            'financial_widget_button_font_size' => [
+
+                'title' => __('Financial Widget Button Font Size', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your financial widget button font size from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => null,
+                'class' => 'mbbx-into-appearance'
+
+            ],
+
+            'financial_widget_button_Padding' => [
+
+                'title' => __('Financial Widget Button Padding', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your financial widget button padding from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => null,
+                'class' => 'mbbx-into-appearance'
+
+            ],
+            
             /* Advanced Configuration */
 
             'advanced_configuration_tab' => [
