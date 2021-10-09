@@ -340,15 +340,22 @@ class MobbexGateway
 
         $product = wc_get_product($post->ID);
 
-        //Get Plans
+        // Get Plans configured
         $inactivePlans = self::$helper->get_inactive_plans($product->get_id());
         $activePlans = self::$helper->get_active_plans($product->get_id());
 
         // Get sources
         $sources = self::$helper->get_sources($product->get_price(), $inactivePlans, $activePlans);
-        
+
         $data = [
             'sources' => $sources,
+            'style' => [
+                'theme' => self::$helper->financial_widget_theme,
+                'button_color' => self::$helper->financial_widget_button_color,
+                'button_font_color' => self::$helper->financial_widget_button_font_color,
+                'button_font_size' => self::$helper->financial_widget_button_font_color,
+                'button_padding' => self::$helper->financial_widget_button_padding,
+            ]
         ];
 
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';

@@ -1,4 +1,4 @@
-<div id="mbbxProductModal"> 
+<div id="mbbxProductModal" class="<?= $data['style']['theme'] ?>"> 
     <div id="mbbxProductModalContent">
         <div id="mbbxProductModalHeader">
             <label id="mobbex_select_title" for="mbbx-method-select">Seleccione un método de pago</label>
@@ -35,4 +35,13 @@
         </div>
     </div>
 </div>
-<button id="mbbxProductBtn" class="button alt">Ver Financiación</button>
+<button id="mbbxProductBtn" class="button alt" style="
+<?= 
+($data['style']['button_color'] !== null) ? 'background-color: ' . $data['style']['button_color'] . ';' : '';
+($data['style']['button_font_color'] !== null) ? 'color: ' . $data['style']['button_font_color'] . ';' : '';
+($data['style']['button_font_size'] !== null) ? 'font-size: ' . $data['style']['button_padding'] . 'px;' : ''; 
+($data['style']['button_padding'] !== null) ? 'padding: ' . $data['style']['button_padding'] . 'px;' : ''; 
+?>
+">
+Ver Financiación
+</button>

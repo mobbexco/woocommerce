@@ -97,3 +97,10 @@
     border: 1px #d8d8d8 solid;
     border-radius: 5px;
 }
+
+/* DARK MODE  */
+.dark #mbbxProductModalContent,
+.dark #mbbxProductModalContent table td {
+    background-color: rgb(39, 31, 36);
+    color: rgb(226, 226, 226);
+}
