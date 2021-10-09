@@ -27,8 +27,10 @@ class MobbexHelper
     /**
      * Get sources with common plans from mobbex.
      * @param integer|null $total
+     * @param array|null $inactivePlans
+     * @param array|null $activePlans
      */
-    public function get_sources($total = null)
+    public function get_sources($total = null, $inactivePlans = null, $activePlans = null)
     {
         // If plugin is not ready
         if (!$this->isReady()) {
@@ -36,6 +38,9 @@ class MobbexHelper
         }
 
         $data = $total ? '?total=' . $total : null;
+
+        //Get installments
+        $data .= '&' . self::get_installments_query($inactivePlans, $activePlans);
 
         $response = wp_remote_get(MOBBEX_SOURCES . $data, [
 
@@ -58,7 +63,7 @@ class MobbexHelper
 
         return [];
     }
-
+    
     /**
      * Get sources with advanced rule plans from mobbex.
      * @param string $rule
@@ -89,75 +94,32 @@ class MobbexHelper
     }
 
     /**
-     * Merge common sources with sources obtained by advanced rules.
-     * 
-     * @param mixed $sources
-     * @param mixed $advanced_sources
-     * 
-     * @return array
+     * Returns a query param with the installments of the product.
+     * @param array $inactivePlans
+     * @param array $activePlans
      */
-    public function merge_sources($sources, $advanced_sources)
-    {
-        foreach ($advanced_sources as $advanced_source) {
-            $key = array_search($advanced_source['sourceReference'], array_column(array_column($sources, 'source'), 'reference'));
-
-            // If source exists in common sources array
-            if ($key !== false) {
-                // Only add installments
-                $sources[$key]['installments']['list'] = array_merge($sources[$key]['installments']['list'], $advanced_source['installments']);
-            } else {
-                $sources[] = [
-                    'source'       => $advanced_source['source'],
-                    'installments' => [
-                        'list' => $advanced_source['installments']
-                    ]
-                ];
+    public static function get_installments_query($inactivePlans = null, $activePlans = null ) {
+        
+        $installments = [];
+        
+        //get plans
+        if($inactivePlans) {
+            foreach ($inactivePlans as $plan) {
+                $installments[] = "-$plan";
             }
         }
 
-        return $sources;
-    }
-
-    /**
-     * Filter inactive plans from common sources.
-     * 
-     * @param array &$sources
-     * @param int $product_id Product ID to get plans.
-     */
-    public function filter_inactive_plans(&$sources, $product_id)
-    {
-        $inactive_plans = self::get_inactive_plans($product_id);
-
-        foreach ($sources as $source_key => $source) {
-            if (empty($source['installments']['list']))
-                continue;
-
-            foreach ($source['installments']['list'] as $key => $installment) {
-                if (in_array($installment['reference'], $inactive_plans))
-                    unset($sources[$source_key]['installments']['list'][$key]);
-            }
+        if($activePlans) {
+            foreach ($activePlans as $plan) {
+                $installments[] = "+uid:$plan";
+            } 
         }
-    }
 
-    /**
-     * Filter active plans from sources obtained by advanced rules.
-     * 
-     * @param array &$advanced_sources
-     * @param int $product_id Product ID to get plans.
-     */
-    public function filter_active_plans(&$advanced_sources, $product_id)
-    {
-        $active_plans = self::get_active_plans($product_id);
-
-        foreach ($advanced_sources as $source_key => $source) {
-            if (empty($source['installments']))
-                continue;
-
-            foreach ($source['installments'] as $key => $installment) {
-                if (!in_array($installment['uid'], $active_plans))
-                    unset($advanced_sources[$source_key]['installments'][$key]);
-            }
-        }
+        //Build query param
+        $query = http_build_query(['installments' => $installments]);
+        $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
+        
+        return $query;
     }
 
     /**
