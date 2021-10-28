@@ -713,7 +713,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         //Prcess the webbhook data
         if($webhookData['parent'] === 'yes')
-            $this->process_webhook($id, $token, $postData));
+            $this->process_webhook($id, $token, $postData);
 
         return [
             "result" => $res,
