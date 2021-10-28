@@ -308,4 +308,117 @@ class MobbexHelper
 
         return is_array($var) ? $var : [];
     }
+
+    /* WEBHOOK METHODS */
+    
+    /**
+     * Format the webhook data in an array.
+     * 
+     * @param int $cart_id
+     * @param array $res
+     * @param bool $multicard
+     * @return array $data
+     * 
+     */
+    public static function format_webhook_data($order_id, $res, $multicard) 
+    {
+        $data = [
+            'order_id'           => $order_id,
+            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard) ? 'yes' : 'no',
+            'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
+            'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
+            'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
+            'status_code'        => isset($res['payment']['status']['code']) ? $res['payment']['status']['code'] : '',
+            'source_name'        => !empty($res['payment']['source']['name']) ? $res['payment']['source']['name'] : 'Mobbex',
+            'source_type'        => !empty($res['payment']['source']['type']) ? $res['payment']['source']['type'] : 'Mobbex',
+            'source_reference'   => isset($res['payment']['source']['reference']) ? $res['payment']['source']['reference'] : '',
+            'source_number'      => isset($res['payment']['source']['number']) ? $res['payment']['source']['number'] : '',
+            'source_expiration'  => isset($res['payment']['source']['expiration']) ? json_encode($res['payment']['source']['expiration']) : '',
+            'source_installment' => isset($res['payment']['source']['installment']) ? json_encode($res['payment']['source']['installment']) : '',
+            'installment_name'   => isset($res['payment']['source']['installment']['description']) ? json_encode($res['payment']['source']['installment']['description']) : '',
+            'installment_amount' => isset($res['payment']['source']['installment']['amount']) ? $res['payment']['source']['installment']['amount'] : '',
+            'source_url'         => isset($res['payment']['source']['url']) ? json_encode($res['payment']['source']['url']) : '',
+            'cardholder'         => isset($res['payment']['source']['cardholder']) ? json_encode(($res['payment']['source']['cardholder'])) : '',
+            'entity_name'        => isset($res['entity']['name']) ? $res['entity']['name'] : '',
+            'entity_uid'         => isset($res['entity']['uid']) ? $res['entity']['uid'] : '',
+            'customer'           => isset($res['customer']) ? json_encode($res['customer']) : '',
+            'checkout_uid'       => isset($res['checkout']['uid']) ? $res['checkout']['uid'] : '',
+            'total'              => isset($res['checkout']['total']) ? $res['checkout']['total'] : '',
+            'total_webhook'      => isset($res['payment']['total']) ? $res['payment']['total'] : '',
+            'currency'           => isset($res['checkout']['currency']) ? $res['checkout']['currency'] : '',
+            'risk_analysis'      => isset($res['payment']['riskAnalysis']['level']) ? $res['payment']['riskAnalysis']['level'] : '',
+            'data'               => json_encode($res),
+            'created'            => isset($res['payment']['created']) ? $res['payment']['created'] : '',
+            'updated'            => isset($res['payment']['updated']) ? $res['payment']['created'] : '',
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Receives the webhook "opartion type" and return true if the webhook is parent and false if not
+     * 
+     * @param string $operationType
+     * @param bool $multicard
+     * @return bool true|false
+     * 
+     */
+    public static function is_parent_webhook($operationType, $multicard)
+    {
+        if ($operationType === "payment.v2") {
+            if ($multicard)
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Receives an array and returns an array with the data format for the 'insert' method
+     * 
+     * @param array $array
+     * @return array $format
+     * 
+     */
+    public static function db_column_format($array) 
+    {
+        $format = [];
+
+        foreach ($array as $value) {
+            switch (gettype($value)) {
+                case "bolean":
+                    $format[] = '%s';
+                    break;
+                case "integer":
+                    $format[] = '%d';
+                    break;
+                case "double":
+                    $format[] = '%f';
+                    break;
+                case "string":
+                    $format[] = '%s';
+                    break;
+                case "array":
+                    $format[] = '%s';
+                    break;
+                case "object":
+                    $format[] = '%s';
+                    break;
+                case "resource":
+                    $format[] = '%s';
+                    break;
+                case "NULL":
+                    $format[] = '%s';
+                    break;
+                case "unknown type":
+                    $format[] = '%s';
+                    break;
+                case "bolean":
+                    $format[] = '%s';
+                    break;
+            }
+        }
+        return $format;
+    } 
+
 }
+
