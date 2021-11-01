@@ -717,9 +717,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $id = $request->get_param('mobbex_order_id');
         $token = $request->get_param('mobbex_token');
 
-        $debug = $this->helper->multivendor;
-        error_log('Multivendor: ' . "\n" . json_encode($debug, JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
-
         $this->debug($postData, "Mobbex API > Post Data");
         $this->debug([
             "id" => $id,
@@ -729,7 +726,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         //order webhook filter
         $postData = apply_filters( 'mobbex_order_webhook', $postData );
           
-        $webhookData = MobbexHelper::format_webhook_data($id, $postData, ($this->helper->multicard === 'yes'), ($this->helper->multicard === 'yes'));
+        $webhookData = MobbexHelper::format_webhook_data($id, $postData['data'], ($this->helper->multicard === 'yes'), ($this->helper->multivendor !== 'no'));
 
         //Save de webhook in the database
         global $wpdb;
