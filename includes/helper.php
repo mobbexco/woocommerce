@@ -394,11 +394,11 @@ class MobbexHelper
      * @return array $data
      * 
      */
-    public static function format_webhook_data($order_id, $res, $multicard)
+    public static function format_webhook_data($order_id, $res, $multicard, $multivendor)
     {
         $data = [
             'order_id'           => $order_id,
-            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard) ? 'yes' : 'no',
+            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard, $multivendor) ? 'yes' : 'no',
             'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
             'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
             'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
@@ -440,7 +440,7 @@ class MobbexHelper
     public static function is_parent_webhook($operationType, $multicard)
     {
         if ($operationType === "payment.v2") {
-            if ($multicard)
+            if ($multicard || $multivendor)
                 return false;
         }
         return true;
