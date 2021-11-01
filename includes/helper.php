@@ -63,7 +63,7 @@ class MobbexHelper
 
         return [];
     }
-    
+
     /**
      * Get sources with advanced rule plans from mobbex.
      * @param string $rule
@@ -98,27 +98,28 @@ class MobbexHelper
      * @param array $inactivePlans
      * @param array $activePlans
      */
-    public static function get_installments_query($inactivePlans = null, $activePlans = null ) {
-        
+    public static function get_installments_query($inactivePlans = null, $activePlans = null)
+    {
+
         $installments = [];
-        
+
         //get plans
-        if($inactivePlans) {
+        if ($inactivePlans) {
             foreach ($inactivePlans as $plan) {
                 $installments[] = "-$plan";
             }
         }
 
-        if($activePlans) {
+        if ($activePlans) {
             foreach ($activePlans as $plan) {
                 $installments[] = "+uid:$plan";
-            } 
+            }
         }
 
         //Build query param
         $query = http_build_query(['installments' => $installments]);
         $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
-        
+
         return $query;
     }
 
@@ -213,7 +214,7 @@ class MobbexHelper
         // Get Products Ids
         $products = self::get_product_ids($order);
 
-        foreach($products as $product)
+        foreach ($products as $product)
             $categories = array_merge($categories, wp_get_post_terms($product, 'product_cat', ['fields' => 'ids']));
 
         // Remove duplicated IDs and return
@@ -269,7 +270,7 @@ class MobbexHelper
         $store      = get_post_meta($product_id, 'mbbx_store', true);
         $ms_enabled = get_post_meta($product_id, 'mbbx_enable_multisite', true);
 
-        if ($ms_enabled && !empty($store) && !empty($stores[$store]) )
+        if ($ms_enabled && !empty($store) && !empty($stores[$store]))
             return $store;
 
         // Get stores from product categories
@@ -338,8 +339,52 @@ class MobbexHelper
         return is_array($var) ? $var : [];
     }
 
+    /* MULTIVENDOR METHODS */
+
+    /**
+     * Return an array with al the merchants from the items list.
+     * 
+     * @param array $items
+     * @return array
+     * 
+     */
+    public static function get_merchants($items)
+    {
+
+        $merchants = [];
+
+        //Get the merchants from items list
+        foreach ($items as $item) {
+            if (!empty($item['entity'])) 
+                $merchants[] = ['uid' => $item['entity']];
+        }
+
+        return $merchants;
+    }
+
+    /**
+     * Return the UID of the entity of a product.
+     * 
+     * @param array $item
+     * @param array $product_id
+     * @return string
+     * 
+     */
+    public static function get_entity($item, $product_id)
+    {
+        if (get_metadata('post', $product_id, 'mbbx_entity', true)) {
+            return get_metadata('post', $product_id, 'mbbx_entity', true);
+        }
+        
+        $product_terms_ids = wc_get_product_term_ids($product_id, 'product_cat');
+        foreach ($product_terms_ids as $id) {
+            if (get_metadata('term', $id, 'mbbx_entity', true))
+                return get_metadata('term', $id, 'mbbx_entity', true);
+        }
+    }
+
     /* WEBHOOK METHODS */
-    
+
     /**
      * Format the webhook data in an array.
      * 
@@ -349,7 +394,7 @@ class MobbexHelper
      * @return array $data
      * 
      */
-    public static function format_webhook_data($order_id, $res, $multicard) 
+    public static function format_webhook_data($order_id, $res, $multicard)
     {
         $data = [
             'order_id'           => $order_id,
@@ -408,7 +453,7 @@ class MobbexHelper
      * @return array $format
      * 
      */
-    public static function db_column_format($array) 
+    public static function db_column_format($array)
     {
         $format = [];
 
@@ -447,7 +492,5 @@ class MobbexHelper
             }
         }
         return $format;
-    } 
-
+    }
 }
-

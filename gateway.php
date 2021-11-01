@@ -360,7 +360,22 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'type' => 'checkbox',
                 'label' => __('Allow to pay the operation with multiple cards (incompatible with marketplace).', 'mobbex-for-woocommerce'), // Permite abonar la operación con múltiples tarjetas
                 'default' => 'no',
-                'class' => 'mbbx-into-advanced',
+                'class' => 'mbbx-into-tab-advanced',
+
+            ],
+
+            'multivendor' => [
+
+                'title' => __('Enable/Disable Multivendor', 'mobbex-for-woocommerce'),
+                'type' => 'select',
+                'label' => __('Allow to pay the operation with multiple vendor (incompatible with multicard).', 'mobbex-for-woocommerce'), // Permite abonar la operación con múltiples tarjetas
+                'options' => [
+                    'no' => __('Disable', 'mobbex-for-woocommerce'),
+                    'active' => __('Active', 'mobbex-for-woocommerce'),
+                    'unified' => __('Unified', 'mobbex-for-woocommerce'),
+                ],
+                'default' => 'no',
+                'class' => 'mbbx-into-tab-advanced',
 
             ],
 
@@ -501,7 +516,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function get_checkout($order = null, $return_url = null)
     {
         $this->debug([
-            "order" => $order,
+            "order"      => $order,
             "return_url" => $return_url,
         ]);
 
@@ -511,36 +526,39 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // Get Customer data
         $current_user = wp_get_current_user();
-        $dni_key = !empty($this->custom_dni) ? $this->custom_dni : '_billing_dni';
+        $dni_key      = !empty($this->custom_dni) ? $this->custom_dni : '_billing_dni';
+        $items        = $this->get_items($order);
 
         $customer = [
-            'name' => $current_user->display_name ? : $order->get_formatted_billing_full_name(),
-            'email' => $current_user->user_email ? : $order->get_billing_email(),
-            'phone' => get_user_meta($current_user->ID,'phone_number',true) ? : $order->get_billing_phone(),
-            'uid' => $current_user->ID ? : null,
+            'name'           => $current_user->display_name ? : $order->get_formatted_billing_full_name(),
+            'email'          => $current_user->user_email ? : $order->get_billing_email(),
+            'phone'          => get_user_meta($current_user->ID,'phone_number',true) ? : $order->get_billing_phone(),
+            'uid'            => $current_user->ID ? : null,
             'identification' => get_post_meta($order->get_id(), $dni_key, true),
         ];
 
         $checkout_body = [
-            'reference' => $this->get_reference($order->get_id()),
-            'description' => 'Orden #' . $order->get_id(),
-            'items' => $this->get_items($order),
+            'reference'    => $this->get_reference($order->get_id()),
+            'description'  => 'Orden #' . $order->get_id(),
+            'items'        => $items,
             'installments' => $this->get_installments($order),
-            'customer' => $customer,
-            'test' => $this->test_mode,
-            'options' => [
-                'button' => $this->use_button,
-                'domain' => parse_url(home_url())['host'],
-                'theme' => $this->getTheme(),
-                'redirect' => [
-                    'success' => true,
-                    'failure' => false,
+            'customer'     => $customer,
+            'test'         => $this->test_mode,
+            'options'      => [
+                'button'     => $this->use_button,
+                'domain'     => parse_url(home_url())['host'],
+                'theme'      => $this->getTheme(),
+                'redirect'   => [
+                    'success'  => true,
+                    'failure'  => false,
                 ],
-                'platform' => $this->getPlatform(),
+                'platform'   => $this->getPlatform(),
             ],
-            'wallet' => ($this->use_wallet && wp_get_current_user()->ID),
-            'multicard' => ($this->helper->multicard === 'yes'),
-            'timeout' => 5,
+            'wallet'       => ($this->use_wallet && wp_get_current_user()->ID),
+            'multicard'    => ($this->helper->multicard === 'yes'),
+            'multivendor'  => $this->helper->multivendor === 'no' ? false : $this->helper->multivendor,
+            'timeout'      => 5,
+            'merchants'    => MobbexHelper::get_merchants($items),
         ];
 
         // Custom data filter
@@ -548,10 +566,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // Merge not editable data
         $checkout_body = array_merge($checkout_body,[
-            'total' => $order->get_total(),
-            'webhook' => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
+            'total'      => $order->get_total(),
+            'webhook'    => $this->get_api_endpoint('mobbex_webhook', $order->get_id()),
             'return_url' => $return_url,
-            'intent' => $this->helper->get_payment_mode(),
+            'intent'     => $this->helper->get_payment_mode(),
         ]);
 
         $this->debug([
@@ -559,7 +577,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         ]);
 
         // Try to get credentials from store configured using multisite options
-        $store = MobbexHelper::get_store($order);
+        $store        = MobbexHelper::get_store($order);
         $api_key      = !empty($store['api_key'])      ? $store['api_key']      : $this->api_key;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->access_token;
 
@@ -600,7 +618,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Get items from order
         $line_items = $order->get_items();
         $shipping_items = $order->get_items('shipping');
-
         $mobbex_items = [];
 
         if (!empty($line_items)) {
@@ -620,11 +637,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 }
     
                 $mobbex_items[] = [
-                    'image' => $image,
-                    'quantity' => $item->get_quantity(),
-                    'description' => $item->get_name(),
-                    'total' => $item->get_total(),
+                    'image'          => $image,
+                    'quantity'       => $item->get_quantity(),
+                    'description'    => $item->get_name(),
+                    'total'          => $item->get_total(),
+                    'entity'         => MobbexHelper::get_entity($item, $item->get_product_id())
                 ];
+
             }
         }
 
@@ -637,6 +656,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 ];
             }
         }
+
+
 
         return $mobbex_items;
     }
@@ -696,6 +717,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $id = $request->get_param('mobbex_order_id');
         $token = $request->get_param('mobbex_token');
 
+        $debug = $this->helper->multivendor;
+        error_log('Multivendor: ' . "\n" . json_encode($debug, JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
+
         $this->debug($postData, "Mobbex API > Post Data");
         $this->debug([
             "id" => $id,
@@ -713,7 +737,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         //Prcess the webbhook data
         if($webhookData['parent'] === 'yes')
-            $this->process_webhook($id, $token, $postData));
+            $this->process_webhook($id, $token, $postData);
 
         return [
             "result" => $res,
