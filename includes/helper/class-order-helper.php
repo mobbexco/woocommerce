@@ -32,12 +32,13 @@ class MobbexOrderHelper
     public function create_checkout()
     {
         // Try to configure api with order store credentials
-        $this->helper->get_store($this->order);
+        $store = $this->get_store();
 
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->helper->settings['api-key'];
         $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->helper->settings['access-token'];
 
-        $checkout = new MobbexCheckout($this->helper->settings, new MobbexApi($api_key, $access_token));
+        $api      = new MobbexApi($api_key, $access_token);
+        $checkout = new MobbexCheckout($this->helper->settings, $api);
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -48,7 +49,7 @@ class MobbexOrderHelper
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->helper->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : ''); // TODO: Add new debug method
+            $this->helper->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
         do_action('mobbex_checkout_process', $response, $this->id);
@@ -122,15 +123,33 @@ class MobbexOrderHelper
      */
     private function add_customer($checkout)
     {
-        $user    = wp_get_current_user();
-        $dni_key = !empty($this->helper->settings['custom_dni']) ? $this->helper->settings['custom_dni'] : '_billing_dni';
+        $user = $this->order->get_user();
 
         $checkout->set_customer(
             $this->order->get_formatted_billing_full_name() ?: $user->display_name,
             $this->order->get_billing_email() ?: $user->user_email,
-            get_post_meta($this->id, $dni_key, true),
+            get_user_meta($user->ID, 'billing_dni', true) ?: '12123123',
             $this->order->get_billing_phone() ?: get_user_meta($user->ID, 'phone_number', true),
             $user->ID,
         );
+    }
+
+    /**
+     * Get Store from order items multisite configuration.
+     * 
+     * @return array|null
+     */
+    public function get_store()
+    {
+        $stores = get_option('mbbx_stores') ?: [];
+        $items  = $this->order->get_items() ?: [];
+
+        // Search store configured
+        foreach ($items as $item) {
+            $store_id = $this->helper::get_store_from_product($item->get_product_id());
+
+            if ($store_id && !empty($stores[$store_id]))
+                return $stores[$store_id];
+        }
     }
 }

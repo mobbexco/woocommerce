@@ -31,8 +31,11 @@ class MobbexCartHelper
      */
     public function create_checkout()
     {
-        $api_key      = $this->helper->settings['api-key'];
-        $access_token = $this->helper->settings['access-token'];
+        // Try to configure api with order store credentials
+        $store = $this->get_store();
+
+        $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->helper->settings['api-key'];
+        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->helper->settings['access-token'];
 
         $api      = new MobbexApi($api_key, $access_token);
         $checkout = new MobbexCheckout($this->helper->settings, $api);
@@ -123,9 +126,28 @@ class MobbexCartHelper
         $checkout->set_customer(
             $customer->get_display_name(),
             $customer->get_billing_email(),
-            '12123123',
+            get_user_meta($customer->get_id(), 'billing_dni', true) ?: '12123123',
             $customer->get_billing_phone() ?: get_user_meta($customer->get_id(), 'phone_number', true),
             $customer->get_id(),
         );
+    }
+
+    /**
+     * Get Store from cart items multisite configuration.
+     * 
+     * @return array|null
+     */
+    public function get_store()
+    {
+        $stores = get_option('mbbx_stores') ?: [];
+        $items  = $this->cart->get_cart() ?: [];
+
+        // Search current store configured
+        foreach ($items as $item) {
+            $store_id = $this->helper::get_store_from_product($item['product_id']);
+
+            if ($store_id && isset($stores[$store_id]))
+                return $stores[$store_id];
+        }
     }
 }
