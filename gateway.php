@@ -787,6 +787,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             } else {
                 $order->update_status('on-hold', __('Awaiting payment', 'mobbex-for-woocommerce'));
             }
+        } else if ($status == 602 || $status == 605) {
+            $order->update_status('refunded', __('Payment refunded', 'mobbex-for-woocommerce'));
         } else if ($status == 4 || $status >= 200 && $status < 400) {
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.
@@ -794,7 +796,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $this->add_fee_or_discount($data['payment']['total'], $order);
             $order->payment_complete($id);
         } else {
-            $order->update_status('failed', __('Order failed', 'mobbex-for-woocommerce'));
+            $order->update_status('failed', __('Payment failed', 'mobbex-for-woocommerce'));
         }
         
         // Set Total Paid
@@ -1028,14 +1030,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         ]);
 
-        $result = json_decode($response['body']);
+        $result = json_decode($response['body'], true);
 
-        if ($result->result) {
+        if ($result['result'])
             return true;
-        } else {
-            return new WP_Error('mobbex_refund_error', __('Refund Error: Sorry! This is not a refundable transaction.', 'mobbex-gateway'));
-        }
 
+        return false;
     }
 
     /**
