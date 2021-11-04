@@ -370,6 +370,13 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
+            'debug_mode' => [
+                'title'   => __('Modo Debug', 'mobbex-for-woocommerce'),
+                'label'   => __('Activar Modo Debug.', 'mobbex-for-woocommerce'),
+                'class'   => 'mbbx-into-advanced',
+                'type'    => 'checkbox',
+                'default' => 'no',
+            ],
         ];
 
     }
