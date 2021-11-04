@@ -38,7 +38,7 @@ class MobbexCartHelper
         $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->helper->settings['access-token'];
 
         $api      = new MobbexApi($api_key, $access_token);
-        $checkout = new MobbexCheckout($this->helper->settings, $api);
+        $checkout = new MobbexCheckout($this->helper->settings, $api, 'mobbex_cart_checkout_custom_data');
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -52,7 +52,7 @@ class MobbexCartHelper
             $this->helper->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
-        do_action('mobbex_checkout_process', $response, $this->id);
+        do_action('mobbex_cart_checkout_process', $response, $this->id);
 
         return $response;
     }

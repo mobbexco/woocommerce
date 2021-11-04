@@ -16,22 +16,27 @@ class MobbexCheckout
 
     public $endpoints = [];
 
-    /** Module configuration settings */
+    /** Module configured options */
     public $settings = [];
 
     /** @var MobbexApi */
     public $api;
 
+    /** Name of hook to execute when body is filtered */
+    public $filter = '';
+
     /**
      * Constructor.
      * 
-     * @param array $settings Module configuration settings.
+     * @param array $settings Module configured options.
      * @param MobbexApi $api API conector.
+     * @param string $filter Name of hook to execute when body is filtered.
      */
-    public function __construct($settings, $api)
+    public function __construct($settings, $api, $filter = 'mobbex_checkout_custom_data')
     {
         $this->settings = $settings;
         $this->api      = $api;
+        $this->filter   = $filter;
     }
 
     /**
@@ -44,7 +49,7 @@ class MobbexCheckout
         $data = [
             'uri'    => 'checkout',
             'method' => 'POST',
-            'body'   => apply_filters('mobbex_checkout_custom_data', [
+            'body'   => apply_filters($this->filter, [
                 'total'        => $this->total,
                 'webhook'      => $this->endpoints['webhook'],
                 'return_url'   => $this->endpoints['return'],
@@ -153,10 +158,10 @@ class MobbexCheckout
      * 
      * @param int|string $total
      * @param int $quantity
-     * @param string|null $decription
+     * @param string|null $description
      * @param string|null $image
      */
-    public function add_item($total, $quantity = 1, $decription = null, $image = null)
+    public function add_item($total, $quantity = 1, $description = null, $image = null)
     {
         $this->items[] = compact('total', 'quantity', 'description', 'image');
     }
