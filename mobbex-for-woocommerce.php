@@ -10,6 +10,11 @@ Copyright: 2020 mobbex.com
  */
 
 require_once 'includes/utils.php';
+require_once 'includes/class-api.php';
+require_once 'includes/class-checkout.php';
+require_once 'includes/class-exception.php';
+require_once 'includes/helper/class-order-helper.php';
+require_once 'includes/helper/class-cart-helper.php';
 
 class MobbexGateway
 {
@@ -58,10 +63,8 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
-        if (!empty(self::$helper->financial_info_active) && self::$helper->financial_info_active === 'yes') {
-            // Add a new button after the "add to cart" button
-            add_action('woocommerce_after_add_to_cart_form', [$this, 'additional_button_add_to_cart'], 20 );
-        }
+        if (self::$helper->settings['financial_info_active'] === 'yes')
+            add_action('woocommerce_after_add_to_cart_form', [$this, 'display_finnacial_button']);
 
         // Enqueue assets
         add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
@@ -73,11 +76,6 @@ class MobbexGateway
 
         // Validate Cart items
         add_filter('woocommerce_add_to_cart_validation', [$this, 'validate_cart_items'], 10, 2);
-
-        // Checkout update actions
-        add_action('woocommerce_api_mobbex_update_order', [$this, 'update_order']);
-        add_action('woocommerce_cart_emptied', function(){WC()->session->set('order_id', null);});
-        add_action('woocommerce_add_to_cart', function(){WC()->session->set('order_id', null);});
 
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/webhook', [
@@ -227,9 +225,7 @@ class MobbexGateway
 
     public static function load_gateway()
     {
-
         require_once plugin_dir_path(__FILE__) . 'gateway.php';
-
     }
 
     public static function add_gateway()
@@ -311,15 +307,11 @@ class MobbexGateway
     }
 
     /**
-     * Add new button to show a modal with financial information
-     * only if the checkbox of financial information is checked
-     * @access public
+     * Display finance widget open button in product page.
      */
-    public function additional_button_add_to_cart()
+    public function display_finnacial_button()
     {
-        // If financial widget is active, execute shortcode to display modal
-        if (self::$helper->financial_info_active)
-            do_shortcode('[mobbex_button]');
+        do_shortcode('[mobbex_button]');
     }
 
     /**
@@ -359,36 +351,6 @@ class MobbexGateway
         ];
 
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
-    }
-
-    public function update_order()
-    {
-        // Try to get current order
-        $checkout = WC()->checkout;
-        $order_id = WC()->session->get('order_id');
-        $order    = $order_id ? wc_get_order($order_id) : null;
-
-        // Exit if order does not exist
-        if (!$order)
-            return false;
-
-        WC()->cart->calculate_totals();
-
-        // If form data is sent, only update it
-        if (!empty($_REQUEST['payment_method']))
-            wp_send_json($checkout->create_order($_REQUEST));
-
-        // Renew order items
-        $order->remove_order_items();
-        $order->set_cart_hash(WC()->cart->get_cart_hash());
-        $checkout->set_data_from_cart($order);
-        $order->save();
-
-        // Create new Mobbex checkout
-        $gateway      = new WC_Gateway_Mobbex();
-        $new_checkout = $gateway->process_payment($order_id);
-
-        wp_send_json($new_checkout);
     }
 
     /**

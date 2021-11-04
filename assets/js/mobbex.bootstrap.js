@@ -38,10 +38,6 @@ jQuery(function ($) {
             })
             // Only if mobbex is the only payment method and is the first render
             if($('#payment_method_mobbex').is(':checked') && !rendered) return renderOptions()
-            
-            // Update de wallet if is alredy rendered
-            if (rendered) getUpdatedWallet()
-
         }
     })
 
@@ -58,18 +54,15 @@ jQuery(function ($) {
 
             lockForm()
 
-            if (mobbex_data.is_wallet === "1"){
-                return executeWallet()
-
-            }
-            else {
+            if (mobbex_data.is_wallet === "1") {
+                getUpdatedWallet(response => executeWallet(response));
+            } else {
                 $("body").append('<div id="mbbx-container"></div>');
-
                 getSignedCheckoutUrlViaAjax();
-
-                // Make sure we don't submit the form normally
-                return true;
             }
+
+            // Make sure we don't submit the form normally
+            return true;
         }
 
         // We didn't fire
@@ -166,14 +159,14 @@ jQuery(function ($) {
     }
     
     // Process the selected credit card with Mobbex SDK
-    function executeWallet() {
-        if (!mobbex_data.is_pay_for_order) getUpdatedWallet(form.serializeArray())
+    function executeWallet(response) {
         var card = $('input[name=walletOpt]:checked').val()
         // Executes this if a credit card is selected
         if (card !== 'new_card') {
+            var cardNumber = $(`#wallet-${card} input[name=cardNumber]`).val()
             var installment = $(`#wallet-${card} select`).val()
             var securityCode = $(`#wallet-${card} input[name=securityCode]`).val()
-            var intentToken = $(`#wallet-${card} input[name=intentToken]`).val()
+            var intentToken = response.data.wallet.find(card => card.card.card_number == cardNumber).it
     
             window.MobbexJS.operation.process({
                 intentToken: intentToken,
@@ -182,7 +175,7 @@ jQuery(function ($) {
             })
             .then(data => {
                 if (data.result === true) {
-                    location.href = walletReturn + '&status=' + data.data.status.code
+                    location.href = response.return_url + '&status=' + data.data.status.code
                 }
                 else handleErrorResponse({
                     result: 'errors',
@@ -195,42 +188,37 @@ jQuery(function ($) {
         else {
             // New card is selected so the modal is executed
             $("body").append('<div id="mbbx-container"></div>');
-            startMobbexCheckoutModal(mobbex_data.transaction_uid, walletReturn)
+            startMobbexCheckoutModal(response.data.id, response.return_url)
         }
 
         return true
     }
 
     // Get the new wallet with updated installments from server
-    function getUpdatedWallet(data){
+    function getUpdatedWallet(callback){
         lockForm()
         $.ajax({
             dataType: "json",
             method: "POST",
-            url: mobbex_data.update_url,
-            data: data,
-            success: function( response) {
-                if (typeof data === "undefined" || data === null) {
-                    mobbex_data.transaction_uid = response.data.id
-                    walletData = response.data.wallet
-                    updateWallet()
+            url: mobbex_data.is_pay_for_order ? form[0].action : mobbex_data.order_url,
+            data: form.serializeArray(),
+            success: function (response) {
+                if (response.result === 'success') {
+                    callback(response);
+                } else {
+                    handleErrorResponse(response);
                 }
-                unlockForm()
             },
             error: function () {
+                // We got a 500 or something if we hit here. Shouldn't normally happen
+                // alert("We were unable to process your order, please try again in a few minutes.");
                 handleErrorResponse({
                     result: 'errors',
                     reload: false,
                     messages: ['Se produjo un error al cargar las tarjetas. Intentelo nuevamente']
                 });
-            },
-        })
-    }
-
-    // Updates the options
-    function updateWallet(){
-        $('#walletCardsContainer').remove()
-        renderOptions()
+            }
+        });
     }
 
     // Renders the wallet with the info from server
@@ -238,7 +226,7 @@ jQuery(function ($) {
         // Creates the input radio and form for each card
         wallet.forEach((card, index) => {
             var installments
-            installments = card.installments
+            installments = card.installments ? card.installments : [];
             var i = index
             var listCard = `
                 <li class="wc_payment_method payment_method_card" style="margin-bottom:1.5rem">
@@ -248,6 +236,7 @@ jQuery(function ($) {
                         <select class="select2-selection__rendered" name="installment"></select>
                         <input style="margin-top:1rem" class="input-text" type="password" maxlength="${card.source.card.product.code.length}" name="securityCode" placeholder="${card.source.card.product.code.name}" required>
                         <input type="hidden" name="intentToken" value="${card.it}">
+                        <input type="hidden" name="cardNumber" value="${card.card.card_number}">
                     </div>
                 </li>`
             $('#walletCards').append(listCard)

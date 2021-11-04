@@ -8,15 +8,42 @@ class MobbexHelper
      */
     public static $ahora = ['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'];
 
+    /** Module configuration settings */
+    public $settings = [];
+
+    /**
+     * Load plugin settings.
+     */
     public function __construct()
     {
-        // Init settings (Full List in WC_Gateway_Mobbex::init_form_fields)
-        $option_key = 'woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings';
-        $settings = get_option($option_key, null) ?: [];
-        foreach ($settings as $key => $value) {
+        $this->settings = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID .'_settings', null) ?: [];
+
+        foreach ($this->settings as $key => $value) {
             $key = str_replace('-', '_', $key);
             $this->$key = $value;
         }
+
+        // The intent constant overwrite payment mode setting
+        if (defined('MOBBEX_CHECKOUT_INTENT')) {
+            $this->settings['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
+        } else if ($this->settings['payment_mode'] == 'yes') {
+            $this->settings['payment_mode'] = 'payment.2-step';
+        } else {
+            $this->settings['payment_mode'] = 'payment.v2';
+        }
+    }
+
+    public function debug($message = 'debug', $data = [], $force = false)
+    {
+        if ($this->settings['debug_mode'] != 'yes' && !$force)
+            return;
+
+        apply_filters(
+            'simple_history_log',
+            'Mobbex: ' . $message,
+            $data,
+            'debug'
+        );
     }
 
     public function isReady()
@@ -221,42 +248,6 @@ class MobbexHelper
     }
 
     /**
-     * Get payment mode.
-     * 
-     * @return string|null $payment_mode
-     */
-    public function get_payment_mode()
-    {
-        if (defined('MOBBEX_CHECKOUT_INTENT') && !empty(MOBBEX_CHECKOUT_INTENT)) {
-            // Try to get from constant first
-            return MOBBEX_CHECKOUT_INTENT;
-        } else if (!empty($this->payment_mode) && $this->payment_mode === 'yes') {
-            return 'payment.2-step';
-        }
-    }
-
-    /**
-     * Get Store configured by product/category using Multisite options.
-     * 
-     * @param WP_Order $order
-     * 
-     * @return array|null $store
-     */
-    public static function get_store($order)
-    {
-        $stores   = get_option('mbbx_stores') ?: [];
-        $products = self::get_product_ids($order);
-
-        // Search store configured
-        foreach ($products as $product_id) {
-            $store_configured = self::get_store_from_product($product_id);
-
-            if (!empty($store_configured) && !empty($stores[$store_configured]))
-                return $stores[$store_configured];
-        }
-    }
-
-    /**
      * Get Store ID from product and its categories.
      * 
      * @param int|string $product_id
@@ -336,5 +327,95 @@ class MobbexHelper
             $var = unserialize($var);
 
         return is_array($var) ? $var : [];
+    }
+
+    public function get_api_endpoint($endpoint, $order_id)
+    {
+        $query = [
+            'mobbex_token' => $this->generate_token(),
+            'platform' => "woocommerce",
+            "version" => MOBBEX_VERSION,
+        ];
+
+        if ($order_id) {
+            $query['mobbex_order_id'] = $order_id;
+        }
+
+        if ($endpoint === 'mobbex_webhook' && $this->settings['use_webhook_api']) {
+            return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
+        } else {
+            $query['wc-api'] = $endpoint;
+        }
+
+        return add_query_arg($query, home_url('/'));
+    }
+
+    public function valid_mobbex_token($token)
+    {
+        return $token == $this->generate_token();
+    }
+
+    public function generate_token()
+    {
+        return md5($this->settings['api-key'] . '|' . $this->settings['access-token']);
+    }
+
+    public function get_product_image($product_id)
+    {
+        $product = wc_get_product($product_id);
+
+        if (!$product)
+            return;
+
+        $image   = wp_get_attachment_image_url($product->get_image_id(), 'thumbnail');
+        $default = wc_placeholder_img_src('thumbnail');
+
+        return $image ?: $default;
+    }
+
+    /**
+     * Update order total.
+     * 
+     * @param WC_Order $order
+     * @param int|string $total
+     */
+    public function update_order_total($order, $total)
+    {
+        if ($total == $order->get_total())
+            return;
+
+        // Create an item with total difference
+        $item = new WC_Order_Item_Fee();
+
+        $item->set_name($total > $order->get_total() ? __('Cargo financiero', 'mobbex-for-woocommerce') : __('Descuento', 'mobbex-for-woocommerce'));
+        $item->set_amount($total - $order->get_total());
+        $item->set_total($total - $order->get_total());
+
+        // Add the item and recalculate totals
+        $order->add_item($item);
+        $order->calculate_totals();
+    }
+
+    public function get_wallet_checkout()
+    {
+        $order = wc_get_order(get_query_var('order-pay'));
+        $cart  = WC()->cart;
+
+        $helper = $order ? new MobbexOrderHelper($order) : new MobbexCartHelper($cart);
+
+        // If is pending order page create checkout from order and return
+        if ($order)
+            return $helper->create_checkout();
+
+        // Try to get previous cart checkout data
+        $cart_checkout = WC()->session->get('mobbex_cart_checkout');
+        $cart_hash     = $cart->get_cart_hash();
+
+        $response = isset($cart_checkout[$cart_hash]) ? $cart_checkout[$cart_hash] : $helper->create_checkout();
+
+        if ($response)
+            WC()->session->set('mobbex_cart_checkout', [$cart_hash => $response]);
+
+        return $response;
     }
 }
