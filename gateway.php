@@ -1023,13 +1023,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function add_checkout_fields($fields)
     {
+        $cutomer_id = WC()->cart->get_customer()->get_id();
+
         $fields['billing_dni'] = array(
             'label' => __('DNI', 'woocommerce'),
             'placeholder' => _x('Ingrese su DNI', 'placeholder', 'woocommerce'),
             'required' => true,
             'clear' => false,
             'type' => 'text',
-            'class' => array('my-dni'),
+            'default' => get_user_meta($cutomer_id, 'billing_dni', true),
         );
 
         return $fields;
@@ -1037,7 +1039,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function display_checkout_fields_data($order)
     {
-        echo '<p><strong>' . __('DNI') . ':</strong> ' . get_post_meta($order->get_id(), '_billing_dni', true) . '</p>';
+        ?>
+        <p>
+            <strong>DNI:</strong><?= get_user_meta($order->get_customer_id(), 'billing_dni', true) ?>
+        </p>
+        <?php
     }
 
     public function validate_checkout_fields()
@@ -1047,11 +1053,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
     }
 
-    public function save_checkout_fields($order_id) 
+    public function save_checkout_fields($post_data)
     {
-        // Save DNI field
-        if (!empty($_POST['billing_dni'])) {
-            update_post_meta($order_id, '_billing_dni', esc_attr($_POST['billing_dni']));
-        }
+        $cutomer_id = WC()->cart->get_customer()->get_id();
+        $dni_field  = !empty($this->helper->settings['custom_dni']) ? $this->helper->settings['custom_dni'] : 'billing_dni';
+
+        if ($cutomer_id && isset($post_data[$dni_field]))
+            update_user_meta($cutomer_id, 'billing_dni', $post_data[$dni_field]);
     }
 }
