@@ -1,9 +1,9 @@
 <?php
+
 require_once 'includes/utils.php';
 
 class WC_Gateway_Mobbex extends WC_Payment_Gateway
 {
-
     public $supports = array(
         'products',
         'refunds',
@@ -14,13 +14,16 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function __construct()
     {
-        $this->id = MOBBEX_WC_GATEWAY_ID;
+        $this->id     = MOBBEX_WC_GATEWAY_ID;
+        $this->helper = new MobbexHelper();
 
-        $this->method_title = __('Mobbex', 'mobbex-for-woocommerce');
+        // String variables. That's used on checkout view
+        $this->icon        = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
+        $this->title       = $this->helper->settings['title'];
+        $this->description = $this->helper->settings['description'];
+
+        $this->method_title       = 'Mobbex';
         $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', 'mobbex-for-woocommerce');
-
-        // Icon
-        $this->icon = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
 
         // Generate admin fields
         $this->init_form_fields();
@@ -60,60 +63,37 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $this->api_key = $this->get_option('api-key');
         $this->access_token = $this->get_option('access-token');
-
-        $this->helper = new MobbexHelper();
         $this->error = false;
-        if (empty($this->api_key) || empty($this->access_token)) {
 
-            $this->error = true;
-            MobbexGateway::notice('error', __('You need to specify an API Key and an Access Token.', 'mobbex-for-woocommerce'));
-
-        }
+        if (!$this->helper->settings['api-key'] || !$this->helper->settings['access-token'])
+            $this->error = !MobbexGateway::notice('error', __('You need to specify an API Key and an Access Token.', 'mobbex-for-woocommerce'));
 
         // Always Required
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
 
-        $this->debug(array(
-            "enabled" => $this->enabled,
-            "use_button" => $this->use_button,
-            "test_mode" => $this->test_mode,
-            "title" => $this->title,
-            "description" => $this->description,
-            "api_key" => $this->api_key,
-            "access_token" => $this->access_token,
-            "error" => $this->error,
-        ), "Settings");
-
         // Only if the plugin is enabled
         if (!$this->error && $this->enabled === 'yes') {
-            $this->debug([], "Adding actions");
-
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
 
-            if ($this->use_webhook_api === false) {
-                $this->debug([], "Registering WC Controller");
-
+            if ($this->helper->settings['use_webhook_api'] != 'yes')
                 add_action('woocommerce_api_mobbex_webhook', [$this, 'mobbex_webhook']);
-            }
 
             // If button is enabled show it
             if ($this->use_button) {
-                $this->debug([], "Adding actions for Button");
-
                 add_action('woocommerce_after_checkout_form', [$this, 'display_mobbex_button']);
                 add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
             }
 
             // Add additional checkout fields
-            if ($this->own_dni == 'yes') {
+            if ($this->helper->settings['own_dni'] == 'yes') {
                 add_filter('woocommerce_billing_fields', [$this, 'add_checkout_fields']);
-                add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'display_checkout_fields_data']);
                 add_action('woocommerce_after_checkout_validation', [$this, 'validate_checkout_fields']);
-                add_action('woocommerce_checkout_update_order_meta', [$this, 'save_checkout_fields']);
+                add_action('woocommerce_checkout_update_order_review', [$this, 'save_checkout_fields']);
             }
+
+            // Display fields on admin panel
+            add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'display_checkout_fields_data']);
         }
-
-
     }
 
     public function debug($log, $message = 'debug')
@@ -390,27 +370,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         return $result;
     }
 
-    public function get_api_endpoint($endpoint, $order_id)
-    {
-        $query = [
-            'mobbex_token' => $this->generate_token(),
-            'platform' => "woocommerce",
-            "version" => MOBBEX_VERSION,
-        ];
-
-        if ($order_id) {
-            $query['mobbex_order_id'] = $order_id;
-        }
-
-        if ($endpoint === 'mobbex_webhook' && $this->use_webhook_api) {
-            return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
-        } else {
-            $query['wc-api'] = $endpoint;
-        }
-
-        return add_query_arg($query, home_url('/'));
-    }
-
     public function mobbex_webhook()
     {
         if (!$_POST['data']) {
@@ -476,7 +435,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return false;
         }
 
-        if (!$this->valid_mobbex_token($token)) {
+        if (!$this->helper->valid_mobbex_token($token)) {
             $this->debug([], 'Invalid mobbex token.');
 
             return false;
@@ -540,7 +499,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.
             // TODO: implement return
-            $this->add_fee_or_discount($data['payment']['total'], $order);
+            $this->helper->update_order_total($order, $data['payment']['total']);
             $order->payment_complete($id);
         } else {
             $order->update_status('failed', __('Order failed', 'mobbex-for-woocommerce'));
@@ -567,7 +526,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $error = "No se pudo validar la transacción. Contacte con el administrador de su sitio";
         }
 
-        if (!$this->valid_mobbex_token($token)) {
+        if (!$this->helper->valid_mobbex_token($token)) {
             $error = "Token de seguridad inválido.";
         }
 
@@ -589,29 +548,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         WC()->session->set('order_awaiting_payment', null);
 
         wp_safe_redirect($redirect);
-    }
-
-    public function valid_mobbex_token($token)
-    {
-        return $token == $this->generate_token();
-    }
-
-    public function generate_token()
-    {
-        return md5($this->api_key . '|' . $this->access_token);
-    }
-
-    public function isReady()
-    {
-        if ($this->enabled !== 'yes') {
-            return false;
-        }
-
-        if (empty($this->api_key) || empty($this->access_token)) {
-            return false;
-        }
-
-        return true;
     }
 
     public function payment_scripts()
@@ -667,12 +603,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     }
 
     /**
-     * Display Mobbex button on the cart page.
+     * Display Mobbex button on checkout page.
      */
-    public function display_mobbex_button($checkout)
+    public function display_mobbex_button()
     {
         ?>
-        <!-- Mobbex Button -->
         <div id="mbbx-button"></div>
         <?php
     }
@@ -683,52 +618,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         wp_redirect(wc_get_cart_url());
 
         return array('result' => 'error', 'redirect' => wc_get_cart_url());
-    }
-
-    private function add_fee_or_discount($total, $order)
-    {
-        if (version_compare(WC_VERSION, '2.6', '>') && version_compare(WC_VERSION, '3.2', '<') && $total < $order->get_total()) {
-            // In these versions discounts can only be applied using coupons
-            $current_user = wp_get_current_user();
-            $coupon_code = $current_user->ID . $order->get_id();
-
-            $coupon = array(
-                'post_title' => $coupon_code,
-                'post_content' => '',
-                'post_status' => 'publish',
-                'post_author' => 1,
-                'post_type' => 'shop_coupon',
-            );
-
-            $new_coupon_id = wp_insert_post($coupon);
-
-            update_post_meta($new_coupon_id, 'discount_type', 'fixed_cart');
-            update_post_meta($new_coupon_id, 'coupon_amount', $order->get_total() - $total);
-            update_post_meta($new_coupon_id, 'individual_use', 'no');
-            update_post_meta($new_coupon_id, 'product_ids', '');
-            update_post_meta($new_coupon_id, 'exclude_product_ids', '');
-            update_post_meta($new_coupon_id, 'usage_limit', '1');
-            update_post_meta($new_coupon_id, 'expiry_date', '');
-            update_post_meta($new_coupon_id, 'apply_before_tax', 'yes');
-            update_post_meta($new_coupon_id, 'free_shipping', 'no');
-
-            $order->apply_coupon($coupon_code);
-            $order->recalculate_coupons();
-
-        } elseif ($total != $order->get_total()) {
-
-            $item_fee = new WC_Order_Item_Fee();
-
-            $item_fee->set_name($total > $order->get_total() ? "Processing Fee" : "Discount");
-            $item_fee->set_amount($total - $order->get_total());
-            $item_fee->set_total($total - $order->get_total());
-
-            $order->add_item($item_fee);
-
-        }
-
-        $order->calculate_totals();
-
     }
 
     public function process_refund($order_id, $amount = null, $reason = '')
@@ -763,43 +652,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return new WP_Error('mobbex_refund_error', __('Refund Error: Sorry! This is not a refundable transaction.', 'mobbex-gateway'));
         }
 
-    }
-
-    /**
-     * Retrieve selected plans that won't be showed in the payment process 
-     * @return array 
-     */
-    public function get_installments($order)
-    {
-        $installments = $inactive_plans = $active_plans = [];
-        $products = MobbexHelper::get_product_ids($order);
-
-        // Get plans from order products
-        foreach ($products as $product_id) {
-            $inactive_plans = array_merge($inactive_plans, MobbexHelper::get_inactive_plans($product_id));
-            $active_plans   = array_merge($active_plans, MobbexHelper::get_active_plans($product_id));
-        }
-
-        // Add inactive (common) plans to installments
-        foreach ($inactive_plans as $plan)
-            $installments[] = '-' . $plan;
-
-        // Add active (advanced) plans to installments only if the plan is active on all products
-        foreach (array_count_values($active_plans) as $plan => $reps) {
-            if ($reps == count($products))
-                $installments[] = '+uid:' . $plan;
-        }
-
-        // Remove duplicated plans and return
-        return array_values(array_unique($installments));
-    }
-
-    public function get_reference($order_id)
-    {
-        // If isset reseller id add it to reference
-        $reseller_id = !empty($this->reseller_id) ? '_reseller:' . str_replace(' ', '-', trim($this->reseller_id)) : null;
-
-        return 'wc_order_'.$order_id.'_time_'.time() . $reseller_id;
     }
 
     public function add_checkout_fields($fields)
