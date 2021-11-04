@@ -268,6 +268,60 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
+            'financial_widget_theme' => [
+
+                'title' => __('Financial Widget Theme', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your Financial Widget Theme from here.', 'mobbex-for-woocommerce'),
+                'type' => 'select',
+                'options' => [
+                    'light' => __('Light Theme', 'mobbex-for-woocommerce'),
+                    'dark' => __('Dark Theme', 'mobbex-for-woocommerce'),
+                ],
+                'default' => 'light',
+                'class' => 'mbbx-into-appearance',
+
+            ],
+
+            'financial_widget_button_color' => [
+
+                'title' => __('Financial Widget Button Color', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your financial widget button color from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => null,
+                'class' => 'colorpick mbbx-into-appearance'
+
+            ],
+
+            'financial_widget_button_font_color' => [
+
+                'title' => __('Financial Widget Button Font Color', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your financial widget button font color from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => null,
+                'class' => 'colorpick mbbx-into-appearance'
+
+            ],
+
+            'financial_widget_button_font_size' => [
+
+                'title' => __('Financial Widget Button Font Size', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your financial widget button font size from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => null,
+                'class' => 'mbbx-into-appearance'
+
+            ],
+
+            'financial_widget_button_Padding' => [
+
+                'title' => __('Financial Widget Button Padding', 'mobbex-for-woocommerce'),
+                'description' => __('You can customize your financial widget button padding from here.', 'mobbex-for-woocommerce'),
+                'type' => 'text',
+                'default' => null,
+                'class' => 'mbbx-into-appearance'
+
+            ],
+            
             /* Advanced Configuration */
 
             'advanced_configuration_tab' => [
@@ -500,6 +554,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             } else {
                 $order->update_status('on-hold', __('Awaiting payment', 'mobbex-for-woocommerce'));
             }
+        } else if ($status == 602 || $status == 605) {
+            $order->update_status('refunded', __('Payment refunded', 'mobbex-for-woocommerce'));
         } else if ($status == 4 || $status >= 200 && $status < 400) {
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.
@@ -507,7 +563,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $this->helper->update_order_total($order, $data['payment']['total']);
             $order->payment_complete($id);
         } else {
-            $order->update_status('failed', __('Order failed', 'mobbex-for-woocommerce'));
+            $order->update_status('failed', __('Payment failed', 'mobbex-for-woocommerce'));
         }
         
         // Set Total Paid
@@ -634,14 +690,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         ]);
 
-        $result = json_decode($response['body']);
+        $result = json_decode($response['body'], true);
 
-        if ($result->result) {
+        if ($result['result'])
             return true;
-        } else {
-            return new WP_Error('mobbex_refund_error', __('Refund Error: Sorry! This is not a refundable transaction.', 'mobbex-gateway'));
-        }
 
+        return false;
     }
 
     public function add_checkout_fields($fields)
