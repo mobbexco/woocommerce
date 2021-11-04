@@ -23,6 +23,7 @@ class MobbexApi
      */
     public function __construct($api_key, $access_token)
     {
+        // TODO: Maybe this could recieve a mobbex store object
         $this->api_key      = $api_key;
         $this->access_token = $access_token;
         $this->ready        = !empty($api_key) && !empty($access_token);
@@ -91,4 +92,4 @@ class MobbexApi
             'x-access-token: ' . $this->access_token,
         ];
     }
-} 
+}

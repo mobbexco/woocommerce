@@ -60,7 +60,7 @@ class MobbexCheckout
                 'customer'     => $this->customer,
                 'options'      => [
                     'button'   => $this->settings['button'] == 'yes',
-                    'domain'   => parse_url(home_url())['host'],
+                    'domain'   => str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
                     'theme'    => [
                         'type'       => $this->settings['checkout_theme'],
                         'background' => $this->settings['checkout_background_color'],

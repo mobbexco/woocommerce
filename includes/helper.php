@@ -28,6 +28,8 @@ class MobbexHelper
             $this->settings['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
         } else if ($this->settings['payment_mode'] == 'yes') {
             $this->settings['payment_mode'] = 'payment.2-step';
+        } else {
+            $this->settings['payment_mode'] = 'payment.v2';
         }
     }
 
