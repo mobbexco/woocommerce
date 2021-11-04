@@ -433,4 +433,27 @@ class MobbexHelper
         $order->add_item($item);
         $order->calculate_totals();
     }
+
+    public function get_wallet_checkout()
+    {
+        $order = wc_get_order(get_query_var('order-pay'));
+        $cart  = WC()->cart;
+
+        $helper = $order ? new MobbexOrderHelper($order) : new MobbexCartHelper($cart);
+
+        // If is pending order page create checkout from order and return
+        if ($order)
+            return $helper->create_checkout();
+
+        // Try to get previous cart checkout data
+        $cart_checkout = WC()->session->get('mobbex_cart_checkout');
+        $cart_hash     = $cart->get_cart_hash();
+
+        $response = isset($cart_checkout[$cart_hash]) ? $cart_checkout[$cart_hash] : $helper->create_checkout();
+
+        if ($response)
+            WC()->session->set('mobbex_cart_checkout', [$cart_hash => $response]);
+
+        return $response;
+    }
 }

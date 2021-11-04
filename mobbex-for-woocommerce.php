@@ -77,9 +77,6 @@ class MobbexGateway
         // Validate Cart items
         add_filter('woocommerce_add_to_cart_validation', [$this, 'validate_cart_items'], 10, 2);
 
-        // Checkout update endpoint
-        add_action('woocommerce_api_mobbex_update_order', [$this, 'update_order']);
-
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/webhook', [
                 'methods' => WP_REST_Server::CREATABLE,
@@ -349,36 +346,6 @@ class MobbexGateway
         ];
 
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
-    }
-
-    public function update_order()
-    {
-        // Try to get current order
-        $checkout = WC()->checkout;
-        $order_id = WC()->session->get('order_awaiting_payment');
-        $order    = $order_id ? wc_get_order($order_id) : null;
-
-        // Exit if order does not exist
-        if (!$order)
-            return false;
-
-        WC()->cart->calculate_totals();
-
-        // If form data is sent, only update it
-        if (!empty($_REQUEST['payment_method']))
-            wp_send_json($checkout->create_order($_REQUEST));
-
-        // Renew order items
-        $order->remove_order_items();
-        $order->set_cart_hash(WC()->cart->get_cart_hash());
-        $checkout->set_data_from_cart($order);
-        $order->save();
-
-        // Create new Mobbex checkout
-        $gateway      = new WC_Gateway_Mobbex();
-        $new_checkout = $gateway->process_payment($order_id);
-
-        wp_send_json($new_checkout);
     }
 
     /**

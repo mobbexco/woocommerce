@@ -572,32 +572,18 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         $mobbex_data = [
             'order_url'        => home_url('/mobbex?wc-ajax=checkout'),
-            'update_url'       => home_url('/wc-api/mobbex_update_order'),
-            'is_wallet'        => $this->helper->settings['wallet'] == 'yes' && wp_get_current_user()->ID && empty($_GET['pay_for_order']),
+            'is_wallet'        => $this->helper->settings['wallet'] == 'yes' && wp_get_current_user()->ID,
             'is_pay_for_order' => !empty($_GET['pay_for_order']),
         ];
 
-        // If using wallet, create Order previously
+        // If using wallet create checkout previously
         if ($mobbex_data['is_wallet']) {
-            $order_id = get_query_var('order-pay') ?: WC()->session->get('order_awaiting_payment');
+            $checkout_data = $this->helper->get_wallet_checkout();
 
-            if (!$order_id) {
-                // Create Order and save in session
-                $checkout = WC()->checkout;
-                WC()->cart->calculate_totals();
-                $order_id = $checkout->create_order($_POST);
-
-                WC()->session->set('order_awaiting_payment', $order_id);
-            }
-
-            // Create mobbex checkout
-            $order_helper  = new MobbexOrderHelper(wc_get_order($order_id));
-            $checkout_data = $order_helper->create_checkout();
-    
             // Set mobbex wallet data
             $mobbex_data = array_merge($mobbex_data, [
                 'wallet'          => $checkout_data['wallet'],
-                'return_url'      => $this->helper->get_api_endpoint('mobbex_return_url', $order_id),
+                'return_url'      => get_query_var('order-pay') ? $this->helper->get_api_endpoint('mobbex_return_url', get_query_var('order-pay')) : false,
                 'transaction_uid' => $checkout_data['id']
             ]);
         }
