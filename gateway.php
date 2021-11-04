@@ -582,7 +582,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 WC()->cart->calculate_totals();
                 $order_id = $checkout->create_order($_POST);
 
-                WC()->session->set('order_id', $order_id);
                 WC()->session->set('order_awaiting_payment', $order_id);
             }
 
