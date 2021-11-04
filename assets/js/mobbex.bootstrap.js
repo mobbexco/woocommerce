@@ -55,17 +55,14 @@ jQuery(function ($) {
             lockForm()
 
             if (mobbex_data.is_wallet === "1") {
-                return getUpdatedWallet(response => executeWallet(response));
-
-            }
-            else {
+                getUpdatedWallet(response => executeWallet(response));
+            } else {
                 $("body").append('<div id="mbbx-container"></div>');
-
                 getSignedCheckoutUrlViaAjax();
-
-                // Make sure we don't submit the form normally
-                return true;
             }
+
+            // Make sure we don't submit the form normally
+            return true;
         }
 
         // We didn't fire
