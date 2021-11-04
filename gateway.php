@@ -414,8 +414,15 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $res = $this->process_webhook($id, $token, $postData['data']);
 
         return [
-            "result" => $res,
-            "platform" => $this->getPlatform(),
+            'result'   => $res,
+            'platform' => [
+                'name'      => 'woocommerce',
+                'version'   => MOBBEX_VERSION,
+                'ecommerce' => [
+                    'wordpress'   => get_bloginfo('version'),
+                    'woocommerce' => WC_VERSION
+                ]
+            ],
         ];
     }
 
