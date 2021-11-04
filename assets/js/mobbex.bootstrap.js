@@ -238,7 +238,7 @@ jQuery(function ($) {
         // Creates the input radio and form for each card
         wallet.forEach((card, index) => {
             var installments
-            installments = card.installments
+            installments = card.installments ? card.installments : [];
             var i = index
             var listCard = `
                 <li class="wc_payment_method payment_method_card" style="margin-bottom:1.5rem">

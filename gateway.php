@@ -85,14 +85,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             }
 
             // Add additional checkout fields
-            if ($this->helper->settings['own_dni'] == 'yes') {
+            if ($this->helper->settings['own_dni'] == 'yes')
                 add_filter('woocommerce_billing_fields', [$this, 'add_checkout_fields']);
-                add_action('woocommerce_after_checkout_validation', [$this, 'validate_checkout_fields']);
-                add_action('woocommerce_checkout_update_order_review', [$this, 'save_checkout_fields']);
-            }
 
-            // Display fields on admin panel
+            // Display fields on admin panel and try to save it
             add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'display_checkout_fields_data']);
+            add_action('woocommerce_after_checkout_validation', [$this, 'save_checkout_fields']);
         }
     }
 
@@ -559,7 +557,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function payment_scripts()
     {
-        if (is_order_received_page() || is_cart() || !is_checkout() || !self::$helper->isReady())
+        if (is_order_received_page() || is_cart() || !is_checkout() || !$this->helper->isReady())
             return;
 
         // Exclude scripts from cache plugins minification
@@ -575,7 +573,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $mobbex_data = [
             'order_url'        => home_url('/mobbex?wc-ajax=checkout'),
             'update_url'       => home_url('/wc-api/mobbex_update_order'),
-            'is_wallet'        => $this->helper->settings['wallet'] == 'yes' && wp_get_current_user()->ID && !empty($_GET['pay_for_order']),
+            'is_wallet'        => $this->helper->settings['wallet'] == 'yes' && wp_get_current_user()->ID && empty($_GET['pay_for_order']),
             'is_pay_for_order' => !empty($_GET['pay_for_order']),
         ];
 
@@ -680,24 +678,25 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         ?>
         <p>
-            <strong>DNI:</strong><?= get_user_meta($order->get_customer_id(), 'billing_dni', true) ?>
+            <strong>DNI:</strong>
+            <?= get_user_meta($order->get_customer_id(), 'billing_dni', true) ?>
         </p>
         <?php
     }
 
-    public function validate_checkout_fields()
-    {
-        if (empty($_POST['billing_dni'])) {
-            wc_add_notice(__('Empty DNI field.'), 'error');
-        }
-    }
-
-    public function save_checkout_fields($post_data)
+    public function save_checkout_fields()
     {
         $cutomer_id = WC()->cart->get_customer()->get_id();
-        $dni_field  = !empty($this->helper->settings['custom_dni']) ? $this->helper->settings['custom_dni'] : 'billing_dni';
+        $own_dni    =  $this->helper->settings['own_dni'] == 'yes' ? 'billing_dni' : false;
+        $dni        = !empty($this->helper->settings['custom_dni']) ? $this->helper->settings['custom_dni'] : $own_dni;
 
-        if ($cutomer_id && isset($post_data[$dni_field]))
-            update_user_meta($cutomer_id, 'billing_dni', $post_data[$dni_field]);
+        if (empty($dni))
+            return;
+
+        if (empty($_POST[$dni]))
+            return wc_add_notice('Complete el campo DNI', 'error');
+
+        if ($cutomer_id)
+            update_user_meta($cutomer_id, 'billing_dni', $_POST[$dni]);
     }
 }
