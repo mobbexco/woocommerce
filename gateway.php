@@ -79,10 +79,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 add_action('woocommerce_api_mobbex_webhook', [$this, 'mobbex_webhook']);
 
             // If button is enabled show it
-            if ($this->use_button) {
-                add_action('woocommerce_after_checkout_form', [$this, 'display_mobbex_button']);
+            if ($this->use_button)
                 add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
-            }
 
             // Add additional checkout fields
             if ($this->helper->settings['own_dni'] == 'yes')
@@ -590,16 +588,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         wp_localize_script('mobbex-bootstrap', 'mobbex_data', $mobbex_data);
         wp_enqueue_script('mobbex-bootstrap');
-    }
-
-    /**
-     * Display Mobbex button on checkout page.
-     */
-    public function display_mobbex_button()
-    {
-        ?>
-        <div id="mbbx-button"></div>
-        <?php
     }
 
     private function _redirect_to_cart_with_error($error_msg)
