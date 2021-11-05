@@ -68,7 +68,7 @@ class MobbexOrderHelper
         $checkout->set_total($this->order->get_total());
         $checkout->set_endpoints(
             $this->helper->get_api_endpoint('mobbex_return_url', $this->id),
-            $this->helper->get_api_endpoint('mobbex_webhook', $this->id),
+            $this->helper->get_api_endpoint('mobbex_webhook', $this->id)
         );
     }
 
@@ -130,7 +130,7 @@ class MobbexOrderHelper
             $this->order->get_billing_email() ?: $user->user_email,
             get_user_meta($user->ID, 'billing_dni', true) ?: '12123123',
             $this->order->get_billing_phone() ?: get_user_meta($user->ID, 'phone_number', true),
-            $user->ID,
+            $user->ID
         );
     }
 

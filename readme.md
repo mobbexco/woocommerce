@@ -56,6 +56,7 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 - Fix checkout items update on cart update when wallet is active
 - Fix duplicated orders when wallet is active
 - Fix checkout DNI field persistence
+- Fix checkout domain obtaining (remove subdomain)
 
 ### 3.4.0 :: 2021-08-11
 - Add multicard mode option

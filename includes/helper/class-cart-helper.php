@@ -68,7 +68,7 @@ class MobbexCartHelper
         $checkout->set_total($this->cart->get_total(null));
         $checkout->set_endpoints(
             $this->helper->get_api_endpoint('mobbex_return_url', $this->id),
-            $this->helper->get_api_endpoint('mobbex_webhook', $this->id),
+            $this->helper->get_api_endpoint('mobbex_webhook', $this->id)
         );
     }
 
@@ -128,7 +128,7 @@ class MobbexCartHelper
             $customer->get_billing_email(),
             get_user_meta($customer->get_id(), 'billing_dni', true) ?: '12123123',
             $customer->get_billing_phone() ?: get_user_meta($customer->get_id(), 'phone_number', true),
-            $customer->get_id(),
+            $customer->get_id()
         );
     }
 
