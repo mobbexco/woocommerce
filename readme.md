@@ -47,6 +47,9 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.5.1 :: 2021-11-05
+- Remove all trailing commas for PHP < 7.3 support
+
 ### 3.5.0 :: 2021-11-04
 - Add finance widget personalization options 
 - Filter plans hidden by plans with advanced rules in finance widget
