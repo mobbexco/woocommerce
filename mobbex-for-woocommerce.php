@@ -451,11 +451,11 @@ function create_mobbex_table()
 			.'checkout_uid TEXT NOT NULL,'
 			.'total DECIMAL(18,2) NOT NULL,'
 			.'currency TEXT NOT NULL,'
-                        .'risk_analysis TEXT NOT NULL,'
+            .'risk_analysis TEXT NOT NULL,'
 			.'data TEXT NOT NULL,'
 			.'created TEXT NOT NULL,'
 			.'updated TEXT NOT NULL'
-                        .');';
+            .');';
     
     $wpdb->get_results($sql);   
 }
