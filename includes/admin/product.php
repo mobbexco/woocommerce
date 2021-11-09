@@ -138,30 +138,6 @@ class Mbbx_Product_Admin
     }
 
     /**
-     * Get current store data from product or product category.
-     * 
-     * @param string $meta_type 'post'|'term'.
-     * @param int|string $id
-     */
-    public static function get_entity($meta_type, $id)
-    {
-        // Get store saved data
-        $entity       = get_option('mbbx_entity') ?: [];
-        $current_entity = get_metadata($meta_type, $id, 'mbbx_entity', true) ?: '';
-
-        return [
-            'enable_ms'   => get_metadata($meta_type, $id, 'mbbx_enable_multisite', true),
-            'store_names' => array_combine(array_keys($stores), array_column($stores, 'name')) ?: [],
-            'store'       => [
-                'id'           => $current_store,
-                'name'         => isset($stores[$current_store]['name']) ? $stores[$current_store]['name'] : '',
-                'api_key'      => isset($stores[$current_store]['api_key']) ? $stores[$current_store]['api_key'] : '',
-                'access_token' => isset($stores[$current_store]['access_token']) ? $stores[$current_store]['access_token'] : '',
-            ],
-        ];
-    }
-
-    /**
      * Save Mobbbex options from product and product category.
      * 
      * @param int $id The post|term ID.

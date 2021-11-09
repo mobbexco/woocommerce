@@ -398,6 +398,7 @@ class MobbexHelper
     {
         $data = [
             'order_id'           => $order_id,
+<<<<<<< HEAD
             'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard, $multivendor) ? 'yes' : 'no',
             'operation_type'     => $res['payment']['operation']['type'] ? $res['payment']['operation']['type'] : '',
             'payment_id'         => $res['payment']['id'] ? $res['payment']['id'] : '',
@@ -421,9 +422,35 @@ class MobbexHelper
             'total_webhook'      => $res['payment']['total'] ? $res['payment']['total'] : '',
             'currency'           => $res['checkout']['currency'] ? $res['checkout']['currency'] : '',
             'risk_analysis'      => $res['payment']['riskAnalysis']['level'] ? $res['payment']['riskAnalysis']['level'] : '',
+=======
+            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard) ? 'yes' : 'no',
+            'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
+            'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
+            'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
+            'status_code'        => isset($res['payment']['status']['code']) ? $res['payment']['status']['code'] : '',
+            'status_message'     => isset($res['payment']['status']['message']) ? $res['payment']['status']['message'] : '',
+            'source_name'        => isset($res['payment']['source']['name']) ? $res['payment']['source']['name'] : 'Mobbex',
+            'source_type'        => isset($res['payment']['source']['type']) ? $res['payment']['source']['type'] : 'Mobbex',
+            'source_reference'   => isset($res['payment']['source']['reference']) ? $res['payment']['source']['reference'] : '',
+            'source_number'      => isset($res['payment']['source']['number']) ? $res['payment']['source']['number'] : '',
+            'source_expiration'  => isset($res['payment']['source']['expiration']) ? json_encode($res['payment']['source']['expiration']) : '',
+            'source_installment' => isset($res['payment']['source']['installment']) ? json_encode($res['payment']['source']['installment']) : '',
+            'installment_name'   => isset($res['payment']['source']['installment']['description']) ? json_encode($res['payment']['source']['installment']['description']) : '',
+            'installment_amount' => isset($res['payment']['source']['installment']['amount']) ? $res['payment']['source']['installment']['amount'] : '',
+            'installment_count'  => isset($res['payment']['source']['installment']['count'] ) ? $res['payment']['source']['installment']['count']  : '',
+            'source_url'         => isset($res['payment']['source']['url']) ? json_encode($res['payment']['source']['url']) : '',
+            'cardholder'         => isset($res['payment']['source']['cardholder']) ? json_encode(($res['payment']['source']['cardholder'])) : '',
+            'entity_name'        => isset($res['entity']['name']) ? $res['entity']['name'] : '',
+            'entity_uid'         => isset($res['entity']['uid']) ? $res['entity']['uid'] : '',
+            'customer'           => isset($res['customer']) ? json_encode($res['customer']) : '',
+            'checkout_uid'       => isset($res['checkout']['uid']) ? $res['checkout']['uid'] : '',
+            'total'      => isset($res['payment']['total']) ? $res['payment']['total'] : '',
+            'currency'           => isset($res['checkout']['currency']) ? $res['checkout']['currency'] : '',
+            'risk_analysis'      => isset($res['payment']['riskAnalysis']['level']) ? $res['payment']['riskAnalysis']['level'] : '',
+>>>>>>> 533e069dcd236dda7c0fe09765ebfeef281397d4
             'data'               => json_encode($res),
-            'created'            => $res['payment']['created'] ? $res['payment']['created'] : '',
-            'updated'            => $res['payment']['updated'] ? $res['payment']['created'] : '',
+            'created'            => isset($res['payment']['created']) ? $res['payment']['created'] : '',
+            'updated'            => isset($res['payment']['updated']) ? $res['payment']['created'] : '',
         ];
 
         return $data;

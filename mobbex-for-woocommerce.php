@@ -426,13 +426,14 @@ function create_mobbex_table()
     global $wpdb;
 
     $sql = 'CREATE TABLE IF NOT EXISTS ' .$wpdb->prefix.'mobbex_transaction'. '('
-            .'id INT(11) NOT NULL AUTO_INCREMENT,'
+            .'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
             .'order_id INT(11) NOT NULL,'
 			.'parent TEXT NOT NULL,'
 			.'operation_type TEXT NOT NULL,'
 			.'payment_id TEXT NOT NULL,'
 			.'description TEXT NOT NULL,'
 			.'status_code TEXT NOT NULL,'
+			.'status_message TEXT NOT NULL,'
 			.'source_name TEXT NOT NULL,'
 			.'source_type TEXT NOT NULL,'
 			.'source_reference TEXT NOT NULL,'
@@ -441,6 +442,7 @@ function create_mobbex_table()
 			.'source_installment TEXT NOT NULL,'
 			.'installment_name TEXT NOT NULL,'
 			.'installment_amount DECIMAL(18,2) NOT NULL,'
+			.'installment_count TEXT NOT NULL,'
 			.'source_url TEXT NOT NULL,'
 			.'cardholder TEXT NOT NULL,'
 			.'entity_name TEXT NOT NULL,'
@@ -448,13 +450,11 @@ function create_mobbex_table()
 			.'customer TEXT NOT NULL,'
 			.'checkout_uid TEXT NOT NULL,'
 			.'total DECIMAL(18,2) NOT NULL,'
-			.'total_webhook DECIMAL(18,2) NOT NULL,'
 			.'currency TEXT NOT NULL,'
             .'risk_analysis TEXT NOT NULL,'
 			.'data TEXT NOT NULL,'
 			.'created TEXT NOT NULL,'
 			.'updated TEXT NOT NULL,'
-			.'PRIMARY KEY (id)'
             .');';
     
     $wpdb->get_results($sql);   
