@@ -390,6 +390,7 @@ class MobbexHelper
      * 
      * @param int $cart_id
      * @param array $res
+     * @param bool $multivendor
      * @param bool $multicard
      * @return array $data
      * 
