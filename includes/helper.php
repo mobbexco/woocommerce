@@ -396,7 +396,14 @@ class MobbexHelper
         $order->calculate_totals();
     }
 
-    public function get_wallet_checkout()
+    /**
+     * Retrieve a checkout created from current Cart|Order as appropriate.
+     * 
+     * @uses Only to show payment options.
+     * 
+     * @return array|null
+     */
+    public function get_context_checkout()
     {
         $order = wc_get_order(get_query_var('order-pay'));
         $cart  = WC()->cart;

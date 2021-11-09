@@ -10,9 +10,12 @@ Copyright: 2020 mobbex.com
  */
 
 require_once 'includes/utils.php';
+require_once 'includes/helper.php';
 require_once 'includes/class-api.php';
 require_once 'includes/class-checkout.php';
 require_once 'includes/class-exception.php';
+require_once 'includes/admin/order.php';
+require_once 'includes/admin/product.php';
 require_once 'includes/helper/class-order-helper.php';
 require_once 'includes/helper/class-cart-helper.php';
 
@@ -57,9 +60,13 @@ class MobbexGateway
             return;
         }
 
-        MobbexGateway::load_helper();
-        MobbexGateway::load_order_admin();
-        MobbexGateway::load_product_admin();
+        self::$helper = new MobbexHelper();
+
+        // Init order and product admin settings
+        Mbbx_Order_Admin::init();
+        Mbbx_Product_Admin::init();
+
+        // Add Mobbex gateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
@@ -193,27 +200,7 @@ class MobbexGateway
 
     public static function load_textdomain()
     {
-
         load_plugin_textdomain('mobbex-for-woocommerce', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-
-    }
-
-    public static function load_helper()
-    {
-        require_once plugin_dir_path(__FILE__) . 'includes/helper.php';
-        self::$helper = new MobbexHelper();
-    }
-
-    public static function load_order_admin()
-    {
-        require_once plugin_dir_path(__FILE__) . 'includes/admin/order.php';
-        Mbbx_Order_Admin::init();
-    }
-
-    public static function load_product_admin()
-    {
-        require_once plugin_dir_path(__FILE__) . 'includes/admin/product.php';
-        Mbbx_Product_Admin::init();
     }
 
     public static function load_update_checker()
@@ -279,6 +266,26 @@ class MobbexGateway
         if (is_product()) {
             wp_enqueue_script('mmbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
+        }
+
+        // Checkout page
+        if (is_checkout() && !is_order_received_page() && !is_cart() && self::$helper->isReady()) {
+            // Exclude scripts from cache plugins minification
+            !defined('DONOTCACHEPAGE') && define('DONOTCACHEPAGE', true);
+            !defined('DONOTMINIFY') && define('DONOTMINIFY', true);
+
+            wp_enqueue_script('mobbex-embed', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_VERSION, false);
+            wp_enqueue_script('mobbex-sdk', 'https://res.mobbex.com/js/sdk/mobbex@'. MOBBEX_SDK_VERSION . '.js', null, MOBBEX_VERSION, false);
+
+            // Enqueue payment asset files
+            wp_enqueue_style('mobbex-checkout-style', $dir_url . 'assets/css/checkout.css', [], MOBBEX_VERSION, false);
+            wp_register_script('mobbex-checkout-script', $dir_url . 'assets/js/mobbex.bootstrap.js', ['jquery'], MOBBEX_VERSION, false);
+
+            wp_localize_script('mobbex-checkout-script', 'mobbex_data', [
+                'order_url'        => home_url('/mobbex?wc-ajax=checkout'),
+                'is_pay_for_order' => !empty($_GET['pay_for_order']),
+            ]);
+            wp_enqueue_script('mobbex-checkout-script');
         }
     }
 
