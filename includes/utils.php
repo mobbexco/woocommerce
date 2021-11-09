@@ -18,7 +18,7 @@ define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
 
 define('MOBBEX_VERSION', '3.5.1');
 define('MOBBEX_SDK_VERSION', '1.1.0');
-define('MOBBEX_EMBED_VERSION', '1.0.17');
+define('MOBBEX_EMBED_VERSION', '1.0.20');
 
 define('MOBBEX_LIST_PLANS', 'https://api.mobbex.com/p/sources/list/arg/{tax_id}?total={total}');
 

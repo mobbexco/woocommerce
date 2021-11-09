@@ -78,10 +78,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             if ($this->helper->settings['use_webhook_api'] != 'yes')
                 add_action('woocommerce_api_mobbex_webhook', [$this, 'mobbex_webhook']);
 
-            // If button is enabled show it
-            if ($this->use_button)
-                add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
-
             // Add additional checkout fields
             if ($this->helper->settings['own_dni'] == 'yes')
                 add_filter('woocommerce_billing_fields', [$this, 'add_checkout_fields']);
@@ -377,6 +373,22 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'type'    => 'checkbox',
                 'default' => 'no',
             ],
+
+            'unified_mode' => [
+                'title'   => __('Modo unificado', 'mobbex-for-woocommerce'),
+                'label'   => __('Deshabilita la subdivisión de los métodos de pago en la página de finalización de la compra. Las opciones se verán en el checkout.', 'mobbex-for-woocommerce'),
+                'class'   => 'mbbx-into-advanced',
+                'type'    => 'checkbox',
+                'default' => 'no',
+            ],
+
+            'disable_template' => [
+                'title'   => __('Deshabilitar plantilla', 'mobbex-for-woocommerce'),
+                'label'   => __('Deshabilitar plantilla para el mostrado de los métodos de pago.', 'mobbex-for-woocommerce'),
+                'class'   => 'mbbx-into-advanced',
+                'type'    => 'checkbox',
+                'default' => 'no',
+            ],
         ];
 
     }
@@ -614,43 +626,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         WC()->session->set('order_awaiting_payment', null);
 
         wp_safe_redirect($redirect);
-    }
-
-    public function payment_scripts()
-    {
-        if (is_order_received_page() || is_cart() || !is_checkout() || !$this->helper->isReady())
-            return;
-
-        // Exclude scripts from cache plugins minification
-        if (!defined('DONOTCACHEPAGE')) define('DONOTCACHEPAGE', true);
-        if (!defined('DONOTMINIFY'))    define('DONOTMINIFY', true);
-
-        wp_enqueue_script('mobbex-embed', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_EMBED_VERSION, false);
-        wp_enqueue_script('mobbex-sdk', 'https://res.mobbex.com/js/sdk/mobbex@'. MOBBEX_SDK_VERSION . '.js', null, MOBBEX_SDK_VERSION, false);
-
-        // Enqueue payment asset files
-        wp_register_script('mobbex-bootstrap', plugins_url('assets/js/mobbex.bootstrap.js', __FILE__), array('jquery'), MOBBEX_VERSION, false);
-
-        $mobbex_data = [
-            'order_url'        => home_url('/mobbex?wc-ajax=checkout'),
-            'is_wallet'        => $this->helper->settings['wallet'] == 'yes' && wp_get_current_user()->ID,
-            'is_pay_for_order' => !empty($_GET['pay_for_order']),
-        ];
-
-        // If using wallet create checkout previously
-        if ($mobbex_data['is_wallet']) {
-            $checkout_data = $this->helper->get_wallet_checkout();
-
-            // Set mobbex wallet data
-            $mobbex_data = array_merge($mobbex_data, [
-                'wallet'          => $checkout_data['wallet'],
-                'return_url'      => get_query_var('order-pay') ? $this->helper->get_api_endpoint('mobbex_return_url', get_query_var('order-pay')) : false,
-                'transaction_uid' => $checkout_data['id']
-            ]);
-        }
-
-        wp_localize_script('mobbex-bootstrap', 'mobbex_data', $mobbex_data);
-        wp_enqueue_script('mobbex-bootstrap');
     }
 
     private function _redirect_to_cart_with_error($error_msg)
