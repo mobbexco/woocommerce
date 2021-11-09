@@ -1,0 +1,18 @@
+img[src*='res.mobbex'] {
+    width: 42px;
+    border-radius: 100%;
+}
+
+.mbbx-card-form-row {
+    display: inline-block;
+}
+
+.mbbx-card-form-row select {
+    height: 39px;
+    width: auto;
+}
+
+.mbbx-card-form-row input {
+    height: 40px;
+    width: auto;
+}

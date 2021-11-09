@@ -373,6 +373,22 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'type'    => 'checkbox',
                 'default' => 'no',
             ],
+
+            'unified_mode' => [
+                'title'   => __('Modo unificado', 'mobbex-for-woocommerce'),
+                'label'   => __('Deshabilita la subdivisión de los métodos de pago en la página de finalización de la compra. Las opciones se verán en el checkout.', 'mobbex-for-woocommerce'),
+                'class'   => 'mbbx-into-advanced',
+                'type'    => 'checkbox',
+                'default' => 'no',
+            ],
+
+            'disable_template' => [
+                'title'   => __('Deshabilitar plantilla', 'mobbex-for-woocommerce'),
+                'label'   => __('Deshabilitar plantilla para el mostrado de los métodos de pago.', 'mobbex-for-woocommerce'),
+                'class'   => 'mbbx-into-advanced',
+                'type'    => 'checkbox',
+                'default' => 'no',
+            ],
         ];
 
     }
