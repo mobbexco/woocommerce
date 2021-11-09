@@ -399,7 +399,7 @@ class MobbexHelper
     {
         $data = [
             'order_id'           => $order_id,
-            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard) ? 'yes' : 'no',
+            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard, $multivendor) ? 'yes' : 'no',
             'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
             'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
             'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
