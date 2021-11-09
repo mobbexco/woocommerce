@@ -87,6 +87,10 @@ class MobbexGateway
 
         // Create financial widget shortcode
         add_shortcode('mobbex_button', [$this, 'shortcode_mobbex_button']);
+
+        // Display payment options on checkout
+        add_filter('woocommerce_available_payment_gateways', [$this, 'load_payment_options']);
+        add_filter('wc_get_template', [$this, 'load_payment_template'], 10, 3);
     }
 
     /**
@@ -380,6 +384,43 @@ class MobbexGateway
         }
 
         return $valid;
+    }
+
+    /**
+     * Load payment options on gateway to show in checkout.
+     *  
+     * @param array $options
+     * 
+     * @return array 
+     */
+    public function load_payment_options($options)
+    {
+        if (is_cart() || is_order_received_page() || !is_checkout() || !self::$helper->isReady() || empty($options['mobbex']))
+            return $options;
+
+        // Get checkout from context loaded object
+        $response = self::$helper->get_context_checkout();
+
+        // Add cards and payment methods to gateway
+        $options['mobbex']->cards   = isset($response['wallet']) ? $response['wallet'] : [];
+        $options['mobbex']->methods = isset($response['paymentMethods']) ? $response['paymentMethods'] : [];
+
+        return $options;
+    }
+
+    /**
+     * Load own template to show payment options in checkout.
+     *  
+     * @param array $options
+     * 
+     * @return array 
+     */
+    public function load_payment_template($template, $template_name, $args)
+    {
+        if (!self::$helper->isReady() || $template_name != 'checkout/payment-method.php' || $args['gateway']->id != 'mobbex' || self::$helper->settings['disable_template'] == 'yes')
+            return $template;
+
+        return plugin_dir_path(__FILE__) . 'templates/payment-options.php';
     }
 }
 
