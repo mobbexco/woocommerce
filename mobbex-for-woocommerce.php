@@ -450,7 +450,6 @@ function create_mobbex_table()
 			.'customer TEXT NOT NULL,'
 			.'checkout_uid TEXT NOT NULL,'
 			.'total DECIMAL(18,2) NOT NULL,'
-			.'total_webhook DECIMAL(18,2) NOT NULL,'
 			.'currency TEXT NOT NULL,'
             .'risk_analysis TEXT NOT NULL,'
 			.'data TEXT NOT NULL,'
