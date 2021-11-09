@@ -360,7 +360,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 'type' => 'checkbox',
                 'label' => __('Allow to pay the operation with multiple cards (incompatible with marketplace).', 'mobbex-for-woocommerce'), // Permite abonar la operación con múltiples tarjetas
                 'default' => 'no',
-                'class' => 'mbbx-into-tab-advanced',
+                'class' => 'mbbx-into-advanced',
 
             ],
 
@@ -375,7 +375,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                     'unified' => __('Unified', 'mobbex-for-woocommerce'),
                 ],
                 'default' => 'no',
-                'class' => 'mbbx-into-tab-advanced',
+                'class' => 'mbbx-into-advanced',
 
             ],
 
@@ -725,13 +725,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         //order webhook filter
         $postData = apply_filters( 'mobbex_order_webhook', $postData );
-          
-<<<<<<< HEAD
         $webhookData = MobbexHelper::format_webhook_data($id, $postData['data'], ($this->helper->multicard === 'yes'), ($this->helper->multivendor !== 'no'));
-=======
-        $webhookData = MobbexHelper::format_webhook_data($id, $postData['data'], ($this->helper->multicard === 'yes'));
->>>>>>> 533e069dcd236dda7c0fe09765ebfeef281397d4
-
+       
         //Save de webhook in the database
         global $wpdb;
         $wpdb->insert( $wpdb->prefix.'mobbex_transaction', $webhookData, MobbexHelper::db_column_format($webhookData));
