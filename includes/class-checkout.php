@@ -57,14 +57,14 @@ class MobbexCheckout
                 'description'  => 'Pedido #' . $this->relation,
                 'test'         => $this->settings['test_mode'] == 'yes',
                 'multicard'    => $this->settings['multicard'] == 'yes',
-                'wallet'       => $this->settings['wallet'] && wp_get_current_user()->ID,
+                'wallet'       => $this->settings['wallet'] == 'yes' && wp_get_current_user()->ID,
                 'intent'       => $this->settings['payment_mode'],
                 'timeout'      => 5,
                 'items'        => $this->items,
                 'installments' => $this->installments,
                 'customer'     => $this->customer,
                 'options'      => [
-                    'button'   => $this->settings['button'] == 'yes',
+                    'embed'    => $this->settings['button'] == 'yes',
                     'domain'   => str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
                     'theme'    => [
                         'type'       => $this->settings['checkout_theme'],
