@@ -47,6 +47,20 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.5.1 :: 2021-11-05
+- Remove all trailing commas for PHP < 7.3 support
+
+### 3.5.0 :: 2021-11-04
+- Add finance widget personalization options 
+- Filter plans hidden by plans with advanced rules in finance widget
+- Add debug mode option.
+- Add more platform data on checkout generation and webhook response
+- Refactor checkout generation. Use cart to create wallet checkout
+- Fix checkout items update on cart update when wallet is active
+- Fix duplicated orders when wallet is active
+- Fix checkout DNI field persistence
+- Fix checkout domain obtaining (remove subdomain)
+
 ### 3.4.0 :: 2021-08-11
 - Add multicard mode option
 - New common and advanced plans filter by category

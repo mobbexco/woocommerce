@@ -45,7 +45,6 @@ class Mbbx_Product_Admin
         // Get plan fields and current store data to use in template
         extract(self::get_plan_fields($meta_type, $id));
         extract(self::get_store_data($meta_type, $id));
-        // self::get_entity($meta_type, $id);
 
         $entity = get_metadata($meta_type, $id, 'mbbx_entity', true) ?: '';
 
