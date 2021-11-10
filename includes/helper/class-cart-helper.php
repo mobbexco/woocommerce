@@ -82,7 +82,13 @@ class MobbexCartHelper
         $items = $this->cart->get_cart() ?: [];
 
         foreach ($items as $item)
-            $checkout->add_item($item['line_total'], $item['quantity'], $item['data']->get_name(), $this->helper->get_product_image($item['product_id']));
+            $checkout->add_item(
+                $item['line_total'],
+                $item['quantity'],
+                $item['data']->get_name(),
+                $this->helper->get_product_image($item['product_id']),
+                $this->helper->get_entity($item['product_id'])
+            );
 
         $checkout->add_item($this->cart->get_shipping_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce'));
     }

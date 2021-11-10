@@ -69,5 +69,19 @@
         ]);
         ?>
     </div>
+    <hr>
+    <h2><?= __('Multivendor', 'mobbex-for-woocommerce')?></h2>
+    <p><?=  __('Write the UID of the entity corresponding to the product.', 'mobbex-for-woocommerce') ?></p>
+    <div>
+        <?php 
+            woocommerce_wp_text_input([
+                'id'            => 'mbbx_entity',
+                'value'         => $entity,
+                'label'         => __('Entity UID', 'mobbex-for-woocommerce'),
+                'description'   => __('The uid of the product entity.', 'mobbex-for-woocommerce'),
+                'desc_tip'      => true,
+            ]);
+        ?>
+    </div>
     <?php do_action('mbbx_product_options_end') ?>
 </div>

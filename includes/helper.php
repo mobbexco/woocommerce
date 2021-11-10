@@ -52,7 +52,7 @@ class MobbexHelper
     }
 
     /**
-     * Get sources with common plans from mobbex.
+     * Get sources with common plans and advanced plans from mobbex.
      * @param integer|null $total
      * @param array|null $inactivePlans
      * @param array|null $activePlans
@@ -90,7 +90,7 @@ class MobbexHelper
 
         return [];
     }
-    
+
     /**
      * Get sources with advanced rule plans from mobbex.
      * @param string $rule
@@ -125,27 +125,28 @@ class MobbexHelper
      * @param array $inactivePlans
      * @param array $activePlans
      */
-    public static function get_installments_query($inactivePlans = null, $activePlans = null ) {
-        
+    public static function get_installments_query($inactivePlans = null, $activePlans = null)
+    {
+
         $installments = [];
-        
+
         //get plans
-        if($inactivePlans) {
+        if ($inactivePlans) {
             foreach ($inactivePlans as $plan) {
                 $installments[] = "-$plan";
             }
         }
 
-        if($activePlans) {
+        if ($activePlans) {
             foreach ($activePlans as $plan) {
                 $installments[] = "+uid:$plan";
-            } 
+            }
         }
 
         //Build query param
         $query = http_build_query(['installments' => $installments]);
         $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
-        
+
         return $query;
     }
 
@@ -240,7 +241,7 @@ class MobbexHelper
         // Get Products Ids
         $products = self::get_product_ids($order);
 
-        foreach($products as $product)
+        foreach ($products as $product)
             $categories = array_merge($categories, wp_get_post_terms($product, 'product_cat', ['fields' => 'ids']));
 
         // Remove duplicated IDs and return
@@ -260,7 +261,7 @@ class MobbexHelper
         $store      = get_post_meta($product_id, 'mbbx_store', true);
         $ms_enabled = get_post_meta($product_id, 'mbbx_enable_multisite', true);
 
-        if ($ms_enabled && !empty($store) && !empty($stores[$store]) )
+        if ($ms_enabled && !empty($store) && !empty($stores[$store]))
             return $store;
 
         // Get stores from product categories
@@ -327,6 +328,142 @@ class MobbexHelper
             $var = unserialize($var);
 
         return is_array($var) ? $var : [];
+    }
+
+    /* MULTIVENDOR METHODS */
+
+    /**
+     * Return entity UID from a product ID.
+     * 
+     * @param int|string $product_id
+     * 
+     * @return string|null
+     */
+    public function get_entity($product_id)
+    {
+        if (get_metadata('post', $product_id, 'mbbx_entity', true)) {
+            return get_metadata('post', $product_id, 'mbbx_entity', true);
+        }
+        
+        $product_terms_ids = wc_get_product_term_ids($product_id, 'product_cat');
+        foreach ($product_terms_ids as $id) {
+            if (get_metadata('term', $id, 'mbbx_entity', true))
+                return get_metadata('term', $id, 'mbbx_entity', true);
+        }
+    }
+
+    /* WEBHOOK METHODS */
+
+    /**
+     * Format the webhook data in an array.
+     * 
+     * @param int $cart_id
+     * @param array $res
+     * @param bool $multivendor
+     * @param bool $multicard
+     * @return array $data
+     * 
+     */
+    public static function format_webhook_data($order_id, $res, $multicard, $multivendor)
+    {
+        $data = [
+            'order_id'           => $order_id,
+            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard, $multivendor) ? 'yes' : 'no',
+            'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
+            'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
+            'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
+            'status_code'        => isset($res['payment']['status']['code']) ? $res['payment']['status']['code'] : '',
+            'status_message'     => isset($res['payment']['status']['message']) ? $res['payment']['status']['message'] : '',
+            'source_name'        => isset($res['payment']['source']['name']) ? $res['payment']['source']['name'] : 'Mobbex',
+            'source_type'        => isset($res['payment']['source']['type']) ? $res['payment']['source']['type'] : 'Mobbex',
+            'source_reference'   => isset($res['payment']['source']['reference']) ? $res['payment']['source']['reference'] : '',
+            'source_number'      => isset($res['payment']['source']['number']) ? $res['payment']['source']['number'] : '',
+            'source_expiration'  => isset($res['payment']['source']['expiration']) ? json_encode($res['payment']['source']['expiration']) : '',
+            'source_installment' => isset($res['payment']['source']['installment']) ? json_encode($res['payment']['source']['installment']) : '',
+            'installment_name'   => isset($res['payment']['source']['installment']['description']) ? json_encode($res['payment']['source']['installment']['description']) : '',
+            'installment_amount' => isset($res['payment']['source']['installment']['amount']) ? $res['payment']['source']['installment']['amount'] : '',
+            'installment_count'  => isset($res['payment']['source']['installment']['count'] ) ? $res['payment']['source']['installment']['count']  : '',
+            'source_url'         => isset($res['payment']['source']['url']) ? json_encode($res['payment']['source']['url']) : '',
+            'cardholder'         => isset($res['payment']['source']['cardholder']) ? json_encode(($res['payment']['source']['cardholder'])) : '',
+            'entity_name'        => isset($res['entity']['name']) ? $res['entity']['name'] : '',
+            'entity_uid'         => isset($res['entity']['uid']) ? $res['entity']['uid'] : '',
+            'customer'           => isset($res['customer']) ? json_encode($res['customer']) : '',
+            'checkout_uid'       => isset($res['checkout']['uid']) ? $res['checkout']['uid'] : '',
+            'total'              => isset($res['payment']['total']) ? $res['payment']['total'] : '',
+            'currency'           => isset($res['checkout']['currency']) ? $res['checkout']['currency'] : '',
+            'risk_analysis'      => isset($res['payment']['riskAnalysis']['level']) ? $res['payment']['riskAnalysis']['level'] : '',
+            'data'               => json_encode($res),
+            'created'            => isset($res['payment']['created']) ? $res['payment']['created'] : '',
+            'updated'            => isset($res['payment']['updated']) ? $res['payment']['created'] : '',
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Receives the webhook "opartion type" and return true if the webhook is parent and false if not
+     * 
+     * @param string $operationType
+     * @param bool $multicard
+     * @return bool true|false
+     * @return bool true|false
+     * 
+     */
+    public static function is_parent_webhook($operationType, $multicard, $multivendor)
+    {
+        if ($operationType === "payment.v2") {
+            if ($multicard || $multivendor)
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * Receives an array and returns an array with the data format for the 'insert' method
+     * 
+     * @param array $array
+     * @return array $format
+     * 
+     */
+    public static function db_column_format($array)
+    {
+        $format = [];
+
+        foreach ($array as $value) {
+            switch (gettype($value)) {
+                case "bolean":
+                    $format[] = '%s';
+                    break;
+                case "integer":
+                    $format[] = '%d';
+                    break;
+                case "double":
+                    $format[] = '%f';
+                    break;
+                case "string":
+                    $format[] = '%s';
+                    break;
+                case "array":
+                    $format[] = '%s';
+                    break;
+                case "object":
+                    $format[] = '%s';
+                    break;
+                case "resource":
+                    $format[] = '%s';
+                    break;
+                case "NULL":
+                    $format[] = '%s';
+                    break;
+                case "unknown type":
+                    $format[] = '%s';
+                    break;
+                case "bolean":
+                    $format[] = '%s';
+                    break;
+            }
+        }
+        return $format;
     }
 
     public function get_api_endpoint($endpoint, $order_id)

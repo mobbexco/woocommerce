@@ -28,8 +28,8 @@ class Mbbx_Product_Admin
 
         // Save options
         add_action('woocommerce_process_product_meta', [self::class, 'save']);
-        add_action('create_product_cat', [self::class,'save']);
-        add_action('edited_product_cat', [self::class,'save']);
+        add_action('create_product_cat', [self::class, 'save']);
+        add_action('edited_product_cat', [self::class, 'save']);
     }
 
     /**
@@ -45,6 +45,8 @@ class Mbbx_Product_Admin
         // Get plan fields and current store data to use in template
         extract(self::get_plan_fields($meta_type, $id));
         extract(self::get_store_data($meta_type, $id));
+
+        $entity = get_metadata($meta_type, $id, 'mbbx_entity', true) ?: '';
 
         // Render template
         $template = $meta_type == 'post' ? 'product-settings.php' : 'category-settings.php';
@@ -151,7 +153,7 @@ class Mbbx_Product_Admin
             if (strpos($key, 'common_plan_') !== false && $value === 'no') {
                 // Add UID to common plans
                 $common_plans[] = explode('common_plan_', $key)[1];
-            } else if (strpos($key, 'advanced_plan_') !== false && $value === 'yes'){
+            } else if (strpos($key, 'advanced_plan_') !== false && $value === 'yes') {
                 // Add UID to advanced plans
                 $advanced_plans[] = explode('advanced_plan_', $key)[1];
             }
@@ -164,10 +166,14 @@ class Mbbx_Product_Admin
         $api_key      = !empty($_POST['mbbx_api_key']) ? $_POST['mbbx_api_key'] : false;
         $access_token = !empty($_POST['mbbx_access_token']) ? $_POST['mbbx_access_token'] : false;
 
+        // Get Entity 
+        $entity = !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false;
+
         // Save all data as meta data
         update_metadata($meta_type, $id, 'common_plans', $common_plans);
         update_metadata($meta_type, $id, 'advanced_plans', $advanced_plans);
         update_metadata($meta_type, $id, 'mbbx_enable_multisite', $enable_ms);
+        update_metadata($meta_type, $id, 'mbbx_entity', $entity);
 
         if ($enable_ms)
             self::save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
@@ -212,6 +218,7 @@ class Mbbx_Product_Admin
             update_option('mbbx_stores', $stores) && update_metadata($meta_type, $id, 'mbbx_store', $new_store);
         }
     }
+
 
     /**
      * Add Mobbex tab to product settings.

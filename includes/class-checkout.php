@@ -12,6 +12,8 @@ class MobbexCheckout
 
     public $items = [];
 
+    public $merchants = [];
+
     public $installments = [];
 
     public $endpoints = [];
@@ -57,10 +59,12 @@ class MobbexCheckout
                 'description'  => 'Pedido #' . $this->relation,
                 'test'         => $this->settings['test_mode'] == 'yes',
                 'multicard'    => $this->settings['multicard'] == 'yes',
+                'multivendor'  => $this->settings['multivendor'] != 'no' ? $this->settings['multivendor'] : false,
                 'wallet'       => $this->settings['wallet'] == 'yes' && wp_get_current_user()->ID,
                 'intent'       => $this->settings['payment_mode'],
                 'timeout'      => 5,
                 'items'        => $this->items,
+                'merchants'    => $this->merchants,
                 'installments' => $this->installments,
                 'customer'     => $this->customer,
                 'options'      => [
@@ -160,10 +164,15 @@ class MobbexCheckout
      * @param int $quantity
      * @param string|null $description
      * @param string|null $image
+     * @param string|null $entity
      */
-    public function add_item($total, $quantity = 1, $description = null, $image = null)
+    public function add_item($total, $quantity = 1, $description = null, $image = null, $entity = null)
     {
-        $this->items[] = compact('total', 'quantity', 'description', 'image');
+        // Try to add entity to merchants
+        if ($entity)
+            $this->merchants[] = ['uid' => $entity];
+
+        $this->items[] = compact('total', 'quantity', 'description', 'image', 'entity');
     }
 
     /**

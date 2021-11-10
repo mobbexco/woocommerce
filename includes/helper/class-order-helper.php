@@ -83,7 +83,13 @@ class MobbexOrderHelper
         $shipping_items = $this->order->get_items('shipping') ?: [];
 
         foreach ($order_items as $item)
-            $checkout->add_item($item->get_total(), $item->get_quantity(), $item->get_name(), $this->helper->get_product_image($item->get_product_id()));
+            $checkout->add_item(
+                $item->get_total(),
+                $item->get_quantity(),
+                $item->get_name(),
+                $this->helper->get_product_image($item->get_product_id()),
+                $this->helper->get_entity($item->get_product_id())
+            );
 
         foreach ($shipping_items as $item)
             $checkout->add_item($item->get_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce') . $item->get_name());
