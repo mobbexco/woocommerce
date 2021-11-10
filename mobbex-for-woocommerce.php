@@ -50,6 +50,7 @@ class MobbexGateway
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
         MobbexGateway::check_dependencies();
+        MobbexGateway::check_upgrades();
 
         if (count(MobbexGateway::$errors)) {
 
@@ -143,6 +144,25 @@ class MobbexGateway
 
         if (!version_compare($matches[1], '1.0.1', '>=')) {
             MobbexGateway::$errors[] = $openssl_warning;
+        }
+    }
+
+    /**
+     * Check pending database upgrades and upgrade if is needed.
+     */
+    public static function check_upgrades()
+    {
+        try {
+            $db_version = get_option('woocommerce-mobbex-version');
+
+            if ($db_version < '3.6.0')
+                create_mobbex_transaction_table();
+
+            // Update db version
+            if ($db_version != MOBBEX_VERSION)
+                update_option('woocommerce-mobbex-version', MOBBEX_VERSION);
+        } catch (\Exception $e) {
+            self::$errors[] = 'Mobbex DB Upgrade error';
         }
     }
 
@@ -431,45 +451,45 @@ class MobbexGateway
     }
 }
 
-function create_mobbex_table()
+function create_mobbex_transaction_table()
 {
     global $wpdb;
 
-    $sql = 'CREATE TABLE IF NOT EXISTS ' .$wpdb->prefix.'mobbex_transaction'. '('
-            .'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
-            .'order_id INT(11) NOT NULL,'
-			.'parent TEXT NOT NULL,'
-			.'operation_type TEXT NOT NULL,'
-			.'payment_id TEXT NOT NULL,'
-			.'description TEXT NOT NULL,'
-			.'status_code TEXT NOT NULL,'
-			.'status_message TEXT NOT NULL,'
-			.'source_name TEXT NOT NULL,'
-			.'source_type TEXT NOT NULL,'
-			.'source_reference TEXT NOT NULL,'
-			.'source_number TEXT NOT NULL,'
-			.'source_expiration TEXT NOT NULL,'
-			.'source_installment TEXT NOT NULL,'
-			.'installment_name TEXT NOT NULL,'
-			.'installment_amount DECIMAL(18,2) NOT NULL,'
-			.'installment_count TEXT NOT NULL,'
-			.'source_url TEXT NOT NULL,'
-			.'cardholder TEXT NOT NULL,'
-			.'entity_name TEXT NOT NULL,'
-			.'entity_uid TEXT NOT NULL,'
-			.'customer TEXT NOT NULL,'
-			.'checkout_uid TEXT NOT NULL,'
-			.'total DECIMAL(18,2) NOT NULL,'
-			.'currency TEXT NOT NULL,'
-            .'risk_analysis TEXT NOT NULL,'
-			.'data TEXT NOT NULL,'
-			.'created TEXT NOT NULL,'
-			.'updated TEXT NOT NULL'
-            .');';
-    
-    $wpdb->get_results($sql);   
+    $wpdb->get_results(
+        'CREATE TABLE IF NOT EXISTS ' . $wpdb->prefix . 'mobbex_transaction('
+        .'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
+        .'order_id INT(11) NOT NULL,'
+        .'parent TEXT NOT NULL,'
+        .'operation_type TEXT NOT NULL,'
+        .'payment_id TEXT NOT NULL,'
+        .'description TEXT NOT NULL,'
+        .'status_code TEXT NOT NULL,'
+        .'status_message TEXT NOT NULL,'
+        .'source_name TEXT NOT NULL,'
+        .'source_type TEXT NOT NULL,'
+        .'source_reference TEXT NOT NULL,'
+        .'source_number TEXT NOT NULL,'
+        .'source_expiration TEXT NOT NULL,'
+        .'source_installment TEXT NOT NULL,'
+        .'installment_name TEXT NOT NULL,'
+        .'installment_amount DECIMAL(18,2) NOT NULL,'
+        .'installment_count TEXT NOT NULL,'
+        .'source_url TEXT NOT NULL,'
+        .'cardholder TEXT NOT NULL,'
+        .'entity_name TEXT NOT NULL,'
+        .'entity_uid TEXT NOT NULL,'
+        .'customer TEXT NOT NULL,'
+        .'checkout_uid TEXT NOT NULL,'
+        .'total DECIMAL(18,2) NOT NULL,'
+        .'currency TEXT NOT NULL,'
+        .'risk_analysis TEXT NOT NULL,'
+        .'data TEXT NOT NULL,'
+        .'created TEXT NOT NULL,'
+        .'updated TEXT NOT NULL'
+        .');'
+    );
 }
 
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [ & $mobbexGateway, 'init']);
-register_activation_hook(__FILE__, 'create_mobbex_table');
+register_activation_hook(__FILE__, 'create_mobbex_transaction_table');
