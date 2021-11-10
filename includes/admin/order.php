@@ -156,6 +156,10 @@ class Mbbx_Order_Admin
 
         // Send new order mail
         $mailer['WC_Email_New_Order']->trigger($order_id);
+
+        // If configured, also send processing mail
+        if (self::$helper->settings['2_step_processing_mail'] == 'authorize')
+            $mailer['WC_Email_Customer_Processing_Order']->trigger($order_id);
     }
 
     /**
@@ -167,7 +171,8 @@ class Mbbx_Order_Admin
     {
         $mailer = WC()->mailer()->get_emails();
 
-        // Send processing mail
-        $mailer['WC_Email_Customer_Processing_Order']->trigger($order_id);
+        // By default send processing mail on capture
+        if (self::$helper->settings['2_step_processing_mail'] != 'authorize')
+            $mailer['WC_Email_Customer_Processing_Order']->trigger($order_id);
     }
 }

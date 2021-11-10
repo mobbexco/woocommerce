@@ -362,6 +362,18 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
             ],
 
+            '2_step_processing_mail' => [
+                'title'         => __('Mail de pedido procesado', 'mobbex-for-woocommerce'),
+                'description'   => __('Para uso de operatoria en 2 pasos', 'mobbex-for-woocommerce'),
+                'type'          => 'select',
+                'default'       => 'capture',
+                'class'         => 'mbbx-into-advanced',
+                'options'       => [
+                    'authorize' => __('Al autorizar un pago', 'mobbex-for-woocommerce'),
+                    'capture'   => __('Al capturar un pago', 'mobbex-for-woocommerce'),
+                ],
+            ],
+
             'use_webhook_api' => [
 
                 'title' => __('Use new WebHook API', 'mobbex-for-woocommerce'),
