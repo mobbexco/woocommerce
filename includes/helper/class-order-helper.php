@@ -134,7 +134,7 @@ class MobbexOrderHelper
         $checkout->set_customer(
             $this->order->get_formatted_billing_full_name() ?: $user->display_name,
             $this->order->get_billing_email() ?: $user->user_email,
-            get_user_meta($user->ID, 'billing_dni', true) ?: '12123123',
+            get_post_meta($this->id, 'billing_dni', true) ?: get_user_meta($user->ID, 'billing_dni', true),
             $this->order->get_billing_phone() ?: get_user_meta($user->ID, 'phone_number', true),
             $user->ID
         );
