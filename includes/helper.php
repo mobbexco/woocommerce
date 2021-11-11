@@ -16,20 +16,25 @@ class MobbexHelper
      */
     public function __construct()
     {
-        $this->settings = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID .'_settings', null) ?: [];
-
-        foreach ($this->settings as $key => $value) {
-            $key = str_replace('-', '_', $key);
-            $this->$key = $value;
-        }
+        // Get default and saved values
+        $default_values = array_fill_keys(array_keys(include('config-options.php')), null);
+        $saved_values   = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID .'_settings', null) ?: [];
 
         // The intent constant overwrite payment mode setting
         if (defined('MOBBEX_CHECKOUT_INTENT')) {
-            $this->settings['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
-        } else if ($this->settings['payment_mode'] == 'yes') {
-            $this->settings['payment_mode'] = 'payment.2-step';
+            $saved_values['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
+        } else if ($saved_values['payment_mode'] == 'yes') {
+            $saved_values['payment_mode'] = 'payment.2-step';
         } else {
-            $this->settings['payment_mode'] = 'payment.v2';
+            $saved_values['payment_mode'] = 'payment.v2';
+        }
+
+        $this->settings = array_merge($default_values, $saved_values);
+
+        // Set settings as properties for backward support
+        foreach ($this->settings as $key => $value) {
+            $key = str_replace('-', '_', $key);
+            $this->$key = $value;
         }
     }
 
