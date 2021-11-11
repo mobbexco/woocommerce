@@ -35,9 +35,9 @@ jQuery(function ($) {
             } else {
                 processOrder(response => response.redirect ? redirectToCheckout(response) : openCheckoutModal(response));
             }
-        }
 
-        return false;
+            return false;
+        }
     }
 
     /**
