@@ -47,6 +47,16 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.6.0 :: 2021-11-11
+- Show payment methods directly in woocommerce checkout
+- Add multivendor options to product and category settings
+- Add 2-step mail sending option
+- Save webhook data in new transaction table
+- Show installments amount in saved cards
+- Improve configuration management
+- Fix customer DNI save
+- Fix personalization options obtaining
+
 ### 3.5.1 :: 2021-11-05
 - Remove all trailing commas for PHP < 7.3 support
 
