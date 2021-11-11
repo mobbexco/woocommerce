@@ -40,7 +40,7 @@ class Mbbx_Product_Admin
     public static function show($term = null)
     {
         $meta_type = $term ? 'term' : 'post';
-        $id        = $term ? $term->term_id : get_the_ID();
+        $id        = is_object($term) ? $term->term_id : get_the_ID();
 
         // Get plan fields and current store data to use in template
         extract(self::get_plan_fields($meta_type, $id));

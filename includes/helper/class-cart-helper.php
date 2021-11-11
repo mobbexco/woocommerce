@@ -132,7 +132,7 @@ class MobbexCartHelper
         $checkout->set_customer(
             $customer->get_billing_first_name() . ' ' . $customer->get_billing_last_name(),
             $customer->get_billing_email(),
-            WC()->session->get('mbbx_billing_dni') ?: get_user_meta($customer->get_id(), 'billing_dni', true),
+            WC()->session->get('mbbx_billing_dni') ?: (get_user_meta($customer->get_id(), 'billing_dni', true) ?: '12123123'),
             $customer->get_billing_phone() ?: get_user_meta($customer->get_id(), 'phone_number', true),
             $customer->get_id()
         );

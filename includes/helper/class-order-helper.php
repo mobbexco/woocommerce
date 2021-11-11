@@ -129,7 +129,7 @@ class MobbexOrderHelper
      */
     private function add_customer($checkout)
     {
-        $user = $this->order->get_user();
+        $user = new WP_User($this->order->get_user_id());
 
         $checkout->set_customer(
             $this->order->get_formatted_billing_full_name() ?: $user->display_name,

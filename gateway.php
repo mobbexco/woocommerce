@@ -159,17 +159,17 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $token = $_REQUEST['mobbex_token'];
 
         //order webhook filter
-        $_POST['data'] = apply_filters( 'mobbex_order_webhook', $_POST['data'] );
+        $_POST['data'] = apply_filters('mobbex_order_webhook', $_POST['data']);
 
-        $webhookData = MobbexHelper::format_webhook_data($id, $_POST['data'], ($this->helper->multicard === 'yes'), ($this->helper->multivendor === 'yes'));
+        $webhookData = MobbexHelper::format_webhook_data($id, $_POST['data'], $this->helper->multicard === 'yes', $this->helper->multivendor === 'yes');
 
-        //Save de webhook in the database
+        // Save transaction
         global $wpdb;
         $wpdb->insert( $wpdb->prefix.'mobbex_transaction', $webhookData, MobbexHelper::db_column_format($webhookData));
 
-        //Prcess the webbhook data
-        if($webhookData['parent'] === 'yes')
-            $this->process_webhook($id, $token, json_decode($_POST['data']));
+        // Try to process webhook
+        if ($webhookData['parent'] === 'yes')
+            $this->process_webhook($id, $token, $_POST['data']);
 
         echo "WebHook OK: Mobbex for WooCommerce v" . MOBBEX_VERSION;
 
@@ -189,19 +189,18 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         ], "Mobbex API > Params");
 
         //order webhook filter
-        $postData = apply_filters( 'mobbex_order_webhook', $postData );
-        $webhookData = MobbexHelper::format_webhook_data($id, $postData['data'], ($this->helper->multicard === 'yes'), ($this->helper->multivendor !== 'no'));
-       
-        //Save de webhook in the database
-        global $wpdb;
-        $wpdb->insert( $wpdb->prefix.'mobbex_transaction', $webhookData, MobbexHelper::db_column_format($webhookData));
+        $postData = apply_filters('mobbex_order_webhook', $postData);
+        $webhookData = MobbexHelper::format_webhook_data($id, $postData['data'], $this->helper->multicard === 'yes', $this->helper->multivendor === 'yes');
 
-        //Prcess the webbhook data
-        if($webhookData['parent'] === 'yes')
-            $this->process_webhook($id, $token, $postData);
+        // Save transaction
+        global $wpdb;
+        $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, MobbexHelper::db_column_format($webhookData));
+
+        // Try to process webhook
+        $result = $webhookData['parent'] === 'yes' ? $this->process_webhook($id, $token, $postData['data']) : true;
 
         return [
-            'result'   => $res,
+            'result'   => $result,
             'platform' => [
                 'name'      => 'woocommerce',
                 'version'   => MOBBEX_VERSION,
@@ -258,7 +257,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $order->add_order_note('URL al Cupón: ' . $mobbex_order_url);
         }
 
-        if ($source['type'] == 'card') {
+        if (!empty($source['type']) && $source['type'] == 'card') {
             $mobbex_card_payment_info = $payment_method . ' ( ' . $source['number'] . ' )';
             $mobbex_card_plan = $source['installment']['description'] . '. ' . $source['installment']['count'] . ' Cuota/s' . ' de ' . $source['installment']['amount'];
 
@@ -337,8 +336,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             // Redirect
             $redirect = $order->get_checkout_order_received_url();
         } else {
-            // Try to restore the cart here
-            $redirect = $order->get_cancel_order_url();
+            return $this->_redirect_to_cart_with_error('Transacción fallida. Reintente con otro método de pago.');
         }
 
         WC()->session->set('order_id', null);

@@ -358,7 +358,7 @@ class MobbexGateway
         global $post;
 
         // Shortcode only works in product page
-        if ($post->post_type != 'product')
+        if (!$post || $post->post_type != 'product')
             return;
 
         $product = wc_get_product($post->ID);

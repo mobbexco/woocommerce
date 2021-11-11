@@ -71,8 +71,11 @@ class MobbexHelper
 
         $data = $total ? '?total=' . $total : null;
 
-        //Get installments
-        $data .= '&' . self::get_installments_query($inactivePlans, $activePlans);
+        // Get installments
+        $installments = self::get_installments_query($inactivePlans, $activePlans);
+
+        if ($installments)
+            $data .= '&' . $installments;
 
         $response = wp_remote_get(MOBBEX_SOURCES . $data, [
 
@@ -87,10 +90,9 @@ class MobbexHelper
 
         if (!is_wp_error($response)) {
             $response = json_decode($response['body'], true);
-            $data = $response['data'];
-            if ($data) {
-                return $data;
-            }
+
+            if (!empty($response['data']))
+                return $response['data'];
         }
 
         return [];

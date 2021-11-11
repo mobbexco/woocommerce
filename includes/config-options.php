@@ -172,7 +172,7 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'financial_widget_button_Padding' => [
+    'financial_widget_button_padding' => [
         'title'       => __('Financial Widget Button Padding', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your financial widget button padding from here.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
@@ -224,17 +224,9 @@ return [
         'default'     => 'capture',
         'class'       => 'mbbx-into-advanced',
         'options'     => [
-            'authorize' => __('Al autorizar un pago', 'mobbex-for-woocommerce'),
             'capture'   => __('Al capturar un pago', 'mobbex-for-woocommerce'),
+            'authorize' => __('Al autorizar un pago', 'mobbex-for-woocommerce'),
         ],
-    ],
-
-    'use_webhook_api' => [
-        'title'   => __('Use new WebHook API', 'mobbex-for-woocommerce'),
-        'type'    => 'checkbox',
-        'label'   => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', 'mobbex-for-woocommerce'),
-        'default' => 'no',
-        'class'   => 'mbbx-into-advanced',
     ],
 
     'reseller_id' => [
@@ -267,5 +259,13 @@ return [
         'class'   => 'mbbx-into-advanced',
         'type'    => 'checkbox',
         'default' => 'no',
+    ],
+
+    'use_webhook_api' => [
+        'title'   => __('Use new WebHook API', 'mobbex-for-woocommerce'),
+        'type'    => 'checkbox',
+        'label'   => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', 'mobbex-for-woocommerce'),
+        'default' => 'no',
+        'class'   => 'mbbx-into-advanced',
     ],
 ];
