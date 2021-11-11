@@ -47,6 +47,9 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.6.1 :: 2021-11-11
+- Fix checkout form submit validation
+
 ### 3.6.0 :: 2021-11-11
 - Show payment methods directly in woocommerce checkout
 - Add multivendor options to product and category settings
