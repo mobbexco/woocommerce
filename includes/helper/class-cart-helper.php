@@ -136,6 +136,13 @@ class MobbexCartHelper
             $customer->get_billing_phone() ?: get_user_meta($customer->get_id(), 'phone_number', true),
             $customer->get_id()
         );
+
+        $checkout->set_address(
+            $customer->get_billing_address_1(),
+            $customer->get_billing_postcode(),
+            $customer->get_billing_state(),
+            $this->helper->convert_country_code($customer->get_billing_country())
+        );
     }
 
     /**

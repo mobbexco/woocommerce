@@ -569,4 +569,18 @@ class MobbexHelper
 
         return $response;
     }
+
+    /**
+     * Converts the WooCommerce country codes to 3-letter ISO codes.
+     * 
+     * @param string $code 2-Letter ISO code.
+     * 
+     * @return string|null
+     */
+    public function convert_country_code($code)
+    {
+        $countries = include('iso-3166.php') ?: [];
+
+        return isset($countries[$code]) ? $countries[$code] : null;
+    }
 }
