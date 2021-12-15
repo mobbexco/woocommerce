@@ -10,6 +10,8 @@ class MobbexCheckout
 
     public $customer = [];
 
+    public $address = [];
+
     public $items = [];
 
     public $merchants = [];
@@ -66,7 +68,7 @@ class MobbexCheckout
                 'items'        => $this->items,
                 'merchants'    => $this->merchants,
                 'installments' => $this->installments,
-                'customer'     => $this->customer,
+                'customer'     => array_merge($this->customer, $this->address),
                 'options'      => [
                     'embed'    => $this->settings['button'] == 'yes',
                     'domain'   => str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
@@ -144,6 +146,27 @@ class MobbexCheckout
     public function set_customer($name, $email, $identification = '12123123', $phone = null, $uid = null)
     {
         $this->customer = compact('name', 'email', 'identification', 'phone', 'uid');
+    }
+
+    /**
+     * Set address data.
+     * 
+     * @param string|null $street Street name with house number.
+     * @param string|int|null $postcode Postal|ZIP code.
+     * @param string|null $state
+     * @param string|null $country Country ISO 3166-1 alpha-3 code.
+     * @param string|null $note
+     */
+    public function set_address($street = null, $postcode = null, $state = null, $country = null, $note = null)
+    {
+        $this->address = [
+            'address'       => trim(preg_replace('/[0-9]/', '', (string) $street)),
+            'addressNumber' => trim(preg_replace('/[^0-9]/', '', (string) $street)),
+            'zipCode'       => $postcode,
+            'state'         => $state,
+            'country'       => $country,
+            'addressNotes'  => $note,
+        ];
     }
 
     /**
