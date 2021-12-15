@@ -406,7 +406,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         ?>
         <p>
             <strong>DNI:</strong>
-            <?= get_post_meta($order->get_id(), 'billing_dni', true) ?: get_user_meta($order->get_customer_id(), 'billing_dni', true) ?>
+            <?= get_post_meta($order->get_id(), '_billing_dni', true) ?: get_post_meta($order->get_id(), 'billing_dni', true) ?>
         </p>
         <?php
     }
@@ -444,6 +444,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             update_user_meta($customer_id, 'billing_dni', $_POST[$dni]);
 
         // Save by order
-        update_post_meta($order_id, 'billing_dni', $_POST[$dni]);
+        update_post_meta($order_id, '_billing_dni', $_POST[$dni]);
     }
 }
