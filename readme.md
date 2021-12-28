@@ -47,6 +47,11 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.6.2 :: 2021-12-28
+- Add installment amount legend to finance widget.
+- Send address and user agent data to Mobbex in checkout generation.
+- Improve dni save method.
+
 ### 3.6.1 :: 2021-11-11
 - Fix checkout form submit validation
 
