@@ -31,13 +31,13 @@
                                             </small>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="text-align: center; "><?= isset($installment['totals']['total']) ? '$ ' . number_format($installment['totals']['total'], 2) : '' ?></td>
+                                    <td style="text-align: right; "><?= isset($installment['totals']['total']) ? '$ ' . number_format($installment['totals']['total'], 2) : '' ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </table>
                     <?php else: ?>
                         <p class="mobbexSourceTotal">
-                            $<?= number_format($data['price'], 2) ?>
+                            $ <?= number_format($data['price'], 2) ?>
                         </p>
                     <?php endif; ?>
                 </div>
