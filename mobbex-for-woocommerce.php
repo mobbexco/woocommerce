@@ -371,13 +371,14 @@ class MobbexGateway
         $sources = self::$helper->get_sources($product->get_price(), $inactivePlans, $activePlans);
 
         $data = [
+            'price'   => $product->get_price(),
             'sources' => $sources,
-            'style' => [
-                'theme' => self::$helper->financial_widget_theme,
-                'button_color' => self::$helper->financial_widget_button_color,
+            'style'   => [
+                'theme'             => self::$helper->financial_widget_theme,
+                'button_color'      => self::$helper->financial_widget_button_color,
                 'button_font_color' => self::$helper->financial_widget_button_font_color,
-                'button_font_size' => self::$helper->financial_widget_button_font_color,
-                'button_padding' => self::$helper->financial_widget_button_padding,
+                'button_font_size'  => self::$helper->financial_widget_button_font_color,
+                'button_padding'    => self::$helper->financial_widget_button_padding,
             ]
         ];
 

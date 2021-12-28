@@ -23,11 +23,22 @@
                         <table>
                             <?php foreach($source['installments']['list'] as $installment) : ?>
                                 <tr>
-                                    <td><?= $installment['name'] ?></td>
-                                    <td style="text-align: center; "><?= isset($installment['totals']['total']) ? '$ ' . $installment['totals']['total'] : '' ?></td>
+                                    <td>
+                                        <?= $installment['name'] ?>
+                                        <?php if ($installment['totals']['installment']['count'] != 1) : ?>
+                                            <small>
+                                                <?= $installment['totals']['installment']['count'] ?> cuotas de $<?= $installment['totals']['installment']['amount'] ?>
+                                            </small>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="text-align: center; "><?= isset($installment['totals']['total']) ? '$ ' . number_format($installment['totals']['total'], 2) : '' ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </table>
+                    <?php else: ?>
+                        <p class="mobbexSourceTotal">
+                            $<?= number_format($data['price'], 2) ?>
+                        </p>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
