@@ -87,19 +87,27 @@
 }
 
 .mobbexSourceTotal {
-    width: 35%;
-    justify-content: center;
     display: flex;
     align-items: center;
     margin: 0;
+    padding-right: 5% !important;
 }
 
 .mobbexSource td small {
     display: block;
+    color: gray;
+}
+
+.mobbexSource table {
+    border: none;
+    width: 90%;
+    margin: 0 auto;
 }
 
 #mbbxProductModalBody td {
     width: 65%;
+    border: none;
+    padding-right: 0;
 }
 
 .mobbexPaymentMethod img {
