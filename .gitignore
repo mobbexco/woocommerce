@@ -5,7 +5,6 @@ deploy/
 
 copy.js
 build.js
-build.bat
 
 mobbex.*.zip
 wc-mobbex*.zip
