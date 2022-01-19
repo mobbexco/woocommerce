@@ -51,7 +51,7 @@ jQuery(function ($) {
         $.ajax({
             dataType: 'json',
             method: 'POST',
-            url: mobbex_data.is_pay_for_order ? form[0].action : mobbex_data.order_url,
+            url: mobbex_data.is_pay_for_order ? form[0].action : wc_checkout_params.checkout_url,
             data: form.serializeArray(),
 
             success: (response) => {

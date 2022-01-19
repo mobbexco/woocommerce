@@ -302,7 +302,6 @@ class MobbexGateway
             wp_register_script('mobbex-checkout-script', $dir_url . 'assets/js/mobbex.bootstrap.js', ['jquery'], MOBBEX_VERSION, false);
 
             wp_localize_script('mobbex-checkout-script', 'mobbex_data', [
-                'order_url'        => home_url('/mobbex?wc-ajax=checkout'),
                 'is_pay_for_order' => !empty($_GET['pay_for_order']),
             ]);
             wp_enqueue_script('mobbex-checkout-script');

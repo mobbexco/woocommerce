@@ -90,6 +90,7 @@ class MobbexApi
             'content-type: application/json',
             'x-api-key: ' . $this->api_key,
             'x-access-token: ' . $this->access_token,
+            'x-ecommerce-agent: WordPress/' . get_bloginfo('version') . ' WooCommerce/' . WC_VERSION . ' Plugin/' . MOBBEX_VERSION,
         ];
     }
 }
