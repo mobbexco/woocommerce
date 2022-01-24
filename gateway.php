@@ -362,19 +362,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
 
         $response = wp_remote_post(str_replace('{ID}', $payment_id, MOBBEX_REFUND), [
-
-            'headers' => [
-
-                'cache-control' => 'no-cache',
-                'content-type' => 'application/json',
-                'x-api-key' => $this->api_key,
-                'x-access-token' => $this->access_token,
-            ],
-
-            'body' => json_encode(['total' => floatval($amount)]),
-
+            'headers'     => $this->helper->get_headers(),
             'data_format' => 'body',
-
+            'body'        => json_encode(['total' => floatval($amount)]),
         ]);
 
         $result = json_decode($response['body'], true);

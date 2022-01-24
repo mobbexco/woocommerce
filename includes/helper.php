@@ -78,14 +78,7 @@ class MobbexHelper
             $data .= '&' . $installments;
 
         $response = wp_remote_get(MOBBEX_SOURCES . $data, [
-
-            'headers' => [
-                'cache-control' => 'no-cache',
-                'content-type' => 'application/json',
-                'x-api-key' => $this->api_key,
-                'x-access-token' => $this->access_token,
-            ],
-
+            'headers' => $this->get_headers(),
         ]);
 
         if (!is_wp_error($response)) {
@@ -108,12 +101,7 @@ class MobbexHelper
             return [];
 
         $response = wp_remote_get(str_replace('{rule}', $rule, MOBBEX_ADVANCED_PLANS), [
-            'headers' => [
-                'cache-control' => 'no-cache',
-                'content-type' => 'application/json',
-                'x-api-key' => $this->api_key,
-                'x-access-token' => $this->access_token,
-            ],
+            'headers' => $this->get_headers(),
         ]);
 
         if (!is_wp_error($response)) {
@@ -301,13 +289,7 @@ class MobbexHelper
 
         // Capture payment
         $response = wp_remote_post(str_replace('{id}', $payment_id, MOBBEX_CAPTURE_PAYMENT), [
-            'headers' => [
-                'cache-control'  => 'no-cache',
-                'content-type'   => 'application/json',
-                'x-api-key'      => $this->api_key,
-                'x-access-token' => $this->access_token,
-            ],
-
+            'headers'     => $this->get_headers(),
             'body'        => json_encode(compact('total')),
             'data_format' => 'body',
         ]);
@@ -582,5 +564,21 @@ class MobbexHelper
         $countries = include('iso-3166.php') ?: [];
 
         return isset($countries[$code]) ? $countries[$code] : null;
+    }
+
+    /**
+     * Get headers to connect with Mobbex API.
+     * 
+     * @return string[] 
+     */
+    public function get_headers()
+    {
+        return [
+            'cache-control: no-cache',
+            'content-type: application/json',
+            'x-api-key: ' . $this->api_key,
+            'x-access-token: ' . $this->access_token,
+            'x-ecommerce-agent: WordPress/' . get_bloginfo('version') . ' WooCommerce/' . WC_VERSION . ' Plugin/' . MOBBEX_VERSION,
+        ];
     }
 }
