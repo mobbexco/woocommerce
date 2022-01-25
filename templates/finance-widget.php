@@ -27,17 +27,17 @@
                                         <?= $installment['name'] ?>
                                         <?php if ($installment['totals']['installment']['count'] != 1) : ?>
                                             <small>
-                                                <?= $installment['totals']['installment']['count'] ?> cuotas de $<?= $installment['totals']['installment']['amount'] ?>
+                                                <?= $installment['totals']['installment']['count'] ?> cuotas de <?= wc_price($installment['totals']['installment']['amount']) ?>
                                             </small>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="text-align: right; "><?= isset($installment['totals']['total']) ? '$ ' . number_format($installment['totals']['total'], 2) : '' ?></td>
+                                    <td style="text-align: right; "><?= isset($installment['totals']['total']) ? wc_price($installment['totals']['total']) : '' ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </table>
                     <?php else: ?>
                         <p class="mobbexSourceTotal">
-                            $ <?= number_format($data['price'], 2) ?>
+                            <?= wc_price($data['price']) ?>
                         </p>
                     <?php endif; ?>
                 </div>
