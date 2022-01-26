@@ -4,7 +4,7 @@
         <li class="wc_payment_method payment_method_mobbex_method_<?= "$method[group].$method[subgroup]" ?>">
             <input id="payment_method_mobbex_method_<?= "$method[group].$method[subgroup]" ?>" type="radio" class="input-radio" name="payment_method" value="<?= $gateway->id ?>" <?php checked($gateway->chosen, true); ?> method-type="method" group="<?= "$method[group]:$method[subgroup]" ?>" data-order_button_text="<?= $gateway->order_button_text ?>" />
             <label for="payment_method_mobbex_method_<?= "$method[group].$method[subgroup]" ?>">
-                <?= $method['subgroup_title'] ?> <img src="<?= $method['subgroup_logo'] ?>">
+                <?= (count($gateway->methods) == 1 || $method['subgroup'] == 'card_input') && $gateway->get_title() ? $gateway->get_title() : $method['subgroup_title'] ?> <img src="<?= $method['subgroup_logo'] ?>">
             </label>
             <?php if ($gateway->has_fields() || $gateway->get_description()) : ?>
                 <div class="payment_box payment_method_mobbex_method_<?= $gateway->id ?>" <?php if (!$gateway->chosen) : ?>style="display:none;" <?php endif; ?>>
