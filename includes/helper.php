@@ -11,6 +11,9 @@ class MobbexHelper
     /** Module configuration settings */
     public $settings = [];
 
+    /** @var MobbexApi */
+    public $api;
+
     /**
      * Load plugin settings.
      */
@@ -36,6 +39,8 @@ class MobbexHelper
             $key = str_replace('-', '_', $key);
             $this->$key = $value;
         }
+
+        $this->api = new MobbexApi($this->settings['api-key'], $this->settings['access-token']);
     }
 
     public function debug($message = 'debug', $data = [], $force = false)
@@ -93,26 +98,50 @@ class MobbexHelper
 
     /**
      * Get sources with advanced rule plans from mobbex.
+     * 
      * @param string $rule
+     * 
+     * @return array
      */
     public function get_sources_advanced($rule = 'externalMatch')
     {
-        if (!$this->isReady())
-            return [];
+        return $this->api->request([
+            'method' => 'GET',
+            'uri'    => "sources/rules/$rule/installments",
+        ]) ?: [];
+    }
 
-        $response = wp_remote_get(str_replace('{rule}', $rule, MOBBEX_ADVANCED_PLANS), [
-            'headers' => $this->get_headers(),
-        ]);
+    /**
+     * Retrieve installments checked on plans filter of each product.
+     * 
+     * @param array $products Array of products or their ids.
+     * 
+     * @return array
+     */
+    public function get_installments($products)
+    {
+        $installments = $inactive_plans = $active_plans = [];
 
-        if (!is_wp_error($response)) {
-            $response = json_decode($response['body'], true);
-            $data = $response['data'];
-            if ($data) {
-                return $data;
-            }
+        // Get plans from products
+        foreach ($products as $product) {
+            $id = $product instanceOf WC_Product ? $product->get_id() : $product;
+
+            $inactive_plans = array_merge($inactive_plans, self::get_inactive_plans($id));
+            $active_plans   = array_merge($active_plans, self::get_active_plans($id));
         }
 
-        return [];
+        // Add inactive (common) plans to installments
+        foreach ($inactive_plans as $plan)
+            $installments[] = '-' . $plan;
+
+        // Add active (advanced) plans to installments (only if the plan is active on all products)
+        foreach (array_count_values($active_plans) as $plan => $reps) {
+            if ($reps == count($products))
+                $installments[] = '+uid:' . $plan;
+        }
+
+        // Remove duplicated plans and return
+        return array_values(array_unique($installments));
     }
 
     /**
@@ -288,18 +317,14 @@ class MobbexHelper
             throw new Exception(__('Empty Payment UID or params', 'mobbex-for-woocommerce'));
 
         // Capture payment
-        $response = wp_remote_post(str_replace('{id}', $payment_id, MOBBEX_CAPTURE_PAYMENT), [
-            'headers'     => $this->get_headers(),
-            'body'        => json_encode(compact('total')),
-            'data_format' => 'body',
+        $result = $this->api->request([
+            'method' => 'POST',
+            'uri'    => "operations/$payment_id/capture",
+            'body'   => compact('total'),
         ]);
 
-        if (!is_wp_error($response)) {
-            $response = json_decode($response['body'], true);
-
-            if (!empty($response['result']))
-                return true;
-        }
+        if ($result || $result === null)
+            return true;
 
         throw new Exception(__('An error occurred in the execution', 'mobbex-for-woocommerce'));
     }
@@ -328,7 +353,7 @@ class MobbexHelper
      * 
      * @return string|null
      */
-    public function get_entity($product_id)
+    public function get_product_entity($product_id)
     {
         if (get_metadata('post', $product_id, 'mbbx_entity', true)) {
             return get_metadata('post', $product_id, 'mbbx_entity', true);
@@ -564,21 +589,5 @@ class MobbexHelper
         $countries = include('iso-3166.php') ?: [];
 
         return isset($countries[$code]) ? $countries[$code] : null;
-    }
-
-    /**
-     * Get headers to connect with Mobbex API.
-     * 
-     * @return string[] 
-     */
-    public function get_headers()
-    {
-        return [
-            'cache-control'     => 'no-cache',
-            'content-type'      => 'application/json',
-            'x-api-key'         => $this->api_key,
-            'x-access-token'    => $this->access_token,
-            'x-ecommerce-agent' => 'WordPress/' . get_bloginfo('version') . ' WooCommerce/' . WC_VERSION . ' Plugin/' . MOBBEX_VERSION,
-        ];
     }
 }
