@@ -62,38 +62,25 @@ class MobbexHelper
     }
 
     /**
-     * Get sources with common plans and advanced plans from mobbex.
-     * @param integer|null $total
-     * @param array|null $inactivePlans
-     * @param array|null $activePlans
+     * Get sources from Mobbex.
+     * 
+     * @param int|float|null $total Amount to calculate payment methods.
+     * @param array|null $installments Use +uid:<uid> to include and -<reference> to exclude.
+     * 
+     * @return array 
      */
-    public function get_sources($total = null, $inactivePlans = null, $activePlans = null)
+    public function get_sources($total = null, $installments = [])
     {
-        // If plugin is not ready
-        if (!$this->isReady()) {
+        $entity = $this->get_entity();
+
+        if (empty($entity['countryReference']) || empty($entity['tax_id']))
             return [];
-        }
 
-        $data = $total ? '?total=' . $total : null;
-
-        // Get installments
-        $installments = self::get_installments_query($inactivePlans, $activePlans);
-
-        if ($installments)
-            $data .= '&' . $installments;
-
-        $response = wp_remote_get(MOBBEX_SOURCES . $data, [
-            'headers' => $this->get_headers(),
-        ]);
-
-        if (!is_wp_error($response)) {
-            $response = json_decode($response['body'], true);
-
-            if (!empty($response['data']))
-                return $response['data'];
-        }
-
-        return [];
+        return $this->api->request([
+            'method' => 'POST',
+            'uri'    => "sources/list/$entity[countryReference]/$entity[tax_id]" . ($total ? "?total=$total" : ''),
+            'body'   => compact('installments'),
+        ]) ?: [];
     }
 
     /**
@@ -145,33 +132,27 @@ class MobbexHelper
     }
 
     /**
-     * Returns a query param with the installments of the product.
-     * @param array $inactivePlans
-     * @param array $activePlans
+     * Get entity data from Mobbex or db if possible.
+     * 
+     * @return string[] 
      */
-    public static function get_installments_query($inactivePlans = null, $activePlans = null)
+    public function get_entity()
     {
+        // First, try to get from db
+        $entity = get_option('mbbx_entity');
 
-        $installments = [];
+        if ($entity)
+            return json_decode($entity, true);
 
-        //get plans
-        if ($inactivePlans) {
-            foreach ($inactivePlans as $plan) {
-                $installments[] = "-$plan";
-            }
-        }
+        $entity = $this->api->request([
+            'method' => 'GET',
+            'uri'    => 'entity/validate',
+        ]);
 
-        if ($activePlans) {
-            foreach ($activePlans as $plan) {
-                $installments[] = "+uid:$plan";
-            }
-        }
+        // Save on db
+        update_option('mbbx_entity', json_encode($entity));
 
-        //Build query param
-        $query = http_build_query(['installments' => $installments]);
-        $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
-
-        return $query;
+        return $entity;
     }
 
     /**

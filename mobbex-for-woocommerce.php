@@ -356,22 +356,15 @@ class MobbexGateway
     {
         global $post;
 
-        // Shortcode only works in product page
+        // Shortcode only works in product and cart pages
         if (!$post || $post->post_type != 'product')
             return;
 
-        $product = wc_get_product($post->ID);
-
-        // Get Plans configured
-        $inactivePlans = self::$helper->get_inactive_plans($product->get_id());
-        $activePlans = self::$helper->get_active_plans($product->get_id());
-
-        // Get sources
-        $sources = self::$helper->get_sources($product->get_price(), $inactivePlans, $activePlans);
+        $price = wc_get_product($post->ID)->get_price();
 
         $data = [
-            'price'   => $product->get_price(),
-            'sources' => $sources,
+            'price'   => $price,
+            'sources' => self::$helper->get_sources($price, self::$helper->get_installments([$post->ID])),
             'style'   => [
                 'theme'             => self::$helper->financial_widget_theme,
                 'button_color'      => self::$helper->financial_widget_button_color,
