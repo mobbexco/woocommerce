@@ -357,19 +357,17 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
 
         $payment_id = get_post_meta($order_id, 'mobbex_payment_id', true);
-        if (!$payment_id) {
-            return false;
-        }
 
-        $response = wp_remote_post(str_replace('{ID}', $payment_id, MOBBEX_REFUND), [
-            'headers'     => $this->helper->get_headers(),
-            'data_format' => 'body',
-            'body'        => json_encode(['total' => floatval($amount)]),
+        if (!$payment_id)
+            return false;
+
+        $result = $this->helper->api->request([
+            'method' => 'POST',
+            'uri'    => "operations/$payment_id/refund",
+            'body'   => ['total' => floatval($amount)],
         ]);
 
-        $result = json_decode($response['body'], true);
-
-        if ($result['result'])
+        if ($result || $result === null)
             return true;
 
         return false;

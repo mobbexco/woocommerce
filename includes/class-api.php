@@ -34,23 +34,22 @@ class MobbexApi
      * 
      * @param array $data 
      * 
-     * @return mixed
+     * @return mixed Result status or data if exists.
      * 
-     * @throws MobbexException
+     * @throws \MobbexException
      */
     public function request($data)
     {
         if (!$this->ready)
             return false;
 
+        if (empty($data['method']) || empty($data['uri']))
+            throw new \MobbexException('Mobbex request error: Missing arguments', 0, $data);
+
         $curl = curl_init();
 
-        // Set query params if needed
-        if (!empty($data['params']))
-            $data['uri'] = $data['uri'] . '?' . http_build_query($data['params']);
-
         curl_setopt_array($curl, [
-            CURLOPT_URL            => $this->api_url . $data['uri'],
+            CURLOPT_URL            => $this->api_url . $data['uri'] . (!empty($data['params']) ? '?' . http_build_query($data['params']) : null),
             CURLOPT_HTTPHEADER     => $this->get_headers(),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_MAXREDIRS      => 10,
@@ -72,10 +71,13 @@ class MobbexApi
         $result = json_decode($response, true);
 
         // Throw request errors
+        if (!$result)
+            throw new \MobbexException('Mobbex request error: Invalid response format', 0, $data);
+
         if (!$result['result'])
             throw new \MobbexException('Mobbex request error #' . $result['code'] . ': ' . $result['error'], 0, $data);
 
-        return isset($result['data']) ? $result['data'] : null;
+        return isset($result['data']) ? $result['data'] : $result['result'];
     }
 
     /**
