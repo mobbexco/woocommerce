@@ -298,16 +298,11 @@ class MobbexHelper
             throw new Exception(__('Empty Payment UID or params', 'mobbex-for-woocommerce'));
 
         // Capture payment
-        $result = $this->api->request([
+        return $this->api->request([
             'method' => 'POST',
             'uri'    => "operations/$payment_id/capture",
             'body'   => compact('total'),
         ]);
-
-        if ($result || $result === null)
-            return true;
-
-        throw new Exception(__('An error occurred in the execution', 'mobbex-for-woocommerce'));
     }
 
     /**

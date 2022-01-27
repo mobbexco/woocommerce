@@ -361,16 +361,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         if (!$payment_id)
             return false;
 
-        $result = $this->helper->api->request([
+        return $this->helper->api->request([
             'method' => 'POST',
             'uri'    => "operations/$payment_id/refund",
             'body'   => ['total' => floatval($amount)],
         ]);
-
-        if ($result || $result === null)
-            return true;
-
-        return false;
     }
 
     public function add_checkout_fields($fields)
