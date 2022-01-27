@@ -136,6 +136,14 @@ return [
         'default'     => '#6f00ff',
     ],
 
+    'financial_widget_on_cart' => [
+        'title'       => __('Widget de financiación en carrito', 'mobbex-for-woocommerce'),
+        'description' => __('Mostrar el botón de financiación en la página del carrito.', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'no',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
     'financial_widget_theme' => [
         'title'       => __('Financial Widget Theme', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your Financial Widget Theme from here.', 'mobbex-for-woocommerce'),

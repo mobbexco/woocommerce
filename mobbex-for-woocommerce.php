@@ -74,6 +74,9 @@ class MobbexGateway
         if (self::$helper->settings['financial_info_active'] === 'yes')
             add_action('woocommerce_after_add_to_cart_form', [$this, 'display_finnacial_button']);
 
+        if (self::$helper->settings['financial_widget_on_cart'] === 'yes')
+            add_action('woocommerce_after_cart_totals', [$this, 'display_finnacial_button'], 1);
+
         // Enqueue assets
         add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
         add_action('admin_enqueue_scripts', [$this, 'load_admin_scripts']);
@@ -276,6 +279,8 @@ class MobbexGateway
 
     public function mobbex_assets_enqueue()
     {
+        global $post;
+
         $dir_url = plugin_dir_url(__FILE__);
 
         // Only if directory url looks good
@@ -283,8 +288,8 @@ class MobbexGateway
             return;
 
         // Product page
-        if (is_product()) {
-            wp_enqueue_script('mmbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
+        if (is_product() || has_shortcode($post->post_content, 'mobbex_button')) {
+            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
         }
 
@@ -357,14 +362,19 @@ class MobbexGateway
         global $post;
 
         // Shortcode only works in product and cart pages
-        if (!$post || $post->post_type != 'product')
+        if (!is_cart() && (!$post || $post->post_type != 'product'))
             return;
 
-        $price = wc_get_product($post->ID)->get_price();
+        // Try to enqueue scripts
+        wp_enqueue_script('mbbx-product-button-js', plugin_dir_url(__FILE__) . 'assets/js/finance-widget.js');
+        wp_enqueue_style('mobbex_product_style', plugin_dir_url(__FILE__) . 'assets/css/product.css');
+
+        $price        = is_cart() ? WC()->cart->get_total(null) : wc_get_product($post->ID)->get_price();
+        $products_ids = is_cart() ? array_column(WC()->cart->get_cart() ?: [], 'product_id') : [$post->ID];
 
         $data = [
             'price'   => $price,
-            'sources' => self::$helper->get_sources($price, self::$helper->get_installments([$post->ID])),
+            'sources' => self::$helper->get_sources($price, self::$helper->get_installments($products_ids)),
             'style'   => [
                 'theme'             => self::$helper->financial_widget_theme,
                 'button_color'      => self::$helper->financial_widget_button_color,
