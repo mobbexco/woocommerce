@@ -24,6 +24,7 @@
     z-index: 10000;
     overflow-y: scroll;
     border-radius: 10px;
+    box-sizing: border-box;
 }
 
 #mbbxProductModalHeader {
@@ -116,7 +117,7 @@
 }
 
 #mbbx-method-select {
-    width: 100%;
+    width: 94%;
     min-height: 40px;
     padding: 0.5rem;
     border: 1px #d8d8d8 solid;
