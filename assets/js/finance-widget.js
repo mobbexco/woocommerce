@@ -22,6 +22,34 @@
         document.body.prepend(document.getElementById('mbbxProductModal'));
     }
 
+    /**
+     * Update the financial widget with the selected variant price.
+     * 
+     * @param {int} variantPrice 
+     * @param {string} variantId 
+     * @param {string} url 
+     */
+    function updateWidget(variantPrice, variantId, url) {
+        jQuery('#mbbxProductBtn').prop('disabled', true);
+        jQuery.ajax({
+            dataType: 'json',
+            method: 'POST',
+            url: url,
+            data: {
+              "variantId": variantId,
+              "variantPrice": variantPrice
+            },
+            success: (response) => {
+                jQuery('#updatedWidget').html(response);
+                replaceModal();
+                jQuery('#mbbxProductBtn').prop('disabled', false);
+            },
+            error: (error) => {
+                
+            }
+          });
+    }
+
     window.addEventListener('load', function () {
         var modal = document.getElementById('mbbxProductModal');
 
@@ -42,6 +70,11 @@
             if (e.target == openBtn || e.target == closeBtn || e.target == modal && !e.target.closest('#mbbxProductModalContent'))
                 toggleElement(modal);
         });
+
+        //Trigger widget update when selected variation change
+        jQuery(document).on('found_variation', 'form.cart', function( event, variation ) {   
+            updateWidget(variation.display_price, variation.variation_id, mobbexWidget.widgetUpdateUrl);
+         });
 
         // Get sources and payment method selector 
         var sources      = document.querySelectorAll('.mobbexSource');

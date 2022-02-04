@@ -94,6 +94,11 @@ class MobbexGateway
                 'callback' => [$this, 'mobbex_webhook_api'],
                 'permission_callback' => '__return_true',
             ]);
+            register_rest_route('mobbex/v1', '/widget', [
+                'methods' => WP_REST_Server::CREATABLE,
+                'callback' => [$this, 'financial_widget_update'],
+                'permission_callback' => '__return_true',
+            ]);
         });
 
         // Create financial widget shortcode
@@ -249,9 +254,7 @@ class MobbexGateway
 
             $methods[] = MOBBEX_WC_GATEWAY;
             return $methods;
-
         });
-
     }
 
     public static function notice($type, $msg)
@@ -263,18 +266,17 @@ class MobbexGateway
 
             ob_start();
 
-            ?>
+?>
 
-            <div class="<?=$class?>">
+            <div class="<?= $class ?>">
                 <h2>Mobbex for Woocommerce</h2>
-                <p><?=$msg?></p>
+                <p><?= $msg ?></p>
             </div>
 
-            <?php
+<?php
 
             echo ob_get_clean();
         });
-
     }
 
     public function mobbex_assets_enqueue()
@@ -290,6 +292,8 @@ class MobbexGateway
         // Product page
         if (is_product() || has_shortcode($post->post_content, 'mobbex_button')) {
             wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
+            wp_localize_script('mbbx-product-button-js', 'mobbexWidget', array('widgetUpdateUrl' => get_rest_url(null, 'mobbex/v1/widget')));
+            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
         }
 
@@ -300,7 +304,7 @@ class MobbexGateway
             !defined('DONOTMINIFY') && define('DONOTMINIFY', true);
 
             wp_enqueue_script('mobbex-embed', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_VERSION, false);
-            wp_enqueue_script('mobbex-sdk', 'https://res.mobbex.com/js/sdk/mobbex@'. MOBBEX_SDK_VERSION . '.js', null, MOBBEX_VERSION, false);
+            wp_enqueue_script('mobbex-sdk', 'https://res.mobbex.com/js/sdk/mobbex@' . MOBBEX_SDK_VERSION . '.js', null, MOBBEX_VERSION, false);
 
             // Enqueue payment asset files
             wp_enqueue_style('mobbex-checkout-style', $dir_url . 'assets/css/checkout.css', [], MOBBEX_VERSION, false);
@@ -388,6 +392,66 @@ class MobbexGateway
     }
 
     /**
+     * Creates a updated financial widget with selected variant price & returns it in a string
+     * 
+     * @return string $widget
+     * 
+     */
+    public function financial_widget_update()
+    {
+
+        //Get variant data
+        $price        = isset($_POST['variantPrice']) ? $_POST['variantPrice'] : '';
+        $products_ids = isset($_POST['variantId']) ? [$_POST['variantId']] : [];
+        $sources      = self::$helper->get_sources($price, self::$helper->get_installments($products_ids));
+        $theme        = self::$helper->financial_widget_theme;
+
+        //Generate updated financial widget
+        $widget = '<div id="mbbxProductModal" class="' . $theme . '"> 
+        <div id="mbbxProductModalContent">
+        <div id="mbbxProductModalHeader">
+        <label id="mobbex_select_title" for="mbbx-method-select">Seleccione un método de pago</label>
+        <span id="closembbxProduct">&times;</span>
+        <select name="mbbx-method-select" id="mbbx-method-select">
+        <option id="0" value="0">Todos</option>';
+
+        foreach ($sources as $source) {
+            if (!empty($source['source']['name'])) {
+                $widget .= '<option id="' . $source['source']['reference'] . '" value="' . $source['source']['reference'] . '">' . $source['source']['name'] . '</option>';
+            }
+        }
+
+        $widget .= '</select></div><div id="mbbxProductModalBody">';
+
+        foreach ($sources as $source) {
+            if (!empty($source['source']['name'])) {
+                $widget .= '
+                    <div id="' . $source['source']['reference'] . '" class="mobbexSource">
+                    <p class="mobbexPaymentMethod">
+                    <img src="https://res.mobbex.com/images/sources/' . $source['source']['reference'] . '.jpg">' . $source['source']['name'] . '</p>
+                    ';
+
+                if (!empty($source['installments']['list'])) {
+                    $widget .= '<table>';
+                    foreach ($source['installments']['list'] as $installment) {
+                        $widget .= "<tr><td>" . $installment['name'];
+                        if ($installment['totals']['installment']['count'] != 1) {
+                            $widget .= "<small>" . $installment['totals']['installment']['count'] . " cuotas de " . wc_price($installment['totals']['installment']['amount']) . "</small>";
+                        }
+                        $widget .= '</td><td style="text-align: right; ">' . isset($installment['totals']['total']) ? wc_price($installment['totals']['total']) : '' . '</td></tr>';
+                    }
+                    $widget .= "</table>";
+                } else {
+                    $widget .= '<p class="mobbexSourceTotal">' . wc_price($price) . '</p>';
+                }
+                $widget .= "</div>";
+            }
+        }
+
+        return $widget;
+    }
+
+    /**
      * Check that the Cart does not have products from different stores.
      * 
      * @param bool $valid
@@ -460,39 +524,39 @@ function create_mobbex_transaction_table()
 
     $wpdb->get_results(
         'CREATE TABLE IF NOT EXISTS ' . $wpdb->prefix . 'mobbex_transaction('
-        .'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
-        .'order_id INT(11) NOT NULL,'
-        .'parent TEXT NOT NULL,'
-        .'operation_type TEXT NOT NULL,'
-        .'payment_id TEXT NOT NULL,'
-        .'description TEXT NOT NULL,'
-        .'status_code TEXT NOT NULL,'
-        .'status_message TEXT NOT NULL,'
-        .'source_name TEXT NOT NULL,'
-        .'source_type TEXT NOT NULL,'
-        .'source_reference TEXT NOT NULL,'
-        .'source_number TEXT NOT NULL,'
-        .'source_expiration TEXT NOT NULL,'
-        .'source_installment TEXT NOT NULL,'
-        .'installment_name TEXT NOT NULL,'
-        .'installment_amount DECIMAL(18,2) NOT NULL,'
-        .'installment_count TEXT NOT NULL,'
-        .'source_url TEXT NOT NULL,'
-        .'cardholder TEXT NOT NULL,'
-        .'entity_name TEXT NOT NULL,'
-        .'entity_uid TEXT NOT NULL,'
-        .'customer TEXT NOT NULL,'
-        .'checkout_uid TEXT NOT NULL,'
-        .'total DECIMAL(18,2) NOT NULL,'
-        .'currency TEXT NOT NULL,'
-        .'risk_analysis TEXT NOT NULL,'
-        .'data TEXT NOT NULL,'
-        .'created TEXT NOT NULL,'
-        .'updated TEXT NOT NULL'
-        .');'
+            . 'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
+            . 'order_id INT(11) NOT NULL,'
+            . 'parent TEXT NOT NULL,'
+            . 'operation_type TEXT NOT NULL,'
+            . 'payment_id TEXT NOT NULL,'
+            . 'description TEXT NOT NULL,'
+            . 'status_code TEXT NOT NULL,'
+            . 'status_message TEXT NOT NULL,'
+            . 'source_name TEXT NOT NULL,'
+            . 'source_type TEXT NOT NULL,'
+            . 'source_reference TEXT NOT NULL,'
+            . 'source_number TEXT NOT NULL,'
+            . 'source_expiration TEXT NOT NULL,'
+            . 'source_installment TEXT NOT NULL,'
+            . 'installment_name TEXT NOT NULL,'
+            . 'installment_amount DECIMAL(18,2) NOT NULL,'
+            . 'installment_count TEXT NOT NULL,'
+            . 'source_url TEXT NOT NULL,'
+            . 'cardholder TEXT NOT NULL,'
+            . 'entity_name TEXT NOT NULL,'
+            . 'entity_uid TEXT NOT NULL,'
+            . 'customer TEXT NOT NULL,'
+            . 'checkout_uid TEXT NOT NULL,'
+            . 'total DECIMAL(18,2) NOT NULL,'
+            . 'currency TEXT NOT NULL,'
+            . 'risk_analysis TEXT NOT NULL,'
+            . 'data TEXT NOT NULL,'
+            . 'created TEXT NOT NULL,'
+            . 'updated TEXT NOT NULL'
+            . ');'
     );
 }
 
 $mobbexGateway = new MobbexGateway;
-add_action('plugins_loaded', [ & $mobbexGateway, 'init']);
+add_action('plugins_loaded', [&$mobbexGateway, 'init']);
 register_activation_hook(__FILE__, 'create_mobbex_transaction_table');
