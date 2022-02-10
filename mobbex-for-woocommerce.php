@@ -94,6 +94,11 @@ class MobbexGateway
                 'callback' => [$this, 'mobbex_webhook_api'],
                 'permission_callback' => '__return_true',
             ]);
+            register_rest_route('mobbex/v1', '/widget', [
+                'methods' => WP_REST_Server::CREATABLE,
+                'callback' => [$this, 'financial_widget_update'],
+                'permission_callback' => '__return_true',
+            ]);
         });
 
         // Create financial widget shortcode
@@ -249,9 +254,7 @@ class MobbexGateway
 
             $methods[] = MOBBEX_WC_GATEWAY;
             return $methods;
-
         });
-
     }
 
     public static function notice($type, $msg)
@@ -263,18 +266,17 @@ class MobbexGateway
 
             ob_start();
 
-            ?>
+?>
 
-            <div class="<?=$class?>">
+            <div class="<?= $class ?>">
                 <h2>Mobbex for Woocommerce</h2>
-                <p><?=$msg?></p>
+                <p><?= $msg ?></p>
             </div>
 
-            <?php
+<?php
 
             echo ob_get_clean();
         });
-
     }
 
     public function mobbex_assets_enqueue()
@@ -290,6 +292,8 @@ class MobbexGateway
         // Product page
         if (is_product() || has_shortcode($post->post_content, 'mobbex_button')) {
             wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
+            wp_localize_script('mbbx-product-button-js', 'mobbexWidget', array('widgetUpdateUrl' => get_rest_url(null, 'mobbex/v1/widget')));
+            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js');
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css');
         }
 
@@ -300,7 +304,7 @@ class MobbexGateway
             !defined('DONOTMINIFY') && define('DONOTMINIFY', true);
 
             wp_enqueue_script('mobbex-embed', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_VERSION, false);
-            wp_enqueue_script('mobbex-sdk', 'https://res.mobbex.com/js/sdk/mobbex@'. MOBBEX_SDK_VERSION . '.js', null, MOBBEX_VERSION, false);
+            wp_enqueue_script('mobbex-sdk', 'https://res.mobbex.com/js/sdk/mobbex@' . MOBBEX_SDK_VERSION . '.js', null, MOBBEX_VERSION, false);
 
             // Enqueue payment asset files
             wp_enqueue_style('mobbex-checkout-style', $dir_url . 'assets/css/checkout.css', [], MOBBEX_VERSION, false);
@@ -357,26 +361,34 @@ class MobbexGateway
      * in woocommerce echo do_shortcode('[mobbex_button]'); in content-single-product.php
      * or [mobbex_button] in wordpress pages
      */
-    public function shortcode_mobbex_button()
+    public function shortcode_mobbex_button($params)
     {
         global $post;
 
-        // Shortcode only works in product and cart pages
-        if (!is_cart() && (!$post || $post->post_type != 'product'))
+        // Try to get shortcode params
+        if (isset($params['price'])) {
+            $price        = $params['price'];
+            $products_ids = isset($params['products_ids']) ? explode(',', $params['products_ids']) : [];
+        } else if (is_cart()) {
+            $price        = WC()->cart->get_total(null);
+            $products_ids = array_column(WC()->cart->get_cart() ?: [], 'product_id');
+        } else if ($post && $post->post_type == 'product') {
+            $price        = wc_get_product($post->ID)->get_price();
+            $products_ids = [$post->ID];
+        } else {
             return;
+        }
 
         // Try to enqueue scripts
         wp_enqueue_script('mbbx-product-button-js', plugin_dir_url(__FILE__) . 'assets/js/finance-widget.js');
         wp_enqueue_style('mobbex_product_style', plugin_dir_url(__FILE__) . 'assets/css/product.css');
-
-        $price        = is_cart() ? WC()->cart->get_total(null) : wc_get_product($post->ID)->get_price();
-        $products_ids = is_cart() ? array_column(WC()->cart->get_cart() ?: [], 'product_id') : [$post->ID];
 
         $data = [
             'price'   => $price,
             'sources' => self::$helper->get_sources($price, self::$helper->get_installments($products_ids)),
             'style'   => [
                 'theme'             => self::$helper->financial_widget_theme,
+                'show_button'       => isset($params['show_button']) ? $params['show_button'] : true,
                 'button_color'      => self::$helper->financial_widget_button_color,
                 'button_font_color' => self::$helper->financial_widget_button_font_color,
                 'button_font_size'  => self::$helper->financial_widget_button_font_color,
@@ -385,6 +397,25 @@ class MobbexGateway
         ];
 
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
+    }
+
+    /**
+     * Creates a updated financial widget with selected variant price & returns it in a string
+     * 
+     * @return string $widget
+     */
+    public function financial_widget_update()
+    {
+        if (empty($_POST['variantPrice']) || empty($_POST['variantId']))
+            exit;
+
+        ob_start() && do_shortcode('[mobbex_button ' . http_build_query([
+            'price'        => $_POST['variantPrice'],
+            'products_ids' => implode(',', [$_POST['variantId']]),
+            'show_button'  => false,
+        ], '', ' ') . ']');
+
+        return ob_get_clean();
     }
 
     /**
@@ -460,39 +491,39 @@ function create_mobbex_transaction_table()
 
     $wpdb->get_results(
         'CREATE TABLE IF NOT EXISTS ' . $wpdb->prefix . 'mobbex_transaction('
-        .'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
-        .'order_id INT(11) NOT NULL,'
-        .'parent TEXT NOT NULL,'
-        .'operation_type TEXT NOT NULL,'
-        .'payment_id TEXT NOT NULL,'
-        .'description TEXT NOT NULL,'
-        .'status_code TEXT NOT NULL,'
-        .'status_message TEXT NOT NULL,'
-        .'source_name TEXT NOT NULL,'
-        .'source_type TEXT NOT NULL,'
-        .'source_reference TEXT NOT NULL,'
-        .'source_number TEXT NOT NULL,'
-        .'source_expiration TEXT NOT NULL,'
-        .'source_installment TEXT NOT NULL,'
-        .'installment_name TEXT NOT NULL,'
-        .'installment_amount DECIMAL(18,2) NOT NULL,'
-        .'installment_count TEXT NOT NULL,'
-        .'source_url TEXT NOT NULL,'
-        .'cardholder TEXT NOT NULL,'
-        .'entity_name TEXT NOT NULL,'
-        .'entity_uid TEXT NOT NULL,'
-        .'customer TEXT NOT NULL,'
-        .'checkout_uid TEXT NOT NULL,'
-        .'total DECIMAL(18,2) NOT NULL,'
-        .'currency TEXT NOT NULL,'
-        .'risk_analysis TEXT NOT NULL,'
-        .'data TEXT NOT NULL,'
-        .'created TEXT NOT NULL,'
-        .'updated TEXT NOT NULL'
-        .');'
+            . 'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
+            . 'order_id INT(11) NOT NULL,'
+            . 'parent TEXT NOT NULL,'
+            . 'operation_type TEXT NOT NULL,'
+            . 'payment_id TEXT NOT NULL,'
+            . 'description TEXT NOT NULL,'
+            . 'status_code TEXT NOT NULL,'
+            . 'status_message TEXT NOT NULL,'
+            . 'source_name TEXT NOT NULL,'
+            . 'source_type TEXT NOT NULL,'
+            . 'source_reference TEXT NOT NULL,'
+            . 'source_number TEXT NOT NULL,'
+            . 'source_expiration TEXT NOT NULL,'
+            . 'source_installment TEXT NOT NULL,'
+            . 'installment_name TEXT NOT NULL,'
+            . 'installment_amount DECIMAL(18,2) NOT NULL,'
+            . 'installment_count TEXT NOT NULL,'
+            . 'source_url TEXT NOT NULL,'
+            . 'cardholder TEXT NOT NULL,'
+            . 'entity_name TEXT NOT NULL,'
+            . 'entity_uid TEXT NOT NULL,'
+            . 'customer TEXT NOT NULL,'
+            . 'checkout_uid TEXT NOT NULL,'
+            . 'total DECIMAL(18,2) NOT NULL,'
+            . 'currency TEXT NOT NULL,'
+            . 'risk_analysis TEXT NOT NULL,'
+            . 'data TEXT NOT NULL,'
+            . 'created TEXT NOT NULL,'
+            . 'updated TEXT NOT NULL'
+            . ');'
     );
 }
 
 $mobbexGateway = new MobbexGateway;
-add_action('plugins_loaded', [ & $mobbexGateway, 'init']);
+add_action('plugins_loaded', [&$mobbexGateway, 'init']);
 register_activation_hook(__FILE__, 'create_mobbex_transaction_table');
