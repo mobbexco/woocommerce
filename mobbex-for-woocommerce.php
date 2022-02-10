@@ -361,26 +361,34 @@ class MobbexGateway
      * in woocommerce echo do_shortcode('[mobbex_button]'); in content-single-product.php
      * or [mobbex_button] in wordpress pages
      */
-    public function shortcode_mobbex_button()
+    public function shortcode_mobbex_button($params)
     {
         global $post;
 
-        // Shortcode only works in product and cart pages
-        if (!is_cart() && (!$post || $post->post_type != 'product'))
+        // Try to get shortcode params
+        if (isset($params['price'])) {
+            $price        = $params['price'];
+            $products_ids = isset($params['products_ids']) ? explode(',', $params['products_ids']) : [];
+        } else if (is_cart()) {
+            $price        = WC()->cart->get_total(null);
+            $products_ids = array_column(WC()->cart->get_cart() ?: [], 'product_id');
+        } else if ($post && $post->post_type == 'product') {
+            $price        = wc_get_product($post->ID)->get_price();
+            $products_ids = [$post->ID];
+        } else {
             return;
+        }
 
         // Try to enqueue scripts
         wp_enqueue_script('mbbx-product-button-js', plugin_dir_url(__FILE__) . 'assets/js/finance-widget.js');
         wp_enqueue_style('mobbex_product_style', plugin_dir_url(__FILE__) . 'assets/css/product.css');
-
-        $price        = is_cart() ? WC()->cart->get_total(null) : wc_get_product($post->ID)->get_price();
-        $products_ids = is_cart() ? array_column(WC()->cart->get_cart() ?: [], 'product_id') : [$post->ID];
 
         $data = [
             'price'   => $price,
             'sources' => self::$helper->get_sources($price, self::$helper->get_installments($products_ids)),
             'style'   => [
                 'theme'             => self::$helper->financial_widget_theme,
+                'show_button'       => isset($params['show_button']) ? $params['show_button'] : true,
                 'button_color'      => self::$helper->financial_widget_button_color,
                 'button_font_color' => self::$helper->financial_widget_button_font_color,
                 'button_font_size'  => self::$helper->financial_widget_button_font_color,
@@ -395,60 +403,19 @@ class MobbexGateway
      * Creates a updated financial widget with selected variant price & returns it in a string
      * 
      * @return string $widget
-     * 
      */
     public function financial_widget_update()
     {
+        if (empty($_POST['variantPrice']) || empty($_POST['variantId']))
+            exit;
 
-        //Get variant data
-        $price        = isset($_POST['variantPrice']) ? $_POST['variantPrice'] : '';
-        $products_ids = isset($_POST['variantId']) ? [$_POST['variantId']] : [];
-        $sources      = self::$helper->get_sources($price, self::$helper->get_installments($products_ids));
-        $theme        = self::$helper->financial_widget_theme;
+        ob_start() && do_shortcode('[mobbex_button ' . http_build_query([
+            'price'        => $_POST['variantPrice'],
+            'products_ids' => implode(',', [$_POST['variantId']]),
+            'show_button'  => false,
+        ], '', ' ') . ']');
 
-        //Generate updated financial widget
-        $widget = '<div id="mbbxProductModal" class="' . $theme . '"> 
-        <div id="mbbxProductModalContent">
-        <div id="mbbxProductModalHeader">
-        <label id="mobbex_select_title" for="mbbx-method-select">Seleccione un método de pago</label>
-        <span id="closembbxProduct">&times;</span>
-        <select name="mbbx-method-select" id="mbbx-method-select">
-        <option id="0" value="0">Todos</option>';
-
-        foreach ($sources as $source) {
-            if (!empty($source['source']['name'])) {
-                $widget .= '<option id="' . $source['source']['reference'] . '" value="' . $source['source']['reference'] . '">' . $source['source']['name'] . '</option>';
-            }
-        }
-
-        $widget .= '</select></div><div id="mbbxProductModalBody">';
-
-        foreach ($sources as $source) {
-            if (!empty($source['source']['name'])) {
-                $widget .= '
-                    <div id="' . $source['source']['reference'] . '" class="mobbexSource">
-                    <p class="mobbexPaymentMethod">
-                    <img src="https://res.mobbex.com/images/sources/' . $source['source']['reference'] . '.jpg">' . $source['source']['name'] . '</p>
-                    ';
-
-                if (!empty($source['installments']['list'])) {
-                    $widget .= '<table>';
-                    foreach ($source['installments']['list'] as $installment) {
-                        $widget .= "<tr><td>" . $installment['name'];
-                        if ($installment['totals']['installment']['count'] != 1) {
-                            $widget .= "<small>" . $installment['totals']['installment']['count'] . " cuotas de " . wc_price($installment['totals']['installment']['amount']) . "</small>";
-                        }
-                        $widget .= '</td><td style="text-align: right; ">' . isset($installment['totals']['total']) ? wc_price($installment['totals']['total']) : '' . '</td></tr>';
-                    }
-                    $widget .= "</table>";
-                } else {
-                    $widget .= '<p class="mobbexSourceTotal">' . wc_price($price) . '</p>';
-                }
-                $widget .= "</div>";
-            }
-        }
-
-        return $widget;
+        return ob_get_clean();
     }
 
     /**
