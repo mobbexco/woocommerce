@@ -53,6 +53,7 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 - Update finance widget prices on product variant changes
 - Format widget prices using platform configuration
 - Fix finance widget customization options
+- Fix DNI options hiding
 
 ### 3.6.3 :: 2022-01-24
 - Add ecommerce agent header to API calls
