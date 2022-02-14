@@ -10,6 +10,7 @@ function mbbxsToggleOptions(optionToCheck, valueToShow, optionsToToggle, classUs
 }
 
 window.addEventListener('load', function () {
+    //Multisite event
     var isMultisite = document.querySelector('#mbbx_enable_multisite');
     var allOptions = [
         document.querySelector('.mbbx_store_field'),
@@ -34,5 +35,14 @@ window.addEventListener('load', function () {
     mbbxsToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
     storeSelect.onchange = function () {
         mbbxsToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
+    }
+
+    //Suscription event
+    var isSuscription         = document.querySelector('#mbbx_enable_sus');
+    var suscriptionUidOptions = document.querySelector('.mbbx_sus_uid_field');
+    //show suscription uid if product is type suscription
+    mbbxsToggleOptions(isSuscription, true, [suscriptionUidOptions], 'really-hidden');
+    isSuscription.onclick = function () {
+        mbbxsToggleOptions(isSuscription, true, [suscriptionUidOptions], 'really-hidden');
     }
 });

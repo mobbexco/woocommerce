@@ -83,5 +83,25 @@
             ]);
         ?>
     </div>
+    <hr>
+    <h2><?= __('Suscriptions', 'mobbex-for-woocommerce') ?></h2>
+    <div>
+    <?php
+        woocommerce_wp_checkbox([
+            'id'          => 'mbbx_enable_sus',
+            'value'       => $is_suscription ? 'yes' : false,
+            'label'       => __('Is type suscription', 'mobbex-for-woocommerce'),
+            'description' => __('Set the product as a sucription.', 'mobbex-for-woocommerce'),
+        ]);
+
+        woocommerce_wp_text_input([
+            'id'            => 'mbbx_sus_uid',
+            'value'         => $suscription_uid,
+            'label'         => __('Suscription UID', 'mobbex-for-woocommerce'),
+            'desc_tip'      => true,
+            'wrapper_class' => 'really-hidden',
+        ]);
+        ?>
+    </div>
     <?php do_action('mbbx_product_options_end') ?>
 </div>

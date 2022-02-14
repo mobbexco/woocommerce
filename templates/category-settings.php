@@ -101,6 +101,26 @@
                 <hr>
             </th>
         </tr>
+        <!-- Suscriptions -->
+        <tr class="form-field">
+            <th scope="row" valign="top"><label for="mbbx_enable_sus"><?= __('Is Suscription', 'mobbex-for-woocommerce') ?></label></th>
+            <td>
+                <input type="checkbox" name="mbbx_enable_sus" id="mbbx_enable_sus" value="yes" <?= checked($is_suscription, true, false) ?>>
+                <p class="description"><?= __('Enable this if the category is a suscription.', 'mobbex-for-woocommerce') ?></p>
+            </td>
+        </tr>
+        <tr class="form-field mbbx_sus_uid_field">
+            <th scope="row" valign="top"><label for="mbbx_sus_uid"><?= __('Suscription UID', 'mobbex-for-woocommerce') ?></label></th>
+            <td>
+                <input type="text" id="mbbx_sus_uid" name="mbbx_sus_uid" value="<?= $suscription_uid ?>">
+                <p class="description"><?= __('Product Suscription UID.', 'mobbex-for-woocommerce') ?></p>
+            </td>
+        </tr>
+        <tr class="form-field">
+            <th scope="row" valign="top" colspan="2">
+                <hr>
+            </th>
+        </tr>
         <?php if (current_action() == 'product_cat_add_form_fields') : ?>
         </tbody>
     </table>
