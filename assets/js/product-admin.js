@@ -37,12 +37,12 @@ window.addEventListener('load', function () {
         mbbxsToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
     }
 
-    //Suscription event
-    var isSuscription         = document.querySelector('#mbbx_enable_sus');
-    var suscriptionUidOptions = document.querySelector('.mbbx_sus_uid_field');
-    //show suscription uid if product is type suscription
-    mbbxsToggleOptions(isSuscription, true, [suscriptionUidOptions], 'really-hidden');
-    isSuscription.onclick = function () {
-        mbbxsToggleOptions(isSuscription, true, [suscriptionUidOptions], 'really-hidden');
+    //subscription event
+    var issubscription         = document.querySelector('#mbbx_enable_sus');
+    var subscriptionUidOptions = document.querySelector('.mbbx_sus_uid_field');
+    //show subscription uid if product is type subscription
+    mbbxsToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
+    issubscription.onclick = function () {
+        mbbxsToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
     }
 });

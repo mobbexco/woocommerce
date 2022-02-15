@@ -89,7 +89,7 @@ class MobbexOrderHelper
                 $item->get_name(),
                 $this->helper->get_product_image($item->get_product_id()),
                 $this->helper->get_product_entity($item->get_product_id()),
-                $this->helper->get_product_suscription($item->get_product_id()),
+                $this->helper->get_product_subscription($item->get_product_id()),
             );
 
         foreach ($shipping_items as $item)

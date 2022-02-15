@@ -49,9 +49,9 @@ class Mbbx_Product_Admin
         //multivendor
         $entity = get_metadata($meta_type, $id, 'mbbx_entity', true) ?: '';
         
-        //Suscriptions
-        $is_suscription  = get_metadata($meta_type, $id, 'mbbx_enable_sus', true) ?: false;
-        $suscription_uid = get_metadata($meta_type, $id, 'mbbx_sus_uid', true) ?: false;
+        //subscriptions
+        $is_subscription  = get_metadata($meta_type, $id, 'mbbx_enable_sus', true) ?: false;
+        $subscription_uid = get_metadata($meta_type, $id, 'mbbx_sus_uid', true) ?: false;
 
         // Render template
         $template = $meta_type == 'post' ? 'product-settings.php' : 'category-settings.php';
@@ -174,22 +174,22 @@ class Mbbx_Product_Admin
         // Get Entity 
         $entity = !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false;
 
-        //Suscription options
-        $is_suscription  = !empty($_POST['mbbx_enable_sus']) && $_POST['mbbx_enable_sus'] === 'yes';
-        $suscription_uid = !empty($_POST['mbbx_sus_uid']) ? $_POST['mbbx_sus_uid'] : false;
+        //subscription options
+        $is_subscription  = !empty($_POST['mbbx_enable_sus']) && $_POST['mbbx_enable_sus'] === 'yes';
+        $subscription_uid = !empty($_POST['mbbx_sus_uid']) ? $_POST['mbbx_sus_uid'] : false;
 
         // Save all data as meta data
         update_metadata($meta_type, $id, 'common_plans', $common_plans);
         update_metadata($meta_type, $id, 'advanced_plans', $advanced_plans);
         update_metadata($meta_type, $id, 'mbbx_enable_multisite', $enable_ms);
         update_metadata($meta_type, $id, 'mbbx_entity', $entity);
-        update_metadata($meta_type, $id, 'mbbx_enable_sus', $is_suscription);
+        update_metadata($meta_type, $id, 'mbbx_enable_sus', $is_subscription);
         
         if ($enable_ms)
         self::save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
         
-        if($is_suscription)
-        update_metadata($meta_type, $id, 'mbbx_sus_uid', $suscription_uid);
+        if($is_subscription)
+        update_metadata($meta_type, $id, 'mbbx_sus_uid', $subscription_uid);
 
     }
 
