@@ -101,21 +101,7 @@
                 <hr>
             </th>
         </tr>
-        <!-- subscriptions -->
-        <tr class="form-field">
-            <th scope="row" valign="top"><label for="mbbx_enable_sus"><?= __('Is subscription', 'mobbex-for-woocommerce') ?></label></th>
-            <td>
-                <input type="checkbox" name="mbbx_enable_sus" id="mbbx_enable_sus" value="yes" <?= checked($is_subscription, true, false) ?>>
-                <p class="description"><?= __('Enable this if the category is a subscription.', 'mobbex-for-woocommerce') ?></p>
-            </td>
-        </tr>
-        <tr class="form-field mbbx_sus_uid_field">
-            <th scope="row" valign="top"><label for="mbbx_sus_uid"><?= __('subscription UID', 'mobbex-for-woocommerce') ?></label></th>
-            <td>
-                <input type="text" id="mbbx_sus_uid" name="mbbx_sus_uid" value="<?= $subscription_uid ?>">
-                <p class="description"><?= __('Product subscription UID.', 'mobbex-for-woocommerce') ?></p>
-            </td>
-        </tr>
+
         <tr class="form-field">
             <th scope="row" valign="top" colspan="2">
                 <hr>

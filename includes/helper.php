@@ -357,12 +357,6 @@ class MobbexHelper
             return get_metadata('post', $product_id, 'mbbx_sus_uid', true);
         }
 
-        $product_terms_ids = wc_get_product_term_ids($product_id, 'product_cat');
-        foreach ($product_terms_ids as $id) {
-            if (get_metadata('term', $id, 'mbbx_enable_sus', true))
-                return get_metadata('term', $id, 'mbbx_sus_uid', true);
-        }
-
     }
 
     /* WEBHOOK METHODS */
