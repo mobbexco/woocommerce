@@ -184,12 +184,12 @@ class Mbbx_Product_Admin
         update_metadata($meta_type, $id, 'mbbx_enable_multisite', $enable_ms);
         update_metadata($meta_type, $id, 'mbbx_entity', $entity);
         update_metadata($meta_type, $id, 'mbbx_enable_sus', $is_subscription);
+        update_metadata($meta_type, $id, 'mbbx_sus_uid', $subscription_uid);
         
         if ($enable_ms)
-        self::save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
+            self::save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
+       
         
-        if($is_subscription)
-        update_metadata($meta_type, $id, 'mbbx_sus_uid', $subscription_uid);
 
     }
 
