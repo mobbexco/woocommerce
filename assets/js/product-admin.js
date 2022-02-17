@@ -38,8 +38,8 @@ window.addEventListener('load', function () {
     }
 
     //subscription event
-    var issubscription         = document.querySelector('#mbbx_enable_sus');
-    var subscriptionUidOptions = document.querySelector('.mbbx_sus_uid_field');
+    var issubscription         = document.querySelector('#mbbx_sub_enable');
+    var subscriptionUidOptions = document.querySelector('.mbbx_sub_uid_field');
     //show subscription uid if product is type subscription
     mbbxsToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
     issubscription.onclick = function () {
