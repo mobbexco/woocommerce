@@ -342,7 +342,7 @@ class MobbexHelper
         }
     }
     
-    /* subscriptionS METHODS */
+    /* SUBCRIPTION METHODS */
 
     /**
      * Return the subscription UID from a product ID.
@@ -356,7 +356,6 @@ class MobbexHelper
         if (get_metadata('post', $product_id, 'mbbx_enable_sus', true)) {
             return get_metadata('post', $product_id, 'mbbx_sus_uid', true);
         }
-
     }
 
     /* WEBHOOK METHODS */

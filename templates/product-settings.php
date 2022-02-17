@@ -91,7 +91,7 @@
             'id'          => 'mbbx_sub_enable',
             'value'       => $is_subscription ? 'yes' : false,
             'label'       => __('Is a subscription:', 'mobbex-for-woocommerce'),
-            'description' => __('Turns the product into a sucription.', 'mobbex-for-woocommerce'),
+            'description' => __('Turns the product into a subscription.', 'mobbex-for-woocommerce'),
         ]);
 
         woocommerce_wp_text_input([

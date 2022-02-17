@@ -188,9 +188,6 @@ class Mbbx_Product_Admin
         
         if ($enable_ms)
             self::save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
-       
-        
-
     }
 
     /**

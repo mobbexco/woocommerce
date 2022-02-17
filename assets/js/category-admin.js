@@ -36,5 +36,4 @@ window.addEventListener('load', function () {
     storeSelect.onchange = function () {
         mbbxsToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
     }
-
 });
