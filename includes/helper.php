@@ -341,6 +341,22 @@ class MobbexHelper
                 return get_metadata('term', $id, 'mbbx_entity', true);
         }
     }
+    
+    /* SUBCRIPTION METHODS */
+
+    /**
+     * Return the subscription UID from a product ID.
+     * 
+     * @param int|string $product_id
+     * 
+     * @return string|null
+     */
+    public function get_product_subscription($product_id)
+    {
+        if (get_metadata('post', $product_id, 'mbbx_enable_sus', true)) {
+            return get_metadata('post', $product_id, 'mbbx_sus_uid', true);
+        }
+    }
 
     /* WEBHOOK METHODS */
 
