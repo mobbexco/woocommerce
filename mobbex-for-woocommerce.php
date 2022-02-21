@@ -390,14 +390,15 @@ class MobbexGateway
             'price'   => $price,
             'sources' => self::$helper->get_sources($price, self::$helper->get_installments($products_ids)),
             'style'   => [
-                'theme'             => self::$helper->financial_widget_theme,
-                'show_button'       => isset($params['show_button']) ? $params['show_button'] : true,
-                'button_color'      => self::$helper->financial_widget_button_color,
-                'button_font_color' => self::$helper->financial_widget_button_font_color,
-                'button_font_size'  => self::$helper->financial_widget_button_font_color,
-                'button_padding'    => self::$helper->financial_widget_button_padding,
+                'show_button'   => isset($params['show_button']) ? $params['show_button'] : true,
+                'theme'         => self::$helper->mobbex_theme,
+                'custom_styles' => self::$helper->financial_widget_styles,
+                'text'          => self::$helper->financial_widget_button_text,
+                'logo'          => self::$helper->financial_widget_button_logo
             ]
         ];
+
+        error_log('Log Message: ' . "\n" . json_encode($data['style'], JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
 
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
     }
