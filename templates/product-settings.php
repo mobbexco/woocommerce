@@ -84,20 +84,20 @@
         ?>
     </div>
     <hr>
-    <h2><?= __('subscriptions', 'mobbex-for-woocommerce') ?></h2>
+    <h2><?= __('Subscriptions', 'mobbex-for-woocommerce') ?></h2>
     <div>
     <?php
         woocommerce_wp_checkbox([
-            'id'          => 'mbbx_enable_sus',
+            'id'          => 'mbbx_sub_enable',
             'value'       => $is_subscription ? 'yes' : false,
-            'label'       => __('Is type subscription', 'mobbex-for-woocommerce'),
-            'description' => __('Set the product as a sucription.', 'mobbex-for-woocommerce'),
+            'label'       => __('Is a subscription:', 'mobbex-for-woocommerce'),
+            'description' => __('Turns the product into a subscription.', 'mobbex-for-woocommerce'),
         ]);
 
         woocommerce_wp_text_input([
-            'id'            => 'mbbx_sus_uid',
+            'id'            => 'mbbx_sub_uid',
             'value'         => $subscription_uid,
-            'label'         => __('subscription UID', 'mobbex-for-woocommerce'),
+            'label'         => __('Subscription UID:', 'mobbex-for-woocommerce'),
             'desc_tip'      => true,
             'wrapper_class' => 'really-hidden',
         ]);
