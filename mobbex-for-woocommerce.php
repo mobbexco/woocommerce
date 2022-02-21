@@ -398,8 +398,6 @@ class MobbexGateway
             ]
         ];
 
-        error_log('Log Message: ' . "\n" . json_encode($data['style'], JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
-
         include_once plugin_dir_path(__FILE__) . 'templates/finance-widget.php';
     }
 
