@@ -215,7 +215,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function process_webhook($id, $token, $data)
     {
-        $status = $data['payment']['status']['code'];   
+        $status = $data['payment']['status']['code'];
         
         $this->debug([
             "id" => $id,
@@ -290,15 +290,16 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 $order->update_status('on-hold', __('Awaiting payment', 'mobbex-for-woocommerce'));
             }
         } else if ($status == 602 || $status == 605) {
-            $order->update_status('refunded', __('Payment refunded', 'mobbex-for-woocommerce'));
+            $order->update_status(str_replace('wp-','', $this->settings['order_status_refunded']), __('Payment refunded', 'mobbex-for-woocommerce'));
         } else if ($status == 4 || $status >= 200 && $status < 400) {
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.
             // TODO: implement return
             $this->helper->update_order_total($order, $data['payment']['total']);
             $order->payment_complete($id);
+            $order->update_status(str_replace('wp-','', $this->helper->settings['order_status_approve']), __('Payment failed', 'mobbex-for-woocommerce'));
         } else {
-            $order->update_status('failed', __('Payment failed', 'mobbex-for-woocommerce'));
+            $order->update_status(str_replace('wp-','', $this->settings['order_status_failed']), __('Payment failed', 'mobbex-for-woocommerce'));
         }
         
         // Set Total Paid
