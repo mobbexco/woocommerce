@@ -108,14 +108,6 @@ return [
         'default'     => 'wc-refunded',
         'class'       => 'mbbx-into-orders',
     ],
-    'order_status_rejected' => [
-        'title'       => __('Order status rejected', 'mobbex-for-woocommerce'),
-        'description' => __('Select the status for rejected orders.', 'mobbex-for-woocommerce'),
-        'type'        => 'select',
-        'options'     => wc_get_order_statuses(),
-        'default'     => 'wc-failed',
-        'class'       => 'mbbx-into-orders',
-    ],
 
     /* Appearance options */
 
