@@ -124,7 +124,6 @@ class MobbexCheckout
 
         $reference = [
             'wc_id:' . $id,
-            'time:' . time()
         ];
 
         // Add reseller id
@@ -156,9 +155,8 @@ class MobbexCheckout
      * @param string|null $state
      * @param string|null $country Country ISO 3166-1 alpha-3 code.
      * @param string|null $note
-     * @param string|null $agent User agent.
      */
-    public function set_address($street = null, $postcode = null, $state = null, $country = null, $note = null, $agent = null)
+    public function set_address($street = null, $postcode = null, $state = null, $country = null, $note = null)
     {
         $this->address = [
             'address'       => trim(preg_replace('/[0-9]/', '', (string) $street)),
@@ -166,8 +164,7 @@ class MobbexCheckout
             'zipCode'       => $postcode,
             'state'         => $state,
             'country'       => $country,
-            'addressNotes'  => $note,
-            'userAgent'     => $agent,
+            'addressNotes'  => $note
         ];
     }
 
