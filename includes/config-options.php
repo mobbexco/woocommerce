@@ -75,15 +75,6 @@ return [
     ],
 
     'order_status_approve' => [
-        'title'       => __('Checkout Theme', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your Checkout Theme from here.', 'mobbex-for-woocommerce'),
-        'type'        => 'select',
-        'options'     => wc_get_order_statuses(),
-        'default'     => 'wc-completed',
-        'class'       => 'mbbx-into-orders',
-    ],
-
-    'order_status_approve' => [
         'title'       => __('Order status approve', 'mobbex-for-woocommerce'),
         'description' => __('Select the status for approve orders.', 'mobbex-for-woocommerce'),
         'type'        => 'select',
@@ -91,6 +82,16 @@ return [
         'default'     => 'wc-completed',
         'class'       => 'mbbx-into-orders',
     ],
+
+    'order_status_approve' => [
+        'title'       => __('Order status pending', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for pending orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => wc_get_order_statuses(),
+        'default'     => 'wc-on-hold',
+        'class'       => 'mbbx-into-orders',
+    ],
+
     'order_status_failed' => [
         'title'       => __('Order status failed', 'mobbex-for-woocommerce'),
         'description' => __('Select the status for failed orders.', 'mobbex-for-woocommerce'),

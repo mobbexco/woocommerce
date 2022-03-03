@@ -287,7 +287,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             if (!empty($data['payment']['operation']['type']) && $data['payment']['operation']['type'] === 'payment.2-step' && $status == 3) {
                 $order->update_status('authorized', __('Awaiting payment', 'mobbex-for-woocommerce'));
             } else {
-                $order->update_status('on-hold', __('Awaiting payment', 'mobbex-for-woocommerce'));
+                $order->update_status(str_replace('wp-','', $this->helper->settings['order_status_pending']), __('Awaiting payment', 'mobbex-for-woocommerce'));
             }
         } else if ($status == 602 || $status == 605) {
             $order->update_status(str_replace('wp-','', $this->settings['order_status_refunded']), __('Payment refunded', 'mobbex-for-woocommerce'));
@@ -297,7 +297,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             // TODO: implement return
             $this->helper->update_order_total($order, $data['payment']['total']);
             $order->payment_complete($id);
-            $order->update_status(str_replace('wp-','', $this->helper->settings['order_status_approve']), __('Payment failed', 'mobbex-for-woocommerce'));
+            $order->update_status(str_replace('wp-','', $this->helper->settings['order_status_approve']), __('Payment approved', 'mobbex-for-woocommerce'));
         } else {
             $order->update_status(str_replace('wp-','', $this->settings['order_status_failed']), __('Payment failed', 'mobbex-for-woocommerce'));
         }
