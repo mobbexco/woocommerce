@@ -83,9 +83,9 @@ return [
         'class'       => 'mbbx-into-orders',
     ],
 
-    'order_status_pending' => [
-        'title'       => __('Order status pending', 'mobbex-for-woocommerce'),
-        'description' => __('Select the status for pending orders.', 'mobbex-for-woocommerce'),
+    'order_status_on_hold' => [
+        'title'       => __('Order status on hold', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for on hold orders.', 'mobbex-for-woocommerce'),
         'type'        => 'select',
         'options'     => wc_get_order_statuses(),
         'default'     => 'wc-on-hold',
