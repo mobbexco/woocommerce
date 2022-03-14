@@ -67,6 +67,48 @@ return [
         'default'     => '',
     ],
 
+    /* Orders options */
+    'orders_tab' => [
+        'title' => __('Orders Configuration', 'mobbex-for-woocommerce'),
+        'type'  => 'title',
+        'class' => 'mbbx-tab mbbx-tab-orders',
+    ],
+
+    'order_status_approve' => [
+        'title'       => __('Order status approve', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for approve orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => wc_get_order_statuses(),
+        'default'     => 'wc-processing',
+        'class'       => 'mbbx-into-orders',
+    ],
+
+    'order_status_on_hold' => [
+        'title'       => __('Order status on hold', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for on hold orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => wc_get_order_statuses(),
+        'default'     => 'wc-on-hold',
+        'class'       => 'mbbx-into-orders',
+    ],
+
+    'order_status_failed' => [
+        'title'       => __('Order status failed', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for failed orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => wc_get_order_statuses(),
+        'default'     => 'wc-failed',
+        'class'       => 'mbbx-into-orders',
+    ],
+    'order_status_refunded' => [
+        'title'       => __('Order status refunded', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for refunded orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => wc_get_order_statuses(),
+        'default'     => 'wc-refunded',
+        'class'       => 'mbbx-into-orders',
+    ],
+
     /* Appearance options */
 
     'appearance_tab' => [
@@ -276,4 +318,5 @@ return [
         'default' => 'no',
         'class'   => 'mbbx-into-advanced',
     ],
+
 ];
