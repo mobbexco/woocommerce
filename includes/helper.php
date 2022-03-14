@@ -20,7 +20,9 @@ class MobbexHelper
     public function __construct()
     {
         // Get default and saved values
-        $default_values = array_fill_keys(array_keys(include('config-options.php')), null);
+        $default_values = array_map(function($value) {
+            return isset($value['default']) ? $value['default'] : null;
+        }, include('config-options.php'));
         $saved_values   = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID .'_settings', null) ?: [];
 
         // The intent constant overwrite payment mode setting
