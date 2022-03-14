@@ -79,7 +79,7 @@ return [
         'description' => __('Select the status for approve orders.', 'mobbex-for-woocommerce'),
         'type'        => 'select',
         'options'     => wc_get_order_statuses(),
-        'default'     => 'wc-completed',
+        'default'     => 'wc-processing',
         'class'       => 'mbbx-into-orders',
     ],
 
