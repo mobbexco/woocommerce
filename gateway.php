@@ -161,7 +161,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         //order webhook filter
         $_POST['data'] = apply_filters('mobbex_order_webhook', $_POST['data']);
 
-        $webhookData = MobbexHelper::format_webhook_data($id, $_POST['data'], $this->helper->multicard === 'yes', $this->helper->multivendor === 'yes');
+        $webhookData = MobbexHelper::format_webhook_data($id, $_POST['data'], $this->helper->multicard === 'yes', $this->helper->multivendor !== 'no');
 
         // Save transaction
         global $wpdb;
