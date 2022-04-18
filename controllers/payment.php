@@ -25,11 +25,6 @@ final class Payment
                 'callback' => [$this, 'mobbex_webhook'],
                 'permission_callback' => '__return_true',
             ]);
-            register_rest_route('mobbex/v1', '/widget', [
-                'methods' => WP_REST_Server::CREATABLE,
-                'callback' => [$this, 'financial_widget_update'],
-                'permission_callback' => '__return_true',
-            ]);
         });
     }
 

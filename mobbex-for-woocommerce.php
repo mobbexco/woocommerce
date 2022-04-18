@@ -90,6 +90,14 @@ class MobbexGateway
         if (self::$helper->settings['financial_widget_on_cart'] === 'yes')
             add_action('woocommerce_after_cart_totals', [$this, 'display_finnacial_button'], 1);
 
+        add_action('rest_api_init', function () {
+            register_rest_route('mobbex/v1', '/widget', [
+                'methods' => WP_REST_Server::CREATABLE,
+                'callback' => [$this, 'financial_widget_update'],
+                'permission_callback' => '__return_true',
+            ]);
+        });
+
         // Enqueue assets
         add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
         add_action('admin_enqueue_scripts', [$this, 'load_admin_scripts']);
