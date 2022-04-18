@@ -45,19 +45,6 @@ class MobbexHelper
         $this->api = new MobbexApi($this->settings['api-key'], $this->settings['access-token']);
     }
 
-    public function debug($message = 'debug', $data = [], $force = false)
-    {
-        if ($this->settings['debug_mode'] != 'yes' && !$force)
-            return;
-
-        apply_filters(
-            'simple_history_log',
-            'Mobbex: ' . $message,
-            $data,
-            'debug'
-        );
-    }
-
     public function isReady()
     {
         return ($this->enabled === 'yes' && !empty($this->api_key) && !empty($this->access_token));

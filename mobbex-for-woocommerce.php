@@ -11,6 +11,7 @@ Copyright: 2020 mobbex.com
 
 require_once 'includes/utils.php';
 require_once 'includes/helper.php';
+require_once 'includes/logger.php';
 require_once 'includes/class-api.php';
 require_once 'includes/class-checkout.php';
 require_once 'includes/class-exception.php';
@@ -18,11 +19,16 @@ require_once 'includes/admin/order.php';
 require_once 'includes/admin/product.php';
 require_once 'includes/helper/class-order-helper.php';
 require_once 'includes/helper/class-cart-helper.php';
+require_once 'controllers/payment.php';
+require_once 'controllers/checkout.php';
 
 class MobbexGateway
 {
     /** @var MobbexHelper */
     public static $helper;
+    
+    /** @var MobbexLogger */
+    public static $logger;
 
     /**
      * Errors Array
@@ -47,6 +53,9 @@ class MobbexGateway
 
     public function init()
     {
+
+
+
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
         MobbexGateway::check_dependencies();
@@ -55,7 +64,7 @@ class MobbexGateway
         if (count(MobbexGateway::$errors)) {
 
             foreach (MobbexGateway::$errors as $error) {
-                MobbexGateway::notice('error', $error);
+                MobbexLogger::notice('error', $error);
             }
 
             return;
@@ -70,6 +79,10 @@ class MobbexGateway
         // Add Mobbex gateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
+
+        // Init controllers
+        new Payment;
+        new Checkout;
 
         if (self::$helper->settings['financial_info_active'] === 'yes')
             add_action('woocommerce_after_add_to_cart_form', [$this, 'display_finnacial_button']);
@@ -87,19 +100,6 @@ class MobbexGateway
 
         // Validate Cart items
         add_filter('woocommerce_add_to_cart_validation', [$this, 'validate_cart_items'], 10, 2);
-
-        add_action('rest_api_init', function () {
-            register_rest_route('mobbex/v1', '/webhook', [
-                'methods' => WP_REST_Server::CREATABLE,
-                'callback' => [$this, 'mobbex_webhook_api'],
-                'permission_callback' => '__return_true',
-            ]);
-            register_rest_route('mobbex/v1', '/widget', [
-                'methods' => WP_REST_Server::CREATABLE,
-                'callback' => [$this, 'financial_widget_update'],
-                'permission_callback' => '__return_true',
-            ]);
-        });
 
         // Create financial widget shortcode
         add_shortcode('mobbex_button', [$this, 'shortcode_mobbex_button']);
@@ -209,23 +209,6 @@ class MobbexGateway
         return $links;
     }
 
-    public function mobbex_webhook_api($request)
-    {
-        try {
-            mobbex_debug("REST API > Request", $request->get_params());
-
-            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-
-            return $mobbexGateway->mobbex_webhook_api($request);
-        } catch (Exception $e) {
-            mobbex_debug("REST API > Error", $e);
-
-            return [
-                "result" => false,
-            ];
-        }
-    }
-
     public static function load_textdomain()
     {
         load_plugin_textdomain('mobbex-for-woocommerce', false, dirname(plugin_basename(__FILE__)) . '/languages/');
@@ -254,28 +237,6 @@ class MobbexGateway
 
             $methods[] = MOBBEX_WC_GATEWAY;
             return $methods;
-        });
-    }
-
-    public static function notice($type, $msg)
-    {
-
-        add_action('admin_notices', function () use ($type, $msg) {
-            $class = esc_attr("notice notice-$type");
-            $msg = esc_html($msg);
-
-            ob_start();
-
-?>
-
-            <div class="<?= $class ?>">
-                <h2>Mobbex for Woocommerce</h2>
-                <p><?= $msg ?></p>
-            </div>
-
-<?php
-
-            echo ob_get_clean();
         });
     }
 

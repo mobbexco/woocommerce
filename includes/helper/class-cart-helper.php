@@ -11,17 +11,23 @@ class MobbexCartHelper
     /** @var MobbexHelper */
     public $helper;
 
+
+    /** @var MobbexLogger */
+    public $logger;
+
     /**
     * Constructor.
     * 
     * @param WC_Cart WooCommerce Cart instance.
     * @param MobbexHelper Base plugin helper.
+    * @param MobbexLogger Base plugin debugger.
     */
     public function __construct($cart, $helper = null)
     {
         $this->id     = $cart->get_cart_hash();
         $this->cart   = $cart;
         $this->helper = $helper ?: new MobbexHelper();
+        $this->logger = new MobbexLogger();
     }
 
     /**
@@ -49,7 +55,7 @@ class MobbexCartHelper
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->helper->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
+            $this->logger->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
         do_action('mobbex_cart_checkout_process', $response, $this->id);
