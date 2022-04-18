@@ -1,7 +1,5 @@
 <?php
 
-defined('ABSPATH') || exit;
-
 final class Payment
 {
     /** @var MobbexLogger */

@@ -1,6 +1,5 @@
 <?php
 
-defined('ABSPATH') || exit;
 
 final class checkout
 {
