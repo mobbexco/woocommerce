@@ -80,27 +80,26 @@ final class Payment
         try {
             $this->logger->debug("REST API > Request", $request->get_params());
             
-            $postData = $request->get_params();
+            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : apply_filters('mobbex_order_webhook', $request->get_params())['data'];
             $id       = $request->get_param('mobbex_order_id');
             $token    = $request->get_param('mobbex_token');
-    
+
             $this->logger->debug($postData, "Mobbex API > Post Data");
             $this->logger->debug([
                 "id" => $id,
                 "token" => $token,
             ], "Mobbex API > Params");
-    
+            
             //order webhook filter
-            $postData    = apply_filters('mobbex_order_webhook', $postData);
-            $webhookData = MobbexHelper::format_webhook_data($id, $postData['data'], $this->helper->multicard === 'yes', $this->helper->multivendor === 'yes');
-    
+            $webhookData = MobbexHelper::format_webhook_data($id, $postData, $this->helper->multicard === 'yes', $this->helper->multivendor === 'yes');
+            
             // Save transaction
             global $wpdb;
             $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, MobbexHelper::db_column_format($webhookData));
-    
+
             // Try to process webhook
-            $result = $webhookData['parent'] === 'yes' ? $this->process_webhook($id, $token, $postData['data']) : true;
-    
+            $result = $webhookData['parent'] === 'yes' ? $this->process_webhook($id, $token, $postData) : true;
+            
             return [
                 'result'   => $result,
                 'platform' => [
