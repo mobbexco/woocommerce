@@ -80,7 +80,7 @@ final class Payment
         try {
             $this->logger->debug("REST API > Request", $request->get_params());
             
-            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : apply_filters('mobbex_order_webhook', $request->get_params())['data'];
+            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true)['data'] : apply_filters('mobbex_order_webhook', $request->get_params())['data'];
             $id       = $request->get_param('mobbex_order_id');
             $token    = $request->get_param('mobbex_token');
 
