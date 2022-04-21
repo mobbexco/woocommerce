@@ -1,4 +1,4 @@
-function mbbxsToggleOptions(optionToCheck, valueToShow, optionsToToggle, classUsed) {
+function mbbxToggleOptions(optionToCheck, valueToShow, optionsToToggle, classUsed) {
     // Works with multiple elements
     for (var option of optionsToToggle) {
         if (optionToCheck.checked === valueToShow || optionToCheck.value === valueToShow) {
@@ -19,9 +19,9 @@ window.addEventListener('load', function () {
     ];
 
     // Show all multisite options when is enabled
-    mbbxsToggleOptions(isMultisite, true, allOptions, 'really-hidden');
+    mbbxToggleOptions(isMultisite, true, allOptions, 'really-hidden');
     isMultisite.onclick = function () {
-        mbbxsToggleOptions(isMultisite, true, allOptions, 'really-hidden');
+        mbbxToggleOptions(isMultisite, true, allOptions, 'really-hidden');
     }
 
     var storeSelect = document.querySelector('select#mbbx_store');
@@ -31,8 +31,8 @@ window.addEventListener('load', function () {
         document.querySelector('.mbbx_access_token_field'),
     ];
 
-    mbbxsToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
+    mbbxToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
     storeSelect.onchange = function () {
-        mbbxsToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
+        mbbxToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
     }
 });
