@@ -406,6 +406,9 @@ class MobbexHelper
      */
     public static function is_parent_webhook($operationType, $multicard, $multivendor)
     {
+        if(!isset($operationType))
+            return false;
+
         if ($operationType === "payment.v2") {
             if ($multicard || $multivendor)
                 return false;
