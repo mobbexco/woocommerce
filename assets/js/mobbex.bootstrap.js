@@ -164,7 +164,7 @@ jQuery(function ($) {
     }
 
     function unlockForm() {
-        document.getElementById("mbbx-loader-modal").style.display = 'block'
+        document.getElementById("mbbx-loader-modal").style.display = 'none'
     }
 
     // Shows any errors we encountered
