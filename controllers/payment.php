@@ -80,7 +80,7 @@ final class Payment
         try {
             $this->logger->debug("REST API > Request", $request->get_params());
             
-            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true)['data'] : apply_filters('mobbex_order_webhook', $request->get_params())['data'];
+            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : apply_filters('mobbex_order_webhook', $request->get_params());
             $postData = isset($postData['data']) ? $postData['data'] : [];
             $id       = $request->get_param('mobbex_order_id');
             $token    = $request->get_param('mobbex_token');
@@ -153,21 +153,21 @@ final class Payment
         }
 
         $order = wc_get_order($id);
-        $order->update_meta_data('mobbex_webhook', $_POST);
+        $order->update_meta_data('mobbex_webhook', json_decode($data['data']));
 
-        $mobbex_risk_analysis = $_POST['data']['payment']['riskAnalysis']['level'];
+        $mobbex_risk_analysis = $data['risk_analysis'];
 
-        $order->update_meta_data('mobbex_payment_id', $_POST['data']['payment']['id']);
+        $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
 
-        $source = $_POST['data']['payment']['source'];
+        $source = json_decode($data['data']['payment']['source']);
         $payment_method = $source['name'];
 
         // TODO: Check the Status and Make a better note here based on the last registered status
-        $main_mobbex_note = 'ID de Operación Mobbex: ' . $_POST['data']['payment']['id'] . '. ';
-        if (!empty($_POST['data']['entity']['uid'])) {
-            $entity_uid = $_POST['data']['entity']['uid'];
+        $main_mobbex_note = 'ID de Operación Mobbex: ' . $data['payment_id'] . '. ';
+        if (!empty($data['entity_uid'])) {
+            $entity_uid = $data['entity_uid'];
 
-            $mobbex_order_url = str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $_POST['data']['payment']['id']], MOBBEX_COUPON);
+            $mobbex_order_url = str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $data['payment_id']], MOBBEX_COUPON);
 
             $order->update_meta_data('mobbex_coupon_url', $mobbex_order_url);
 
