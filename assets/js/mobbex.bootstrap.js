@@ -1,10 +1,15 @@
+
 jQuery(function ($) {
+        
     // Can submit from either checkout or order review forms
     var form = $('form.checkout, form#order_review');
-
+    
+    //Add mobbex render lock
+    renderLock();
+    
     // Add mobbex container to document
     $("body").append('<div id="mbbx-container"></div>');
-
+    
     // Intercept form button (Bind to click instead of WC trigger to avoid popup) 
     $('form.checkout').on('click', ':submit', function (event) {
         return executePayment(event);
@@ -114,8 +119,8 @@ jQuery(function ($) {
      * @param {array} response Mobbex checkout response.
      */
     function executeWallet(response) {
-        let card        = $('[name=payment_method]:checked').attr('key') ?? null;
-        let cardNumber  = $(`#wallet-${card}-number`).val();
+        let card = $('[name=payment_method]:checked').attr('key') ?? null;
+        let cardNumber = $(`#wallet-${card}-number`).val();
         let updatedCard = response.data.wallet.find(card => card.card.card_number == cardNumber);
 
         var options = {
@@ -138,14 +143,28 @@ jQuery(function ($) {
     }
 
     // Utils
-    function lockForm() {
-        form.addClass('processing').block();
+    /**
+     * Render form loader element.
+     */
+    function renderLock() {
+        let loaderModal = document.createElement("div")
+        loaderModal.id = "mbbx-loader-modal"
+        loaderModal.style.display = "none"
 
-        $('.blockMsg').hide();
+        let spinner = document.createElement("div")
+        spinner.id = "mbbx-spinner"
+
+        loaderModal.appendChild(spinner)
+
+        document.body.appendChild(loaderModal)
+    }
+
+    function lockForm() {
+        document.getElementById("mbbx-loader-modal").style.display = 'block'
     }
 
     function unlockForm() {
-        form.removeClass('processing').unblock();
+        document.getElementById("mbbx-loader-modal").style.display = 'none'
     }
 
     // Shows any errors we encountered
