@@ -1,5 +1,7 @@
 <?php
 
+namespace Mobbex\Controller;
+
 final class Payment
 {
     /** @var MobbexLogger */
@@ -10,8 +12,8 @@ final class Payment
 
     public function __construct()
     {
-        $this->logger = new MobbexLogger();
-        $this->helper = new MobbexHelper();
+        $this->logger = new \MobbexLogger();
+        $this->helper = new \MobbexHelper();
 
         if (!$this->logger->error) 
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
@@ -19,7 +21,7 @@ final class Payment
         //Add Mobbex Webhook hook 
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/webhook', [
-                'methods' => WP_REST_Server::CREATABLE,
+                'methods' => \WP_REST_Server::CREATABLE,
                 'callback' => [$this, 'mobbex_webhook'],
                 'permission_callback' => '__return_true',
             ]);
@@ -80,26 +82,27 @@ final class Payment
         try {
             $this->logger->debug("REST API > Request", $request->get_params());
             
-            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : apply_filters('mobbex_order_webhook', $request->get_params());
-            $postData = isset($postData['data']) ? $postData['data'] : [];
-            $id       = $request->get_param('mobbex_order_id');
-            $token    = $request->get_param('mobbex_token');
+            $requestData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? apply_filters('mobbex_order_webhook',  json_decode(file_get_contents('php://input'), true)) : apply_filters('mobbex_order_webhook', $request->get_params());
+            $postData    = !empty($requestData['data']) ? $requestData['data'] : [];
+            $id          = $request->get_param('mobbex_order_id');
+            $token       = $request->get_param('mobbex_token');
 
-            $this->logger->debug($postData, "Mobbex API > Post Data");
-            $this->logger->debug([
+            $this->logger->debug("Mobbex API > Post Data", $postData);
+            $this->logger->debug( "Mobbex API > Params",
+            [
                 "id" => $id,
                 "token" => $token,
-            ], "Mobbex API > Params");
+            ]);
             
             //order webhook filter
-            $webhookData = MobbexHelper::format_webhook_data($id, $postData, $this->helper->multicard === 'yes', $this->helper->multivendor === 'yes');
+            $webhookData = \MobbexHelper::format_webhook_data($id, $postData, $this->helper->multicard === 'yes', $this->helper->multivendor === 'yes');
             
             // Save transaction
             global $wpdb;
-            $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, MobbexHelper::db_column_format($webhookData));
+            $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \MobbexHelper::db_column_format($webhookData));
 
             // Try to process webhook
-            $result = $webhookData['parent'] === 'yes' ? $this->process_webhook($id, $token, $postData) : true;
+            $result = $webhookData['parent'] === 'yes' ? $this->process_webhook($id, $token, $webhookData) : true;
             
             return [
                 'result'   => $result,
@@ -132,45 +135,43 @@ final class Payment
      */
     public function process_webhook($id, $token, $data)
     {
-        $status = $data['payment']['status']['code'];
+        $status = $data['status_code'];
         
-        $this->logger->debug([
+        $this->logger->debug("Mobbex API > Process Data", 
+        [
             "id" => $id,
             "token" => $token,
             "status" => $status,
-        ], "Mobbex API > Process Data");
+        ]);
 
         if (empty($status) || empty($id) || empty($token)) {
-            $this->logger->debug([], 'Missing status, id, or token.');
+            $this->logger->debug('Missing status, id, or token.');
 
             return false;
         }
 
         if (!$this->helper->valid_mobbex_token($token)) {
-            $this->logger->debug([], 'Invalid mobbex token.');
+            $this->logger->debug('Invalid mobbex token.');
 
             return false;
         }
 
         $order = wc_get_order($id);
-        $order->update_meta_data('mobbex_webhook', json_decode($data['data']));
-
-        $mobbex_risk_analysis = $data['risk_analysis'];
-
+        $order->update_meta_data('mobbex_webhook', json_decode($data['data'], true));
         $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
 
-        $source = json_decode($data['data']['payment']['source']);
+        $source = json_decode($data['data']['payment']['source'], true);
         $payment_method = $source['name'];
 
         // TODO: Check the Status and Make a better note here based on the last registered status
         $main_mobbex_note = 'ID de Operación Mobbex: ' . $data['payment_id'] . '. ';
+
         if (!empty($data['entity_uid'])) {
             $entity_uid = $data['entity_uid'];
 
             $mobbex_order_url = str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $data['payment_id']], MOBBEX_COUPON);
 
             $order->update_meta_data('mobbex_coupon_url', $mobbex_order_url);
-
             $order->add_order_note('URL al Cupón: ' . $mobbex_order_url);
         }
 
@@ -188,9 +189,9 @@ final class Payment
 
         $order->add_order_note($main_mobbex_note);
 
-        if ($mobbex_risk_analysis > 0) {
-            $order->add_order_note('El riesgo de la operación fue evaluado en: ' . $mobbex_risk_analysis);
-            $order->update_meta_data('mobbex_risk_analysis', $mobbex_risk_analysis);
+        if ($data['risk_analisys'] > 0) {
+            $order->add_order_note('El riesgo de la operación fue evaluado en: ' . $data['risk_analisys']);
+            $order->update_meta_data('mobbex_risk_analysis', $data['risk_analisys']);
         }
 
         if (!empty($payment_method)) {
@@ -199,9 +200,31 @@ final class Payment
 
         $order->save();
 
-        // Check status and set
+        //Set order status
+        $this->set_order_status($status, $order, $id, $data);
+        
+        // Set Total Paid
+        $order->set_total($data['total']);
+
+        //action with the checkout data
+        do_action('mobbex_webhook_process', $id, json_decode($data['data'], true));
+
+        return true;
+    }
+
+    /**
+     * Check the payment status & set the respective to the order.
+     * 
+     * @param string $status
+     * @param object $order
+     * @param string $id
+     * @param array $data
+     * 
+     */
+    public function set_order_status($status, $order, $id, $data)
+    {
         if ($status == 2 || $status == 3 || $status == 100) {
-            if (!empty($data['payment']['operation']['type']) && $data['payment']['operation']['type'] === 'payment.2-step' && $status == 3) {
+            if (!empty($data['operation_type']) && $data['operation_type'] === 'payment.2-step' && $status == 3) {
                 $order->update_status('authorized', __('Awaiting payment', 'mobbex-for-woocommerce'));
             } else {
                 $order->update_status($this->helper->settings['order_status_on_hold'], __('Awaiting payment', 'mobbex-for-woocommerce'));
@@ -212,20 +235,11 @@ final class Payment
             // Set as completed and reduce stock
             // Set Mobbex Order ID to be able to refund.
             // TODO: implement return
-            $this->helper->update_order_total($order, $data['payment']['total']);
+            $this->helper->update_order_total($order, $data['total']);
             $order->payment_complete($id);
             $order->update_status($this->helper->settings['order_status_approve'], __('Payment approved', 'mobbex-for-woocommerce'));
         } else {
             $order->update_status($this->settings['order_status_failed'], __('Payment failed', 'mobbex-for-woocommerce'));
         }
-        
-        // Set Total Paid
-        $total = (float) $data['payment']['total'];
-        $order->set_total($total);
-
-        //action with the checkout data
-        do_action('mobbex_webhook_process',$id,$data);
-
-        return true;
     }
 }

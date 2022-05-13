@@ -476,7 +476,7 @@ class MobbexHelper
             $query['mobbex_order_id'] = $order_id;
         }
 
-        if ($endpoint === 'mobbex_webhook' && $this->settings['use_webhook_api']) {
+        if ($endpoint === 'mobbex_webhook') {
             return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
         } else {
             $query['wc-api'] = $endpoint;

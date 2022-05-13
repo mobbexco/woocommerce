@@ -81,8 +81,8 @@ class MobbexGateway
         MobbexGateway::add_gateway();
 
         // Init controllers
-        new Payment;
-        new Checkout;
+        new \Mobbex\Controller\Payment;
+        new \Mobbex\Controller\Checkout;
 
         if (self::$helper->settings['financial_info_active'] === 'yes')
             add_action('woocommerce_after_add_to_cart_form', [$this, 'display_finnacial_button']);

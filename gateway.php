@@ -33,35 +33,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->init_settings();
 
-        // Internal Options
-        $this->use_button = ($this->get_option('button') === 'yes');
-        $this->test_mode  = ($this->get_option('test_mode') === 'yes');
-        $this->use_wallet = ($this->get_option('wallet') === 'yes');
-
-        // Enable or Disable financial information in products
-        $this->financial_info_active = ($this->get_option('financial_info_active') === 'yes');
-
-        // Theme
-        $this->checkout_title            = $this->get_option('checkout_title');
-        $this->checkout_logo             = $this->get_option('checkout_logo');
-        $this->checkout_theme            = $this->get_option('checkout_theme');
-        $this->checkout_background_color = $this->get_option('checkout_background_color');
-        $this->checkout_primary_color    = $this->get_option('checkout_primary_color');
-
-        // DNI fields
-        $this->custom_dni = $this->get_option('custom_dni');
-        $this->own_dni    = ($this->get_option('own_dni') === 'yes');
-
-        // Reseller ID
-        $this->reseller_id = $this->get_option('reseller_id');
-
-        // String variables
-        $this->title       = $this->get_option('title');
-        $this->description = $this->get_option('description');
-
-        $this->api_key      = $this->get_option('api-key');
-        $this->access_token = $this->get_option('access-token');
-
         // Always Required
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
 
@@ -81,7 +52,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $saved = parent::process_admin_options();
 
         // Both fields cannot be filled at the same time
-        if ($this->get_option('own_dni') === 'yes' && $this->get_option('custom_dni') != '') {
+        if ($this->get_option('own_dni') === 'yes' && $this->helper->settings['custom_dni'] != '') {
             $this->update_option('custom_dni');
         }
 

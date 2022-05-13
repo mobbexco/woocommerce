@@ -98,7 +98,6 @@ class MobbexCheckout
                 ],
             ], $this->relation)
         ];
-
         return $this->api->request($data);
     }
 
