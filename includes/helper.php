@@ -45,19 +45,6 @@ class MobbexHelper
         $this->api = new MobbexApi($this->settings['api-key'], $this->settings['access-token']);
     }
 
-    public function debug($message = 'debug', $data = [], $force = false)
-    {
-        if ($this->settings['debug_mode'] != 'yes' && !$force)
-            return;
-
-        apply_filters(
-            'simple_history_log',
-            'Mobbex: ' . $message,
-            $data,
-            'debug'
-        );
-    }
-
     public function isReady()
     {
         return ($this->enabled === 'yes' && !empty($this->api_key) && !empty($this->access_token));
@@ -419,6 +406,9 @@ class MobbexHelper
      */
     public static function is_parent_webhook($operationType, $multicard, $multivendor)
     {
+        if(!isset($operationType))
+            return false;
+
         if ($operationType === "payment.v2") {
             if ($multicard || $multivendor)
                 return false;
@@ -486,7 +476,7 @@ class MobbexHelper
             $query['mobbex_order_id'] = $order_id;
         }
 
-        if ($endpoint === 'mobbex_webhook' && $this->settings['use_webhook_api']) {
+        if ($endpoint === 'mobbex_webhook') {
             return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
         } else {
             $query['wc-api'] = $endpoint;

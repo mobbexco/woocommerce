@@ -311,12 +311,4 @@ return [
         'default' => 'no',
     ],
 
-    'use_webhook_api' => [
-        'title'   => __('Use new WebHook API', 'mobbex-for-woocommerce'),
-        'type'    => 'checkbox',
-        'label'   => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', 'mobbex-for-woocommerce'),
-        'default' => 'no',
-        'class'   => 'mbbx-into-advanced',
-    ],
-
 ];

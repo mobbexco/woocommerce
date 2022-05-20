@@ -11,17 +11,22 @@ class MobbexOrderHelper
     /** @var MobbexHelper */
     public $helper;
 
+    /** @var MobbexLogger */
+    public $logger;
+
     /**
     * Constructor.
     * 
     * @param WC_Order WooCommerce Order instance.
     * @param MobbexHelper Base plugin helper.
+    * @param MobbexLogger Base plugin debugger.
     */
     public function __construct($order, $helper = null)
     {
         $this->id     = $order->get_id();
         $this->order  = $order;
         $this->helper = $helper ?: new MobbexHelper();
+        $this->logger = new MobbexLogger();
     }
 
     /**
@@ -49,7 +54,7 @@ class MobbexOrderHelper
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->helper->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
+            $this->logger->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
         do_action('mobbex_checkout_process', $response, $this->id);
