@@ -144,8 +144,7 @@ class MobbexOrderHelper
             $this->order->get_billing_postcode(),
             $this->order->get_billing_state(),
             $this->helper->convert_country_code($this->order->get_billing_country()),
-            $this->order->get_customer_note(),
-            $this->order->get_customer_user_agent()
+            $this->order->get_customer_note()
         );
     }
 
