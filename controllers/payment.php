@@ -158,7 +158,7 @@ final class Payment
         $order->update_meta_data('mobbex_webhook', json_decode($data['data'], true));
         $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
 
-        $source = json_decode($data['data']['payment']['source'], true);
+        $source = json_decode($data['data'], true)['payment']['source'];
         $payment_method = $source['name'];
 
         // TODO: Check the Status and Make a better note here based on the last registered status
