@@ -16,3 +16,39 @@ img[src*='res.mobbex'] {
     height: 40px;
     width: auto;
 }
+
+#mbbx-loader-modal{
+    position: fixed!important;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center!important;
+    background-color: rgb(0,0,0,.3);
+    z-index: 9999999;
+    place-items: center;
+}
+
+#mbbx-spinner {
+    max-height: 60vmin;
+    max-width: 60vmin;
+    height: 60px;
+    width: 60px;
+    box-sizing: border-box;
+    border: 3px solid #7000ff;
+    border-top-color: #ffffff;
+    border-radius: 100%;
+    animation: rotation .7s infinite linear;
+}
+
+@keyframes rotation {
+    from {
+        transform: translateX(-50%) translateY(-50%) rotate(0deg);
+    }
+    to {
+        transform: translateX(-50%) translateY(-50%) rotate(359deg);
+    }
+}
