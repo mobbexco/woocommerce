@@ -499,3 +499,8 @@ function create_mobbex_transaction_table()
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
 register_activation_hook(__FILE__, 'create_mobbex_transaction_table');
+
+// Remove mbbx entity saved data on uninstall
+register_deactivation_hook(__FILE__, function() {
+    update_option('mbbx_entity', '');
+});
