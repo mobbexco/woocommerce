@@ -10,6 +10,7 @@ function mbbxToggleOptions(optionToCheck, valueToShow, optionsToToggle, classUse
 }
 
 window.addEventListener('load', function () {
+    //Multisite event
     var isMultisite = document.querySelector('#mbbx_enable_multisite');
     var allOptions = [
         document.querySelector('.mbbx_store_field'),

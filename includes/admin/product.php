@@ -46,7 +46,12 @@ class Mbbx_Product_Admin
         extract(self::get_plan_fields($meta_type, $id));
         extract(self::get_store_data($meta_type, $id));
 
+        //multivendor
         $entity = get_metadata($meta_type, $id, 'mbbx_entity', true) ?: '';
+        
+        //subscriptions
+        $is_subscription  = get_metadata($meta_type, $id, 'mbbx_sub_enable', true) ?: false;
+        $subscription_uid = get_metadata($meta_type, $id, 'mbbx_sub_uid', true) ?: false;
 
         // Render template
         $template = $meta_type == 'post' ? 'product-settings.php' : 'category-settings.php';
@@ -169,12 +174,18 @@ class Mbbx_Product_Admin
         // Get Entity 
         $entity = !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false;
 
+        //subscription options
+        $is_subscription  = !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes';
+        $subscription_uid = !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false;
+
         // Save all data as meta data
         update_metadata($meta_type, $id, 'common_plans', $common_plans);
         update_metadata($meta_type, $id, 'advanced_plans', $advanced_plans);
         update_metadata($meta_type, $id, 'mbbx_enable_multisite', $enable_ms);
         update_metadata($meta_type, $id, 'mbbx_entity', $entity);
-
+        update_metadata($meta_type, $id, 'mbbx_sub_enable', $is_subscription);
+        update_metadata($meta_type, $id, 'mbbx_sub_uid', $subscription_uid);
+        
         if ($enable_ms)
             self::save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
     }

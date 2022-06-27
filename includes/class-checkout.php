@@ -98,7 +98,6 @@ class MobbexCheckout
                 ],
             ], $this->relation)
         ];
-
         return $this->api->request($data);
     }
 
@@ -188,13 +187,20 @@ class MobbexCheckout
      * @param string|null $image
      * @param string|null $entity
      */
-    public function add_item($total, $quantity = 1, $description = null, $image = null, $entity = null)
+    public function add_item($total, $quantity = 1, $description = null, $image = null, $entity = null, $subscription = null)
     {
         // Try to add entity to merchants
         if ($entity)
             $this->merchants[] = ['uid' => $entity];
 
-        $this->items[] = compact('total', 'quantity', 'description', 'image', 'entity');
+        if($subscription) {
+            $this->items[] = [
+                'type'      => 'subscription',
+                'reference' => $subscription
+            ];
+        } else {
+            $this->items[] = compact('total', 'quantity', 'description', 'image', 'entity');
+        }
     }
 
     /**

@@ -156,7 +156,6 @@ jQuery(function ($) {
         spinner.id = "mbbx-spinner"
 
         loaderModal.appendChild(spinner)
-
         document.body.appendChild(loaderModal)
     }
 

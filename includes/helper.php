@@ -45,19 +45,6 @@ class MobbexHelper
         $this->api = new MobbexApi($this->settings['api-key'], $this->settings['access-token']);
     }
 
-    public function debug($message = 'debug', $data = [], $force = false)
-    {
-        if ($this->settings['debug_mode'] != 'yes' && !$force)
-            return;
-
-        apply_filters(
-            'simple_history_log',
-            'Mobbex: ' . $message,
-            $data,
-            'debug'
-        );
-    }
-
     public function isReady()
     {
         return ($this->enabled === 'yes' && !empty($this->api_key) && !empty($this->access_token));
@@ -343,6 +330,22 @@ class MobbexHelper
                 return get_metadata('term', $id, 'mbbx_entity', true);
         }
     }
+    
+    /* SUBCRIPTION METHODS */
+
+    /**
+     * Return the subscription UID from a product ID.
+     * 
+     * @param int|string $product_id
+     * 
+     * @return string|null
+     */
+    public function get_product_subscription($product_id)
+    {
+        if (get_metadata('post', $product_id, 'mbbx_enable_sus', true)) {
+            return get_metadata('post', $product_id, 'mbbx_sus_uid', true);
+        }
+    }
 
     /* WEBHOOK METHODS */
 
@@ -403,6 +406,9 @@ class MobbexHelper
      */
     public static function is_parent_webhook($operationType, $multicard, $multivendor)
     {
+        if(!isset($operationType))
+            return false;
+
         if ($operationType === "payment.v2") {
             if ($multicard || $multivendor)
                 return false;
@@ -470,7 +476,7 @@ class MobbexHelper
             $query['mobbex_order_id'] = $order_id;
         }
 
-        if ($endpoint === 'mobbex_webhook' && $this->settings['use_webhook_api']) {
+        if ($endpoint === 'mobbex_webhook') {
             return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
         } else {
             $query['wc-api'] = $endpoint;
@@ -568,4 +574,5 @@ class MobbexHelper
 
         return isset($countries[$code]) ? $countries[$code] : null;
     }
+
 }

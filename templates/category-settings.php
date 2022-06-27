@@ -96,11 +96,6 @@
                 <p class="description"><?= __('Product entity uid.', 'mobbex-for-woocommerce') ?></p>
             </td>
         </tr>
-        <tr class="form-field">
-            <th scope="row" valign="top" colspan="2">
-                <hr>
-            </th>
-        </tr>
         <?php if (current_action() == 'product_cat_add_form_fields') : ?>
         </tbody>
     </table>
