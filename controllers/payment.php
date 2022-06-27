@@ -4,10 +4,10 @@ namespace Mobbex\Controller;
 
 final class Payment
 {
-    /** @var MobbexLogger */
+    /** @var \MobbexLogger */
     public $logger;
 
-    /** @var MobbexHelper */
+    /** @var \MobbexHelper */
     public $helper;
 
     public function __construct()
@@ -87,15 +87,13 @@ final class Payment
             $id          = $request->get_param('mobbex_order_id');
             $token       = $request->get_param('mobbex_token');
 
-            $this->logger->debug("Mobbex API > Post Data", $postData);
-            $this->logger->debug( "Mobbex API > Params",
-            [
-                "id" => $id,
-                "token" => $token,
-            ]);
-            
+            $this->logger->debug(
+                'Mobbex Webhook Data: ',
+                compact('id', 'token', 'postData')
+            );
+
             //order webhook filter
-            $webhookData = \MobbexHelper::format_webhook_data($id, $postData, $this->helper->multicard === 'yes', $this->helper->multivendor === 'yes');
+            $webhookData = \MobbexHelper::format_webhook_data($id, $postData, $this->helper->multicard === 'yes', $this->helper->multivendor != 'no');
             
             // Save transaction
             global $wpdb;
@@ -115,8 +113,8 @@ final class Payment
                     ]
                 ],
             ];
-        } catch (Exception $e) {
-            $this->logger->debug("REST API > Error", $e);
+        } catch (\Exception $e) {
+            $this->logger->debug("REST API > Error", $e->getMessage());
 
             return [
                 "result" => false,

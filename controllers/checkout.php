@@ -2,12 +2,12 @@
 
 namespace Mobbex\Controller;
 
-final class checkout
+final class Checkout
 {
-    /** @var MobbexHelper */
+    /** @var \MobbexHelper */
     public $helper;
 
-    /** @var MobbexLogger */
+    /** @var \MobbexLogger */
     public $logger;
 
     public function __construct()
