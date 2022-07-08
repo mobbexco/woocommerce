@@ -111,6 +111,7 @@ jQuery(function ($) {
 
         let mobbexEmbed = window.MobbexEmbed.init(options);
         mobbexEmbed.open();
+        unlockForm();
     }
 
     /**
@@ -155,12 +156,11 @@ jQuery(function ($) {
         spinner.id = "mbbx-spinner"
 
         loaderModal.appendChild(spinner)
-
         document.body.appendChild(loaderModal)
     }
 
     function lockForm() {
-        document.getElementById("mbbx-loader-modal").style.display = 'block'
+        document.getElementById("mbbx-loader-modal").style.display = 'grid'
     }
 
     function unlockForm() {

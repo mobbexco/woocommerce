@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.7.0
+Version:      3.8.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -500,3 +500,8 @@ function create_mobbex_transaction_table()
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
 register_activation_hook(__FILE__, 'create_mobbex_transaction_table');
+
+// Remove mbbx entity saved data on uninstall
+register_deactivation_hook(__FILE__, function() {
+    update_option('mbbx_entity', '');
+});

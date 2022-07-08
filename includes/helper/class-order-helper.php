@@ -94,7 +94,7 @@ class MobbexOrderHelper
                 $item->get_name(),
                 $this->helper->get_product_image($item->get_product_id()),
                 $this->helper->get_product_entity($item->get_product_id()),
-                $this->helper->get_product_subscription($item->get_product_id()),
+                $this->helper->get_product_subscription($item->get_product_id())
             );
 
         foreach ($shipping_items as $item)
@@ -150,8 +150,7 @@ class MobbexOrderHelper
             $this->order->get_billing_postcode(),
             $this->order->get_billing_state(),
             $this->helper->convert_country_code($this->order->get_billing_country()),
-            $this->order->get_customer_note(),
-            $this->order->get_customer_user_agent()
+            $this->order->get_customer_note()
         );
     }
 

@@ -1,4 +1,4 @@
-set ver="3.7.0"
+set ver="3.8.0"
 
 :: Create directory with plugin files
 robocopy . woocommerce-mobbex /MIR /XD .git .vscode woocommerce-mobbex /XF .gitignore build.bat readme.md *.zip

@@ -47,6 +47,21 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.8.0 :: 2022-06-27
+- Add custom order status options.
+- Add options to link products with subscriptions.
+- Support application/json type webhooks.
+- Use new woocommerce api method by default.
+- Refresh saved entity data on plugin deactivation.
+
+### 3.7.1 :: 2022-05-27
+- Fix mbbxToggleOptions function name conflict with subscriptions plugin
+- Fix parent webhooks check when using multivendor
+- Fix plugin default settings obtaining
+- Remove jQuery BlockUI plugin dependencies
+- Remove timestamp from checkout references to prevent duplicated payments.
+- Remove customer user agent from checkout data.
+
 ### 3.7.0 :: 2022-02-11
 - Add option to show finance widget on cart page
 - Apply title option to card_input method
