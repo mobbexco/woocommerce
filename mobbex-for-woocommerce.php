@@ -10,10 +10,10 @@ Copyright: 2020 mobbex.com
  */
 
 require_once 'includes/utils.php';
-require_once 'includes/model.php';
+require_once !class_exists('Mobbex\Model') ? 'includes/model.php' : WP_PLUGIN_DIR . '/woocommerce-mobbex-subs/includes/lib/model.php';
 require_once 'includes/helper.php';
 require_once 'includes/logger.php';
-require_once 'includes/class-api.php';
+require_once !class_exists('Mobbex\Model') ? 'includes/class-api.php' : WP_PLUGIN_DIR . '/woocommerce-mobbex-subs/includes/lib/class-api.php';
 require_once 'includes/class-checkout.php';
 require_once 'includes/class-exception.php';
 require_once 'includes/admin/order.php';
