@@ -25,16 +25,17 @@ class MobbexHelper
         }, include('config-options.php'));
         $saved_values   = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID .'_settings', null) ?: [];
 
+        // Merge into a single array
+        $this->settings = array_merge($default_values, $saved_values);
+
         // The intent constant overwrite payment mode setting
         if (defined('MOBBEX_CHECKOUT_INTENT')) {
-            $saved_values['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
-        } else if ($saved_values['payment_mode'] == 'yes') {
-            $saved_values['payment_mode'] = 'payment.2-step';
+            $this->settings['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
+        } else if ($this->settings['payment_mode'] == 'yes') {
+            $this->settings['payment_mode'] = 'payment.2-step';
         } else {
-            $saved_values['payment_mode'] = 'payment.v2';
+            $this->settings['payment_mode'] = 'payment.v2';
         }
-
-        $this->settings = array_merge($default_values, $saved_values);
 
         // Set settings as properties for backward support
         foreach ($this->settings as $key => $value) {
