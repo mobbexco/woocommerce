@@ -47,6 +47,10 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.8.1 :: 2022-08-12
+- Fix PHP < 7.3 support.
+- Fix payment_mode config access on helper.
+
 ### 3.8.0 :: 2022-06-27
 - Add custom order status options.
 - Add options to link products with subscriptions.
