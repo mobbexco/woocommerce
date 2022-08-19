@@ -50,7 +50,7 @@
     <?= 
     ($data['style']['button_color']      ? 'background-color: ' . $data['style']['button_color'] . ';' : '') .
     ($data['style']['button_font_color'] ? 'color: ' . $data['style']['button_font_color'] . ';' : '') .
-    ($data['style']['button_font_size']  ? 'font-size: ' . $data['style']['button_padding'] . ';' : '') .
+    ($data['style']['button_font_size']  ? 'font-size: ' . $data['style']['button_font_size'] . ';' : '') .
     ($data['style']['button_padding']    ? 'padding: ' . $data['style']['button_padding'] . ';' : '')
     ?>
     ">
