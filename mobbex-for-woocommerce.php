@@ -363,7 +363,7 @@ class MobbexGateway
                 'show_button'       => isset($params['show_button']) ? $params['show_button'] : true,
                 'button_color'      => self::$helper->financial_widget_button_color,
                 'button_font_color' => self::$helper->financial_widget_button_font_color,
-                'button_font_size'  => self::$helper->financial_widget_button_font_color,
+                'button_font_size'  => self::$helper->financial_widget_button_font_size,
                 'button_padding'    => self::$helper->financial_widget_button_padding,
             ]
         ];
