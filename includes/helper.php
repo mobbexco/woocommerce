@@ -52,6 +52,18 @@ class MobbexHelper
     }
 
     /**
+     * Returns a query param with the installments of the product.
+     * @param int $total
+     * @param array $installments
+     * @return string $query
+     */
+    public function getInstallmentsQuery($total, $installments = [])
+    {
+        // Build query params and replace special chars
+        return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', http_build_query(compact('total', 'installments')));
+    }
+
+    /**
      * Get sources from Mobbex.
      * 
      * @param int|float|null $total Amount to calculate payment methods.
@@ -61,15 +73,11 @@ class MobbexHelper
      */
     public function get_sources($total = null, $installments = [])
     {
-        $entity = $this->get_entity();
-
-        if (empty($entity['countryReference']) || empty($entity['tax_id']))
-            return [];
+        $query = $this->getInstallmentsQuery($total, $installments);
 
         return $this->api->request([
-            'method' => 'POST',
-            'uri'    => "sources/list/$entity[countryReference]/$entity[tax_id]" . ($total ? "?total=$total" : ''),
-            'body'   => compact('installments'),
+            'method' => 'GET',
+            'uri'    => "sources" . ($query ? "?$query" : ''),
         ]) ?: [];
     }
 
@@ -119,30 +127,6 @@ class MobbexHelper
 
         // Remove duplicated plans and return
         return array_values(array_unique($installments));
-    }
-
-    /**
-     * Get entity data from Mobbex or db if possible.
-     * 
-     * @return string[] 
-     */
-    public function get_entity()
-    {
-        // First, try to get from db
-        $entity = get_option('mbbx_entity');
-
-        if ($entity)
-            return json_decode($entity, true);
-
-        $entity = $this->api->request([
-            'method' => 'GET',
-            'uri'    => 'entity/validate',
-        ]);
-
-        // Save on db
-        update_option('mbbx_entity', json_encode($entity));
-
-        return $entity;
     }
 
     /**
