@@ -1,5 +1,5 @@
 img[src*='res.mobbex'] {
-    width: 42px;
+    max-height: 1.618em;
     border-radius: 100%;
 }
 
