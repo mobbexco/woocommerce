@@ -143,12 +143,7 @@ class MobbexCartHelper
             $customer->get_id()
         );
 
-        $checkout->set_address(
-            $customer->get_billing_address_1(),
-            $customer->get_billing_postcode(),
-            $customer->get_billing_state(),
-            $this->helper->convert_country_code($customer->get_billing_country())
-        );
+        $checkout->set_addresses($customer);
     }
 
     /**

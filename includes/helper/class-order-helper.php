@@ -145,13 +145,7 @@ class MobbexOrderHelper
             $user->ID
         );
 
-        $checkout->set_address(
-            $this->order->get_billing_address_1(),
-            $this->order->get_billing_postcode(),
-            $this->order->get_billing_state(),
-            $this->helper->convert_country_code($this->order->get_billing_country()),
-            $this->order->get_customer_note()
-        );
+        $checkout->set_addresses($this->order);
     }
 
     /**
