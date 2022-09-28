@@ -198,8 +198,8 @@ final class Payment
 
         $order->save();
 
-        //Set order status
-        $this->set_order_status($status, $order, $id, $data);
+        $this->update_order_status($order, $data);
+        $this->update_order_total($order, $data);
         
         // Set Total Paid
         $order->set_total($data['total']);
@@ -211,33 +211,47 @@ final class Payment
     }
 
     /**
-     * Check the payment status & set the respective to the order.
+     * Update order status using webhook formatted data.
      * 
-     * @param string $status
-     * @param object $order
-     * @param string $id
+     * @param WC_Order $order
      * @param array $data
-     * 
      */
-    public function set_order_status($status, $order, $id, $data)
+    public function update_order_status($order, $data)
     {
-        if ($status == 2 || $status == 3 || $status == 100) {
-            if (!empty($data['operation_type']) && $data['operation_type'] === 'payment.2-step' && $status == 3) {
-                $order->update_status('authorized', __('Awaiting payment', 'mobbex-for-woocommerce'));
-            } else {
-                $order->update_status($this->helper->settings['order_status_on_hold'], __('Awaiting payment', 'mobbex-for-woocommerce'));
-            }
-        } else if ($status == 602 || $status == 605) {
-            $order->update_status($this->settings['order_status_refunded'], __('Payment refunded', 'mobbex-for-woocommerce'));
-        } else if ($status == 4 || $status >= 200 && $status < 400) {
-            // Set as completed and reduce stock
-            // Set Mobbex Order ID to be able to refund.
-            // TODO: implement return
-            $this->helper->update_order_total($order, $data['total']);
-            $order->payment_complete($id);
-            $order->update_status($this->helper->settings['order_status_approve'], __('Payment approved', 'mobbex-for-woocommerce'));
-        } else {
-            $order->update_status($this->settings['order_status_failed'], __('Payment failed', 'mobbex-for-woocommerce'));
-        }
+        $helper = new \MobbexOrderHelper($order);
+
+        $order->update_status(
+            $helper->get_status_from_code($data['status_code']),
+            $data['status_message']
+        );
+
+        // Complete payment only if it's approved
+        if (in_array($data['status_code'], $helper->status_codes['approved']))
+            $order->payment_complete($data['payment_id']);
+    }
+
+    /**
+     * Update order total paid using webhook formatted data.
+     * 
+     * @param WC_Order $order
+     * @param array $data
+     */
+    public function update_order_total($order, $data)
+    {
+        if ($order->get_total() == $data['total'] || $data['status_code'] == 605 || $order->get_meta('mbbx_updated'))
+            return;
+
+        // Add a fee item to order with the difference
+        $item = new \WC_Order_Item_Fee;
+        $item->set_props([
+            'name'   => $data['total'] > $order->get_total() ? 'Cargo financiero' : 'Descuento',
+            'amount' => $data['total'] - $order->get_total(),
+            'total'  => $data['total'] - $order->get_total(),
+        ]);
+        $order->add_item($item);
+
+        // Recalculate totals and add flag to not do it again
+        $order->calculate_totals();
+        $order->update_meta_data('mbbx_updated', 1);
     }
 }

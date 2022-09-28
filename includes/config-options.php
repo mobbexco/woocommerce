@@ -74,7 +74,7 @@ return [
         'class' => 'mbbx-tab mbbx-tab-orders',
     ],
 
-    'order_status_approve' => [
+    'order_status_approved' => [
         'title'       => __('Order status approve', 'mobbex-for-woocommerce'),
         'description' => __('Select the status for approve orders.', 'mobbex-for-woocommerce'),
         'type'        => 'select',
