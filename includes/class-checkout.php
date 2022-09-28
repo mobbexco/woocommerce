@@ -10,7 +10,7 @@ class MobbexCheckout
 
     public $customer = [];
 
-    public $address = [];
+    public $addresses = [];
 
     public $items = [];
 
@@ -68,7 +68,8 @@ class MobbexCheckout
                 'items'        => $this->items,
                 'merchants'    => $this->merchants,
                 'installments' => $this->installments,
-                'customer'     => array_merge($this->customer, $this->address),
+                'customer'     => array_merge($this->customer),
+                'addresses'    => $this->addresses,
                 'options'      => [
                     'embed'    => $this->settings['button'] == 'yes',
                     'domain'   => str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
@@ -149,22 +150,40 @@ class MobbexCheckout
     /**
      * Set address data.
      * 
-     * @param string|null $street Street name with house number.
-     * @param string|int|null $postcode Postal|ZIP code.
-     * @param string|null $state
-     * @param string|null $country Country ISO 3166-1 alpha-3 code.
-     * @param string|null $note
+     * @param Class $object Order or Customer class.
+     * 
      */
-    public function set_address($street = null, $postcode = null, $state = null, $country = null, $note = null)
+    public function set_addresses($object)
     {
-        $this->address = [
-            'address'       => trim(preg_replace('/[0-9]/', '', (string) $street)),
-            'addressNumber' => trim(preg_replace('/[^0-9]/', '', (string) $street)),
-            'zipCode'       => $postcode,
-            'state'         => $state,
-            'country'       => $country,
-            'addressNotes'  => $note
-        ];
+        foreach (['billing', 'shipping'] as $type) {
+
+            $address = !empty($object->get_address($type)['country']) ? $object->get_address($type) : $object->get_address('billing');
+
+            $this->addresses[] = [
+                'type' => $type,
+                'country'       => $this->convert_country_code($address['country']),
+                'state'        => $address['state'],
+                'city'         => $address['city'],
+                'zipCode'      => $address['postcode'],
+                'street'       => trim(preg_replace('/[0-9]/', '',  (string) $address['address_1'])),
+                'streetNumber' => trim(preg_replace('/[^0-9]/', '', (string) $address['address_1'])),
+                'streetNotes'  => $address['address_2']
+            ];
+        }
+    }
+
+    /**
+     * Converts the WooCommerce country codes to 3-letter ISO codes.
+     * 
+     * @param string $code 2-Letter ISO code.
+     * 
+     * @return string|null
+     */
+    public function convert_country_code($code)
+    {
+        $countries = include ('iso-3166.php') ?: [];
+
+        return isset($countries[$code]) ? $countries[$code] : null;
     }
 
     /**
