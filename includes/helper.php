@@ -494,29 +494,6 @@ class MobbexHelper
     }
 
     /**
-     * Update order total.
-     * 
-     * @param WC_Order $order
-     * @param int|string $total
-     */
-    public function update_order_total($order, $total)
-    {
-        if ($total == $order->get_total())
-            return;
-
-        // Create an item with total difference
-        $item = new WC_Order_Item_Fee();
-
-        $item->set_name($total > $order->get_total() ? __('Cargo financiero', 'mobbex-for-woocommerce') : __('Descuento', 'mobbex-for-woocommerce'));
-        $item->set_amount($total - $order->get_total());
-        $item->set_total($total - $order->get_total());
-
-        // Add the item and recalculate totals
-        $order->add_item($item);
-        $order->calculate_totals();
-    }
-
-    /**
      * Retrieve a checkout created from current Cart|Order as appropriate.
      * 
      * @uses Only to show payment options.

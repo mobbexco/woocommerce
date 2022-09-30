@@ -14,6 +14,14 @@ class MobbexOrderHelper
     /** @var MobbexLogger */
     public $logger;
 
+    public $status_codes = [
+        'on-hold'            => [2, 100, 201],
+        'authorized'         => [3],
+        'approved'           => [200, 210, 300, 301, 302, 303],
+        'refunded'           => [602],
+        'failed'             => [],
+    ];
+
     /**
     * Constructor.
     * 
@@ -165,5 +173,26 @@ class MobbexOrderHelper
             if ($store_id && !empty($stores[$store_id]))
                 return $stores[$store_id];
         }
+    }
+
+    /**
+     * Get an order status name from an operation status code.
+     * 
+     * @param int $status_code
+     * 
+     * @return string
+     */
+    public function get_status_from_code($status_code)
+    {
+        // Search status name
+        foreach ($this->status_codes as $status_name => $codes)
+            if (in_array($status_code, $codes))
+                break;
+
+        // Get config name
+        $config_name = 'order_status_' . str_replace('-', '_', $status_name);
+
+        // Try to get from config override or return directly
+        return isset($this->helper->settings[$config_name]) ? $this->helper->settings[$config_name] : "wc-$status_name";
     }
 }
