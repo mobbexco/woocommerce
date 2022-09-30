@@ -165,8 +165,8 @@ class MobbexCheckout
                 'state'        => $address['state'],
                 'city'         => $address['city'],
                 'zipCode'      => $address['postcode'],
-                'street'       => trim(preg_replace('/[0-9]/', '',  (string) $address['address_1'])),
-                'streetNumber' => trim(preg_replace('/[^0-9]/', '', (string) $address['address_1'])),
+                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['address_1']))),
+                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['address_1'])), '', trim($address['address_1'])),
                 'streetNotes'  => $address['address_2']
             ];
         }
