@@ -87,10 +87,7 @@ final class Payment
             $id          = $request->get_param('mobbex_order_id');
             $token       = $request->get_param('mobbex_token');
 
-            $this->logger->debug(
-                'Mobbex Webhook Data: ',
-                compact('id', 'token', 'postData')
-            );
+            $this->logger->debug('Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
 
             //order webhook filter
             $webhookData = \MobbexHelper::format_webhook_data($id, $postData, $this->helper->multicard === 'yes', $this->helper->multivendor != 'no');
@@ -100,7 +97,7 @@ final class Payment
             $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \MobbexHelper::db_column_format($webhookData));
 
             // Try to process webhook
-            $result = $webhookData['parent'] === 'yes' ? $this->process_webhook($id, $token, $webhookData) : true;
+            $result = $this->process_webhook($id, $token, $webhookData);
             
             return [
                 'result'   => $result,
@@ -125,36 +122,30 @@ final class Payment
     /**
      * Process & store the data of the Mobbex webhook.
      * 
-     * @param string $id
+     * @param int $order_id
      * @param string $token
      * @param array $data
      * 
      * @return bool 
      */
-    public function process_webhook($id, $token, $data)
+    public function process_webhook($order_id, $token, $data)
     {
         $status = $data['status_code'];
-        
-        $this->logger->debug("Mobbex API > Process Data", 
-        [
-            "id" => $id,
-            "token" => $token,
-            "status" => $status,
-        ]);
+        $order  = wc_get_order($order_id);
 
-        if (empty($status) || empty($id) || empty($token)) {
-            $this->logger->debug('Missing status, id, or token.');
+        $this->logger->debug('Mobbex Webhook: Processing data');
 
-            return false;
-        }
+        if (empty($status) || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
+            return $this->logger->debug('Mobbex Webhook: Invalid mobbex token or empty data');
 
-        if (!$this->helper->valid_mobbex_token($token)) {
-            $this->logger->debug('Invalid mobbex token.');
+        // Catch refunds webhooks
+        if ($status == 602 || $status == 605)
+            return $this->refund_order($order, $data);
 
-            return false;
-        }
+        // Bypass any child webhook (except refunds)
+        if ($data['parent'] != 'yes')
+            return true;
 
-        $order = wc_get_order($id);
         $order->update_meta_data('mobbex_webhook', json_decode($data['data'], true));
         $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
 
@@ -205,7 +196,7 @@ final class Payment
         $order->set_total($data['total']);
 
         //action with the checkout data
-        do_action('mobbex_webhook_process', $id, json_decode($data['data'], true));
+        do_action('mobbex_webhook_process', $order_id, json_decode($data['data'], true));
 
         return true;
     }
@@ -238,7 +229,7 @@ final class Payment
      */
     public function update_order_total($order, $data)
     {
-        if ($order->get_total() == $data['total'] || $data['status_code'] == 605 || $order->get_meta('mbbx_updated'))
+        if ($order->get_total() == $data['total'] || $order->get_meta('mbbx_total_updated'))
             return;
 
         // Add a fee item to order with the difference
@@ -252,6 +243,20 @@ final class Payment
 
         // Recalculate totals and add flag to not do it again
         $order->calculate_totals();
-        $order->update_meta_data('mbbx_updated', 1);
+        $order->update_meta_data('mbbx_total_updated', 1);
+    }
+
+    /**
+     * Try to refund an order using webhook formatted data.
+     * 
+     * @param WC_Order $order
+     * @param array $data
+     */
+    public function refund_order($order, $data)
+    {
+        return wc_create_refund([
+            'amount'   => $data['total'],
+            'order_id' => $data['order_id'],
+        ]);
     }
 }
