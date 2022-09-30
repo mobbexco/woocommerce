@@ -102,15 +102,36 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function process_refund($order_id, $amount = null, $reason = '')
     {
-        $payment_id = get_post_meta($order_id, 'mobbex_payment_id', true);
+        $order          = wc_get_order($order_id);
+        $payment_id     = get_post_meta($order_id, 'mobbex_payment_id', true);
+        $parent_webhook = get_post_meta($order_id, 'mobbex_webhook', true);
 
-        if (!$payment_id)
+        // Validate params
+        if (!$order || !$payment_id || empty($parent_webhook['payment']['operation']['type']))
             return false;
 
-        return $this->helper->api->request([
+        // Create request data
+        $request = [
             'method' => 'POST',
             'uri'    => "operations/$payment_id/refund",
-            'body'   => ['total' => floatval($amount)],
-        ]);
+            'body'   => [
+                'total'     => floatval($amount),
+                'emitEvent' => false,
+            ],
+        ];
+
+        if ($parent_webhook['payment']['operation']['type'] == 'payment.multiple-sources')
+            if ($amount == $order->get_remaining_refund_amount())
+                unset($request['body']['total']);
+            else
+                return new \WP_Error(500, 'No es posible realizar devoluciones parciales sobre la operación padre');
+
+        try {
+            $result = $this->helper->api->request($request);
+        } catch (\Exception $e) {
+            $result = new \WP_Error($e->getCode(), $e->getMessage(), isset($e->data) ? $e->data : '');
+        }
+
+        return $result;
     }
 }
