@@ -156,19 +156,21 @@ class MobbexCheckout
     public function set_addresses($object)
     {
         foreach (['billing', 'shipping'] as $type) {
-
-            $address = !empty($object->get_address($type)['country']) ? $object->get_address($type) : $object->get_address('billing');
+            
+            foreach (['address_1', 'address_2', 'city', 'state', 'postcode', 'country'] as $method)
+                ${$method} = "get_".$type."_".$method;
 
             $this->addresses[] = [
-                'type' => $type,
-                'country'       => $this->convert_country_code($address['country']),
-                'state'        => $address['state'],
-                'city'         => $address['city'],
-                'zipCode'      => $address['postcode'],
-                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['address_1']))),
-                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['address_1'])), '', trim($address['address_1'])),
-                'streetNotes'  => $address['address_2']
+                'type'         => $type,
+                'country'      => $this->convert_country_code($object->$country()),
+                'state'        => $object->$state(),
+                'city'         => $object->$city(),
+                'zipCode'      => $object->$postcode(),
+                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($object->$address_1()))),
+                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($object->$address_1())), '', trim($object->$address_1())),
+                'streetNotes'  => $object->$address_2()
             ];
+
         }
     }
 
