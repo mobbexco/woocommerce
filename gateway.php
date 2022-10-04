@@ -104,7 +104,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         try {
             // Get parent and child transactions
-            $helper   = new \MobbexOrderHelper(wc_get_order($order_id));
+            $helper   = new \MobbexOrderHelper($order_id);
             $parent   = $helper->get_parent_transaction();
             $children = $helper->get_approved_children();
 
@@ -112,18 +112,18 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $child = isset($children[$reason]) ? $children[$reason] : (sizeof($children) == 1 ? reset($children) : null);
 
             if (!$parent)
-                throw new \MobbexException('No se encontró información sobre la operación padre', 596);
+                throw new \MobbexException('No se encontró información de la transacción padre.', 596);
 
             // If use multicard and is not a total refund
-            if ($helper->has_childs($parent) && !$child && $this->order->get_remaining_refund_amount())
-                throw new \MobbexException('Para realizar una devolución parcial en este pedido, especifique el id de la transacción en el campo "Razón"', 596);
+            if ($helper->has_childs($parent) && !$child && (float) $helper->order->get_remaining_refund_amount())
+                throw new \MobbexException('Para realizar una devolución parcial en este pedido, especifique el id de la transacción en el campo "Razón".', 596);
 
             // Make request
             return $this->helper->api->request([
                 'method' => 'POST',
                 'uri'    => 'operations/' . ($child ?: $parent)['payment_id'] . '/refund',
                 'body'   => [
-                    'total'     => !$helper->order->get_remaining_refund_amount() ? null : $amount,
+                    'total'     => (float) $helper->order->get_remaining_refund_amount() ? $amount : null,
                     'emitEvent' => false,
                 ]
             ]);

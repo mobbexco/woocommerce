@@ -348,7 +348,7 @@ class MobbexHelper
     {
         $data = [
             'order_id'           => $order_id,
-            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard, $multivendor) ? 'yes' : 'no',
+            'parent'             => isset($res['payment']['id']) ? (self::is_parent_webhook($res['payment']['id']) ? 'yes' : 'no') : null,
             'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
             'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
             'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
@@ -381,24 +381,15 @@ class MobbexHelper
     }
 
     /**
-     * Receives the webhook "opartion type" and return true if the webhook is parent and false if not
+     * Check if webhook is parent type using him payment id.
      * 
-     * @param string $operationType
-     * @param bool $multicard
-     * @return bool true|false
-     * @return bool true|false
+     * @param string $paymentId
      * 
+     * @return bool
      */
-    public static function is_parent_webhook($operationType, $multicard, $multivendor)
+    public static function is_parent_webhook($payment_id)
     {
-        if(!isset($operationType))
-            return false;
-
-        if ($operationType === "payment.v2") {
-            if ($multicard || $multivendor)
-                return false;
-        }
-        return true;
+        return strpos($payment_id, 'CHD-') !== 0;
     }
 
     /**

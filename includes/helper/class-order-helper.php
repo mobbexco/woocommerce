@@ -28,14 +28,14 @@ class MobbexOrderHelper
     /**
     * Constructor.
     * 
-    * @param WC_Order WooCommerce Order instance.
+    * @param WC_Order|int WooCommerce order instance or its id.
     * @param MobbexHelper Base plugin helper.
     * @param MobbexLogger Base plugin debugger.
     */
     public function __construct($order, $helper = null)
     {
-        $this->id     = $order->get_id();
-        $this->order  = $order;
+        $this->id     = is_int($order) ? $order : $order->get_id();
+        $this->order  = is_int($order) ? wc_get_order($order) : $order;
         $this->helper = $helper ?: new MobbexHelper();
         $this->logger = new MobbexLogger();
         $this->db     = $GLOBALS['wpdb'];
