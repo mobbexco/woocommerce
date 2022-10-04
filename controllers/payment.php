@@ -140,11 +140,11 @@ final class Payment
 
         // Catch refunds webhooks
         if ($status == 602 || $status == 605)
-            return $this->refund_order($data);
+            return !is_wp_error($this->refund_order($data));
 
         // Bypass any child webhook (except refunds)
         if ($data['parent'] != 'yes')
-            return true;
+            return (bool) $this->add_child_note($order, $data);
 
         $order->update_meta_data('mobbex_webhook', json_decode($data['data'], true));
         $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
@@ -250,6 +250,8 @@ final class Payment
      * Try to refund an order using webhook formatted data.
      * 
      * @param array $data
+     * 
+     * @return WC_Order_Refund|WP_Error
      */
     public function refund_order($data)
     {
@@ -257,5 +259,29 @@ final class Payment
             'amount'   => $data['total'],
             'order_id' => $data['order_id'],
         ]);
+    }
+
+    /**
+     * Add a note with the child transaction data to the order given.
+     * 
+     * @param WC_Order $order
+     * @param array $data Webhook child tansaction.
+     * 
+     * @return int Comment id.
+     */
+    public function add_child_note($order, $data)
+    {
+        return $order->add_order_note(sprintf(
+            'Transacción Hija Procesada: ID: %s. Estado: %s (%s). Total: $%s. Método: %s %s (%sx$%s). Tarjeta: %s.',
+            $data['payment_id'],
+            $data['status_code'],
+            $data['status_message'],
+            $data['total'],
+            $data['source_name'],
+            $data['installment_name'],
+            $data['installment_count'],
+            $data['installment_amount'],
+            $data['source_number']
+        ));
     }
 }
