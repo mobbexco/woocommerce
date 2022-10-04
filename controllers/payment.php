@@ -140,7 +140,7 @@ final class Payment
 
         // Catch refunds webhooks
         if ($status == 602 || $status == 605)
-            return $this->refund_order($order, $data);
+            return $this->refund_order($data);
 
         // Bypass any child webhook (except refunds)
         if ($data['parent'] != 'yes')
@@ -249,10 +249,9 @@ final class Payment
     /**
      * Try to refund an order using webhook formatted data.
      * 
-     * @param WC_Order $order
      * @param array $data
      */
-    public function refund_order($order, $data)
+    public function refund_order($data)
     {
         return wc_create_refund([
             'amount'   => $data['total'],

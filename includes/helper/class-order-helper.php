@@ -14,6 +14,9 @@ class MobbexOrderHelper
     /** @var MobbexLogger */
     public $logger;
 
+    /** @var wpdb */
+    public $db;
+
     public $status_codes = [
         'on-hold'            => [2, 100, 201],
         'authorized'         => [3],
@@ -25,16 +28,17 @@ class MobbexOrderHelper
     /**
     * Constructor.
     * 
-    * @param WC_Order WooCommerce Order instance.
+    * @param WC_Order|int WooCommerce order instance or its id.
     * @param MobbexHelper Base plugin helper.
     * @param MobbexLogger Base plugin debugger.
     */
     public function __construct($order, $helper = null)
     {
-        $this->id     = $order->get_id();
-        $this->order  = $order;
+        $this->id     = is_int($order) ? $order : $order->get_id();
+        $this->order  = is_int($order) ? wc_get_order($order) : $order;
         $this->helper = $helper ?: new MobbexHelper();
         $this->logger = new MobbexLogger();
+        $this->db     = $GLOBALS['wpdb'];
     }
 
     /**
@@ -194,5 +198,87 @@ class MobbexOrderHelper
 
         // Try to get from config override or return directly
         return isset($this->helper->settings[$config_name]) ? $this->helper->settings[$config_name] : "wc-$status_name";
+    }
+
+    /**
+     * Retrieve the latest parent transaction for the order loaded.
+     * 
+     * @return array|null An asociative array with transaction values.
+     */
+    public function get_parent_transaction()
+    {
+        // Generate query params
+        $query = [
+            'operation' => 'SELECT *',
+            'table'     => $this->db->prefix . 'mobbex_transaction',
+            'condition' => "WHERE `order_id`='{$this->id}' AND `parent`='yes'",
+            'order'     => 'ORDER BY `id` DESC',
+            'limit'     => 'LIMIT 1',
+        ];
+
+        // Make request to db
+        $result = $this->db->get_results(
+            "$query[operation] FROM $query[table] $query[condition] $query[order] $query[limit];",
+            ARRAY_A
+        );
+
+        return isset($result[0]) ? $result[0] : null;
+    }
+
+    /**
+     * Retrieve all child transactions for the order loaded.
+     * 
+     * @return array[] A list of asociative arrays with transaction values.
+     */
+    public function get_child_transactions()
+    {
+        // Generate query params
+        $query = [
+            'operation' => 'SELECT *',
+            'table'     => $this->db->prefix . 'mobbex_transaction',
+            'condition' => "WHERE `order_id`='{$this->id}' AND `parent`='no'",
+            'order'     => 'ORDER BY `id` ASC',
+            'limit'     => 'LIMIT 50',
+        ];
+
+        // Make request to db
+        $result = $this->db->get_results(
+            "$query[operation] FROM $query[table] $query[condition] $query[order] $query[limit];",
+            ARRAY_A
+        );
+
+        return $result ?: [];
+    }
+
+    /**
+     * Get approved child transactions from the order loaded (multicard only).
+     * 
+     * @return array[] Associative array with payment_id as key.
+     */
+    public function get_approved_children()
+    {
+        $methods = [];
+
+        foreach ($this->get_child_transactions() as $child) {
+            // Filter cash methods and failed status
+            if (!$child['source_number'] || !in_array($child['status_code'], $this->status_codes['approved']))
+                continue;
+
+            $methods[$child['payment_id']] = $child;
+        }
+
+        return $methods;
+    }
+
+    /**
+     * Check if the transaction given has multicard childs.
+     * 
+     * @param array $parent An asociative array with transaction values.
+     * 
+     * @return bool
+     */
+    public function has_childs($parent)
+    {
+        return isset($parent['operation_type']) && $parent['operation_type'] == 'payment.multiple-sources';
     }
 }
