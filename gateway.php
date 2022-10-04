@@ -102,36 +102,33 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     public function process_refund($order_id, $amount = null, $reason = '')
     {
-        $order          = wc_get_order($order_id);
-        $payment_id     = get_post_meta($order_id, 'mobbex_payment_id', true);
-        $parent_webhook = get_post_meta($order_id, 'mobbex_webhook', true);
-
-        // Validate params
-        if (!$order || !$payment_id || empty($parent_webhook['payment']['operation']['type']))
-            return false;
-
-        // Create request data
-        $request = [
-            'method' => 'POST',
-            'uri'    => "operations/$payment_id/refund",
-            'body'   => [
-                'total'     => floatval($amount),
-                'emitEvent' => false,
-            ],
-        ];
-
-        if ($parent_webhook['payment']['operation']['type'] == 'payment.multiple-sources')
-            if ($amount == $order->get_remaining_refund_amount())
-                unset($request['body']['total']);
-            else
-                return new \WP_Error(500, 'No es posible realizar devoluciones parciales sobre la operación padre');
-
         try {
-            $result = $this->helper->api->request($request);
-        } catch (\Exception $e) {
-            $result = new \WP_Error($e->getCode(), $e->getMessage(), isset($e->data) ? $e->data : '');
-        }
+            // Get parent and child transactions
+            $helper   = new \MobbexOrderHelper(wc_get_order($order_id));
+            $parent   = $helper->get_parent_transaction();
+            $children = $helper->get_approved_children();
 
-        return $result;
+            // Try to get child transaction from reason field
+            $child = isset($children[$reason]) ? $children[$reason] : (sizeof($children) == 1 ? reset($children) : null);
+
+            if (!$parent)
+                throw new \MobbexException('No se encontró información sobre la operación padre', 596);
+
+            // If use multicard and is not a total refund
+            if ($helper->has_childs($parent) && !$child && $this->order->get_remaining_refund_amount())
+                throw new \MobbexException('Para realizar una devolución parcial en este pedido, especifique el id de la transacción en el campo "Razón"', 596);
+
+            // Make request
+            return $this->helper->api->request([
+                'method' => 'POST',
+                'uri'    => 'operations/' . ($child ?: $parent)['payment_id'] . '/refund',
+                'body'   => [
+                    'total'     => !$helper->order->get_remaining_refund_amount() ? null : $amount,
+                    'emitEvent' => false,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return new \WP_Error($e->getCode(), $e->getMessage(), isset($e->data) ? $e->data : '');
+        }
     }
 }
