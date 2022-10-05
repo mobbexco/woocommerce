@@ -9,14 +9,9 @@ jQuery(function ($) {
     
     // Add mobbex container to document
     $("body").append('<div id="mbbx-container"></div>');
-    
-    // Intercept form button (Bind to click instead of WC trigger to avoid popup) 
-    $('form.checkout').on('click', ':submit', function (event) {
-        return executePayment(event);
-    });
 
-    // Intercept submit for order review
-    $('form#order_review').on('submit', function (event) {
+    // Intercept form button
+    form.on('checkout_place_order_mobbex', function (event) {
         return executePayment(event);
     });
 
@@ -31,18 +26,14 @@ jQuery(function ($) {
      * Try to execute the payment.
      */
     function executePayment() {
-        let methodSelected = $('[name=payment_method]:checked');
-
-        // Check payment method selected
-        if (methodSelected.val() == 'mobbex') {
-            if (methodSelected.attr('method-type') == 'card') {
-                processOrder(response => executeWallet(response));
-            } else {
-                processOrder(response => response.redirect ? redirectToCheckout(response) : openCheckoutModal(response));
-            }
-
-            return false;
+        // If using wallet
+        if ($('[name=payment_method]:checked').attr('method-type') == 'card') {
+            processOrder(response => executeWallet(response));
+        } else {
+            processOrder(response => response.redirect ? redirectToCheckout(response) : openCheckoutModal(response));
         }
+
+        return false;
     }
 
     /**
