@@ -11,7 +11,7 @@ jQuery(function ($) {
     $("body").append('<div id="mbbx-container"></div>');
 
     // Intercept form button
-    $('form.checkout').on('checkout_place_order_mobbex', function (event) {
+    form.on('checkout_place_order_mobbex', function (event) {
         return executePayment(event);
     });
 
@@ -27,7 +27,7 @@ jQuery(function ($) {
      */
     function executePayment() {
         // If using wallet
-        if (methodSelected.attr('method-type') == 'card') {
+        if ($('[name=payment_method]:checked').attr('method-type') == 'card') {
             processOrder(response => executeWallet(response));
         } else {
             processOrder(response => response.redirect ? redirectToCheckout(response) : openCheckoutModal(response));
