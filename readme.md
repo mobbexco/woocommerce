@@ -47,6 +47,18 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.9.0 :: 2022-10-06
+- Allow to make refunds of operations paid with multiple cards (multicard) from platform.
+- Add notes with child transaction information to the order, once their are processed.
+- Use more specific selector when capturing the checkout completion event.
+- Modify address handling to improve data security.
+- Modify financing widget images routes to improve data security.
+- Fix order status and order amount update when payment fails.
+- Fix processing of webhooks received when doing partial returns from console.
+- Fix width of the images of the payment methods in checkout.
+- Fix getting Appearance tab "Font Size" option.
+- Fix addition of the operation risk note of each order.
+
 ### 3.8.1 :: 2022-08-12
 - Fix PHP < 7.3 support.
 - Fix payment_mode config access on helper.
