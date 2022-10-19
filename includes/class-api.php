@@ -76,8 +76,12 @@ class MobbexApi
 
         if (!$result['result'])
             throw new \MobbexException(
-                'Mobbex request error: ' . (isset($result['status_message']) ? $result['status_message'] : ''),
-                isset($result['code']) ? $result['code'] : 599,
+                sprintf(
+                    'Mobbex request error #%s: %s',
+                    isset($result['code']) ? $result['code'] : '',
+                    isset($result['status_message']) ? $result['status_message'] : ''
+                ),
+                599,
                 $data
             );
 
