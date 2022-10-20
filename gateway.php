@@ -18,8 +18,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id     = MOBBEX_WC_GATEWAY_ID;
-        $this->helper = new MobbexHelper();
-        $this->logger = new MobbexLogger();
+        $this->helper = new \MobbexHelper();
+        $this->logger = new \MobbexLogger($this->helper->settings);
 
         // String variables. That's used on checkout view
         $this->icon        = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');

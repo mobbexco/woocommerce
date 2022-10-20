@@ -12,11 +12,11 @@ final class Checkout
 
     public function __construct()
     {
-        $this->logger = new \MobbexLogger();
         $this->helper = new \MobbexHelper();
+        $this->logger = new \MobbexLogger($this->helper->settings);
 
         // Only if the plugin is enabled
-        if (!$this->logger->error) {
+        if ($this->helper->isReady()) {
             // Add additional checkout fields
             if ($this->helper->settings['own_dni'] == 'yes')
                 add_filter('woocommerce_billing_fields', [$this, 'add_checkout_fields']);
