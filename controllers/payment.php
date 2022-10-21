@@ -12,10 +12,10 @@ final class Payment
 
     public function __construct()
     {
-        $this->logger = new \MobbexLogger();
         $this->helper = new \MobbexHelper();
+        $this->logger = new \MobbexLogger($this->helper->settings);
 
-        if (!$this->logger->error) 
+        if ($this->helper->isReady())
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
 
         //Add Mobbex Webhook hook 

@@ -53,24 +53,27 @@ class MobbexGateway
 
     public function init()
     {
-
-
+        self::$helper = new \MobbexHelper();
+        self::$logger = new \MobbexLogger(self::$helper->settings);
 
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
         MobbexGateway::check_dependencies();
         MobbexGateway::check_upgrades();
 
-        if (count(MobbexGateway::$errors)) {
-
-            foreach (MobbexGateway::$errors as $error) {
-                MobbexLogger::notice('error', $error);
-            }
+        if (MobbexGateway::$errors) {
+            foreach (MobbexGateway::$errors as $error)
+                self::$logger->notice($error);
 
             return;
         }
 
-        self::$helper = new MobbexHelper();
+        // Check if credentials are configured
+        if (!self::$helper->isReady())
+            self::$logger->notice(sprintf(
+                'Debe especificar el API Key y Access Token en la <a href="%s">configuración</a>.',
+                admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex')
+            ));
 
         // Init order and product admin settings
         Mbbx_Order_Admin::init();

@@ -1,21 +1,30 @@
 <?php
-require_once 'utils.php';
 
 class MobbexLogger
 {
-    public function __construct()
+    /** Module configuration settings */
+    public $settings = [];
+
+    /**
+     * Logger constructor.
+     * 
+     * @param array $settings Module configuration values.
+     */
+    public function __construct($settings)
     {
-        $this->error  = false;
-        $this->helper = new MobbexHelper;
-
-        if (!$this->helper->settings['api-key'] || !$this->helper->settings['access-token'])
-            $this->error = MobbexLogger::notice('error', __('You need to specify an API Key and an Access Token.', 'mobbex-for-woocommerce'));
-
+        $this->settings = $settings;
     }
 
+    /**
+     * Log a message to Simple History dashboard.
+     * 
+     * @param string $message Log message.
+     * @param mixed $data Any extra data.
+     * @param bool $force True to force log (bypass debug mode option).
+     */
     public function debug($message = 'debug', $data = [], $force = false)
     {
-        if ($this->helper->settings['debug_mode'] != 'yes' && !$force)
+        if ($this->settings['debug_mode'] != 'yes' && !$force)
             return;
 
         apply_filters(
@@ -26,24 +35,21 @@ class MobbexLogger
         );
     }
 
-    public static function notice($type, $msg)
+    /**
+     * Add a notice to the top of admin panel.
+     * 
+     * @param string $message The text to display in the notice.
+     * @param string $type The name of the notice type. Can be error, success or notice.
+     */
+    public function notice($message, $type = 'error')
     {
-        add_action('admin_notices', function () use ($type, $msg) {
-            $class = esc_attr("notice notice-$type");
-            $msg = esc_html($msg);
-
-            ob_start();
-
+        add_action('admin_notices', function () use ($message, $type) {
 ?>
-
-            <div class="<?= $class ?>">
+            <div class="<?= esc_attr("notice notice-$type") ?>">
                 <h2>Mobbex for Woocommerce</h2>
-                <p><?= $msg ?></p>
+                <p><?= $message ?></p>
             </div>
-
 <?php
-
-            echo ob_get_clean();
         });
     }
 }

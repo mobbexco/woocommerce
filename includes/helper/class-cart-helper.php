@@ -27,7 +27,7 @@ class MobbexCartHelper
         $this->id     = $cart->get_cart_hash();
         $this->cart   = $cart;
         $this->helper = $helper ?: new MobbexHelper();
-        $this->logger = new MobbexLogger();
+        $this->logger = new MobbexLogger($this->helper->settings);
     }
 
     /**

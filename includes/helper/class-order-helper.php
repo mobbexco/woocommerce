@@ -37,7 +37,7 @@ class MobbexOrderHelper
         $this->id     = is_int($order) ? $order : $order->get_id();
         $this->order  = is_int($order) ? wc_get_order($order) : $order;
         $this->helper = $helper ?: new MobbexHelper();
-        $this->logger = new MobbexLogger();
+        $this->logger = new MobbexLogger($this->helper->settings);
         $this->db     = $GLOBALS['wpdb'];
     }
 
