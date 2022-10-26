@@ -24,7 +24,7 @@ class MobbexLogger
      */
     public function debug($message = 'debug', $data = [], $force = false)
     {
-        if ($this->settings['debug_mode'] != 'yes' && !$force)
+        if (!$force && $this->settings['debug_mode'] != 'yes')
             return;
 
         apply_filters(
