@@ -259,10 +259,10 @@ class MobbexGateway
 
         // Only if directory url looks good
         if (empty($dir_url) || substr($dir_url, -1) != '/')
-            return;
+            return self::$logger->debug('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
 
         // Product page
-        if (is_product() || has_shortcode($post->post_content, 'mobbex_button')) {
+        if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
             wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
@@ -273,7 +273,7 @@ class MobbexGateway
         }
 
         // Checkout page
-        if (is_checkout() && !is_order_received_page() && !is_cart() && self::$helper->isReady()) {
+        if (is_checkout()) {
             // Exclude scripts from cache plugins minification
             !defined('DONOTCACHEPAGE') && define('DONOTCACHEPAGE', true);
             !defined('DONOTMINIFY') && define('DONOTMINIFY', true);
