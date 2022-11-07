@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VER="3.9.0"
+VER="3.9.1"
 
 # Copy files to temp dir
 if robocopy > /dev/null; then
