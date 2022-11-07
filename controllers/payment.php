@@ -189,8 +189,8 @@ final class Payment
 
         $order->save();
 
-        $this->helper->update_order_status($order, $data);
-        $this->helper->update_order_total($order, $data);
+        $this->update_order_status($order, $data);
+        $this->update_order_total($order, $data);
         
         // Set Total Paid
         $order->set_total($data['total']);
@@ -199,6 +199,51 @@ final class Payment
         do_action('mobbex_webhook_process', $order_id, json_decode($data['data'], true));
 
         return true;
+    }
+
+    /**
+     * Update order status using webhook formatted data.
+     * 
+     * @param WC_Order $order
+     * @param array $data
+     */
+    public function update_order_status($order, $data)
+    {
+        $helper = new \MobbexOrderHelper($order);
+
+        $order->update_status(
+            $helper->get_status_from_code($data['status_code']),
+            $data['status_message']
+        );
+
+        // Complete payment only if it's approved
+        if (in_array($data['status_code'], $helper->status_codes['approved']))
+            $order->payment_complete($data['payment_id']);
+    }
+
+    /**
+     * Update order total paid using webhook formatted data.
+     * 
+     * @param WC_Order $order
+     * @param array $data
+     */
+    public function update_order_total($order, $data)
+    {
+        if ($order->get_total() == $data['total'] || $order->get_meta('mbbx_total_updated'))
+            return;
+
+        // Add a fee item to order with the difference
+        $item = new \WC_Order_Item_Fee;
+        $item->set_props([
+            'name'   => $data['total'] > $order->get_total() ? 'Cargo financiero' : 'Descuento',
+            'amount' => $data['total'] - $order->get_total(),
+            'total'  => $data['total'] - $order->get_total(),
+        ]);
+        $order->add_item($item);
+
+        // Recalculate totals and add flag to not do it again
+        $order->calculate_totals();
+        $order->update_meta_data('mbbx_total_updated', 1);
     }
 
     /**
