@@ -47,6 +47,12 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+### 3.9.1 :: 2022-11-07
+- Add assets enqueue support for yith checkout manager
+- Fix logger duplicated ready notice
+- Fix result code passing on checkout exception
+- New POSIX compatible script for build
+
 ### 3.9.0 :: 2022-10-06
 - Allow to make refunds of operations paid with multiple cards (multicard) from platform.
 - Add notes with child transaction information to the order, once their are processed.
