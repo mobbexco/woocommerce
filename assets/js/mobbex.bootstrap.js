@@ -10,29 +10,21 @@ jQuery(function ($) {
     // Add mobbex container to document
     $("body").append('<div id="mbbx-container"></div>');
 
-    // Intercept form button (Bind to click instead of WC trigger to avoid popup) 
-    $('form.checkout').on('click', ':submit', function (event) {
-        return executePayment(event);
-    });
+    // Intercept wc form handler (fired on checkout.js, line 480)
+    $('form.checkout').on('checkout_place_order_mobbex', executePayment);
 
     // Intercept submit for order review
-    $('form#order_review').on('submit', function (event) {
-        return executePayment(event);
-    });
+    $('form#order_review').on('submit', executePayment);
 
     // Some customers (Inky) have themes where the button is outside the form
-    $('#checkout_buttons button').on('click', function (event) {
-        $('form#order_review').submit();
-
-        return executePayment(event); // Don't fire the submit event twice if the buttons ARE in the form
-    });
+    $('#checkout_buttons button').on('click', executePayment);
 
     /**
      * Try to execute the payment.
      */
     function executePayment() {
         // If it is not mobbex, continue event propagation
-        if ($('[name=payment_method]:checked') != 'mobbex')
+        if ($('[name=payment_method]:checked').val() != 'mobbex')
             return;
 
         // If using wallet
