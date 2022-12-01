@@ -29,6 +29,9 @@ class Mbbx_Order_Admin
         // Send emails on own statuses changes
         add_action('woocommerce_order_status_authorized', [self::class, 'authorize_notification']);
         add_action('woocommerce_order_status_authorized_to_processing', [self::class, 'capture_notification'], 10, 2);
+
+        // Add payment info panel
+        add_action('add_meta_boxes', [self::class, 'add_payment_info_panel']);
     }
 
     /**
@@ -136,7 +139,7 @@ class Mbbx_Order_Admin
 
                 if ($result) {
                     update_post_meta($order_id, 'mbbx_total_captured', $capture_total);
-                    $order->add_order_note(__('Payment Total Captured: $ ' , 'mobbex-for-woocommerce') . $capture_total);
+                    $order->add_order_note(__('Payment Total Captured: $ ', 'mobbex-for-woocommerce') . $capture_total);
                 }
             }
         } catch (\Exception $e) {
@@ -174,5 +177,134 @@ class Mbbx_Order_Admin
         // By default send processing mail on capture
         if (self::$helper->settings['2_step_processing_mail'] != 'authorize')
             $mailer['WC_Email_Customer_Processing_Order']->trigger($order_id);
+    }
+    /**
+     * Display payment information panel
+     */
+    public static function add_payment_info_panel()
+    {
+        global $post;
+        add_meta_box('mbbxs_order_panel', __('Mobbex Payment Information', 'mobbex-subs-for-woocommerce'), [self::class, 'show_payment_info_panel'], 'shop_order', 'side', 'core');
+    }
+    /**
+     * Show payment information panel
+     */
+    public static function show_payment_info_panel()
+    {
+        global $post;
+
+        $mbbxOrderHelp = new MobbexOrderHelper(wc_get_order($post->ID)); 
+
+        // Get transaction data
+        $prntTrans  = $mbbxOrderHelp->get_parent_transaction();
+        $chldTrans  = $mbbxOrderHelp->get_child_transactions();
+
+        echo "<table><th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Information') . "</b></h4></th>";
+
+        $payInfoArray = [
+            'Transaction ID' => 'payment_id',
+            'Risk Analysis'  => 'risk_analysis',
+            'Currency'       => 'currency',
+            'Total'          => 'total',
+            'Status'         => 'status_message'
+        ];
+
+        //Creating payment info panel 
+        echo self::create_panel($payInfoArray, $prntTrans);
+
+        echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Method') . "</b></h4></th>";
+
+        //Creating sources info panel
+        self::create_sources_panel($prntTrans, $chldTrans);
+
+        echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Entities') . "</b></h4></th>";
+
+        //Creating entities info panel
+        self::create_entities_panel($prntTrans, $chldTrans);
+        
+        ?>
+        <style>
+            .mbbx-color-column {
+                background-color: #f8f8f8;
+            }
+            .mbbx-info-panel-th {
+                text-align: left;
+            }
+            </style>
+        <?php
+        echo "</table>";
+    }
+
+    /**
+     * Create payment source panel section.
+     * 
+     * @param array
+     * @param array
+     */
+    public static function create_sources_panel(array $prntTrans, array $chldTrans)
+    {
+        if ($prntTrans["operation_type"] === "payment.multiple-sources") {
+            $multipleCardArray = [
+                'Card'        => 'source_name',
+                'Number'      => 'source_number',
+                'Installment' => 'installment_count',
+                'Amount'      => 'installment_amount'
+            ];
+            foreach ($chldTrans as $card) :
+                echo self::create_panel($multipleCardArray, $card);
+                echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
+            endforeach;
+        } else {
+            $simpleCardArray = [
+                'Payment Method' => 'source_type',
+                'Payment Source' => 'source_name',
+                'Source Number'  => 'source_number'
+            ];
+            echo self::create_panel($simpleCardArray, $prntTrans);
+            if (!empty($prntTrans['source_installment']))
+                echo "<tr class='mobbex-color-column'><td>" . __('Source Installment:') . "</td><td>" . $prntTrans['installment_count'] . ' cuota/s de $' . $prntTrans['installment_amount'] . "</td></tr>";
+        }
+    }
+    /**
+     * Create entities panel section.
+     * 
+     * @param array $prntTrans
+     * @param array $chldTrans
+     */
+    public static function create_entities_panel(array $prntTrans, array $chldTrans)
+    {
+        $vendorArray = [
+            'Name' => 'entity_name',
+            'UID'  => 'entity_uid'
+        ];
+        if ($prntTrans["operation_type"] === "payment.multiple-vendor") {
+            if ($chldTrans) {
+                foreach ($chldTrans as $entity) :
+                    $mbbxCouponUrl = "https://mobbex.com/console/" . $entity['entity_uid'] . "/operations/?oid=" . $entity['payment_id'];
+                    echo self::create_panel($vendorArray, $entity);
+                    echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($entity['entity_uid']) && isset($entity['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">COUPON</a>" : '') . "</td></tr>";
+                    echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
+                endforeach;
+            }
+        } else {
+            $mbbxCouponUrl = "https://mobbex.com/console/" . $prntTrans['entity_uid'] . "/operations/?oid=" . $prntTrans['payment_id'];
+            echo self::create_panel($vendorArray, $prntTrans);
+            echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($prntTrans['entity_uid']) && isset($prntTrans['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">COUPON</a>" : 'NO COUPON') . "</td></tr>";
+        }
+    }
+
+    /**
+     * Create panel
+     * 
+     * @param array
+     * @param array
+     */
+    public static function create_panel(array $labelsArray, array $transaction)
+    {
+        $i = 1;
+        foreach ($labelsArray as $label => $value) :
+            echo "<tr class=". ($i % 2 == 0 ? 'mbbx-color-column' : '') . "><td>" . __($label . ':') . "</td><td>" . (isset($transaction[$value]) ? $transaction[$value] : '') . "</td></tr>";
+            $i++;
+        endforeach;
     }
 }
