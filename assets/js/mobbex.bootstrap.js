@@ -10,8 +10,13 @@ jQuery(function ($) {
     // Add mobbex container to document
     $("body").append('<div id="mbbx-container"></div>');
 
-    // Intercept form button
-    form.on('checkout_place_order_mobbex', function (event) {
+    // Intercept form button (Bind to click instead of WC trigger to avoid popup) 
+    $('form.checkout').on('click', ':submit', function (event) {
+        return executePayment(event);
+    });
+
+    // Intercept submit for order review
+    $('form#order_review').on('submit', function (event) {
         return executePayment(event);
     });
 
@@ -26,6 +31,10 @@ jQuery(function ($) {
      * Try to execute the payment.
      */
     function executePayment() {
+        // If it is not mobbex, continue event propagation
+        if ($('[name=payment_method]:checked') != 'mobbex')
+            return;
+
         // If using wallet
         if ($('[name=payment_method]:checked').attr('method-type') == 'card') {
             processOrder(response => executeWallet(response));
