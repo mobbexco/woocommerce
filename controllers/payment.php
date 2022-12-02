@@ -189,11 +189,12 @@ final class Payment
 
         $order->save();
 
-        $this->update_order_status($order, $data);
-        $this->update_order_total($order, $data);
-        
-        // Set Total Paid
+        // Update totals
         $order->set_total($data['total']);
+        $this->update_order_total($order, $data);
+
+        // Change status and send email
+        $this->update_order_status($order, $data);
 
         //action with the checkout data
         do_action('mobbex_webhook_process', $order_id, json_decode($data['data'], true));
