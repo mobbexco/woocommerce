@@ -68,12 +68,7 @@ class MobbexGateway
             return;
         }
 
-        // Check if credentials are configured
-        if (!self::$helper->isReady())
-            self::$logger->notice(sprintf(
-                'Debe especificar el API Key y Access Token en la <a href="%s">configuración</a>.',
-                admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex')
-            ));
+        self::check_warnings();
 
         // Init order and product admin settings
         Mbbx_Order_Admin::init();
@@ -183,6 +178,28 @@ class MobbexGateway
         } catch (\Exception $e) {
             self::$errors[] = 'Mobbex DB Upgrade error';
         }
+    }
+
+    /**
+     * Check and log minor problems of install.
+     */
+    public static function check_warnings()
+    {
+        // Check install directory
+        if (basename(__DIR__) == 'woocommerce-master')
+            self::$logger->notice(sprintf(
+                'El directorio de instalación es incorrecto (<code>%s</code>). Si descargó el zip directamente del repositorio, reinstale el plugin utilizando el archivo <code>%s</code> de <a href="%s">%3$s</a>',
+                basename(__DIR__),
+                'wc-mobbex.x.y.z.zip',
+                'https://github.com/mobbexco/woocommerce/releases/latest'
+            ));
+
+        // Check if credentials are configured
+        if (self::$helper->settings['enabled'] && (!self::$helper->settings['api-key'] || !self::$helper->settings['access-token']))
+            self::$logger->notice(sprintf(
+                'Debe especificar el API Key y Access Token en la <a href="%s">configuración</a>.',
+                admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex')
+            ));
     }
 
     public function add_action_links($links)
