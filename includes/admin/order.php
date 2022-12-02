@@ -178,14 +178,19 @@ class Mbbx_Order_Admin
         if (self::$helper->settings['2_step_processing_mail'] != 'authorize')
             $mailer['WC_Email_Customer_Processing_Order']->trigger($order_id);
     }
+
     /**
      * Display payment information panel
      */
     public static function add_payment_info_panel()
     {
         global $post;
-        add_meta_box('mbbxs_order_panel', __('Mobbex Payment Information', 'mobbex-subs-for-woocommerce'), [self::class, 'show_payment_info_panel'], 'shop_order', 'side', 'core');
+
+        //Only displayed if a payment was made with Mobbex.
+        if ($post->post_type == 'shop_order' && wc_get_order($post->ID)->get_payment_method() == 'mobbex')
+            add_meta_box('mbbx_order_panel', __('Mobbex Payment Information', 'mobbex-for-woocommerce'), [self::class, 'show_payment_info_panel'], 'shop_order', 'side', 'core');
     }
+    
     /**
      * Show payment information panel
      */
@@ -238,12 +243,12 @@ class Mbbx_Order_Admin
     /**
      * Create payment source panel section.
      * 
-     * @param array
-     * @param array
+     * @param array $prntTrans
+     * @param array $chldTrans
      */
-    public static function create_sources_panel(array $prntTrans, array $chldTrans)
+    public static function create_sources_panel($prntTrans, $chldTrans)
     {
-        if ($prntTrans["operation_type"] === "payment.multiple-sources") {
+        if (isset($prntTrans["operation_type"]) && $prntTrans["operation_type"] === "payment.multiple-sources") {
             $multipleCardArray = [
                 'Card'        => 'source_name',
                 'Number'      => 'source_number',
@@ -251,7 +256,7 @@ class Mbbx_Order_Admin
                 'Amount'      => 'installment_amount'
             ];
             foreach ($chldTrans as $card) :
-                echo self::create_panel($multipleCardArray, $card);
+                self::create_panel($multipleCardArray, $card);
                 echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
             endforeach;
         } else {
@@ -260,7 +265,7 @@ class Mbbx_Order_Admin
                 'Payment Source' => 'source_name',
                 'Source Number'  => 'source_number'
             ];
-            echo self::create_panel($simpleCardArray, $prntTrans);
+            self::create_panel($simpleCardArray, $prntTrans);
             if (!empty($prntTrans['source_installment']))
                 echo "<tr class='mobbex-color-column'><td>" . __('Source Installment:') . "</td><td>" . $prntTrans['installment_count'] . ' cuota/s de $' . $prntTrans['installment_amount'] . "</td></tr>";
         }
@@ -271,24 +276,24 @@ class Mbbx_Order_Admin
      * @param array $prntTrans
      * @param array $chldTrans
      */
-    public static function create_entities_panel(array $prntTrans, array $chldTrans)
+    public static function create_entities_panel($prntTrans, $chldTrans)
     {
         $vendorArray = [
             'Name' => 'entity_name',
             'UID'  => 'entity_uid'
         ];
-        if ($prntTrans["operation_type"] === "payment.multiple-vendor") {
+        if (isset($prntTrans["operation_type"]) && $prntTrans["operation_type"] === "payment.multiple-vendor") {
             if ($chldTrans) {
                 foreach ($chldTrans as $entity) :
                     $mbbxCouponUrl = "https://mobbex.com/console/" . $entity['entity_uid'] . "/operations/?oid=" . $entity['payment_id'];
-                    echo self::create_panel($vendorArray, $entity);
+                    self::create_panel($vendorArray, $entity);
                     echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($entity['entity_uid']) && isset($entity['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">COUPON</a>" : '') . "</td></tr>";
                     echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
                 endforeach;
             }
-        } else {
+        } elseif(isset($prntTrans["operation_type"])) {
             $mbbxCouponUrl = "https://mobbex.com/console/" . $prntTrans['entity_uid'] . "/operations/?oid=" . $prntTrans['payment_id'];
-            echo self::create_panel($vendorArray, $prntTrans);
+            self::create_panel($vendorArray, $prntTrans);
             echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($prntTrans['entity_uid']) && isset($prntTrans['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">COUPON</a>" : 'NO COUPON') . "</td></tr>";
         }
     }
@@ -296,10 +301,10 @@ class Mbbx_Order_Admin
     /**
      * Create panel
      * 
-     * @param array
-     * @param array
+     * @param array $labelsArray
+     * @param array $transaction
      */
-    public static function create_panel(array $labelsArray, array $transaction)
+    public static function create_panel($labelsArray, $transaction)
     {
         $i = 1;
         foreach ($labelsArray as $label => $value) :
