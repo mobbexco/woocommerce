@@ -160,14 +160,17 @@ class MobbexCheckout
             foreach (['address_1', 'address_2', 'city', 'state', 'postcode', 'country'] as $method)
                 ${$method} = "get_".$type."_".$method;
 
+            // Force address 1 type to string and trim spaces
+            $street = trim((string) $object->$address_1());
+
             $this->addresses[] = [
                 'type'         => $type,
                 'country'      => $this->convert_country_code($object->$country()),
                 'state'        => $object->$state(),
                 'city'         => $object->$city(),
                 'zipCode'      => $object->$postcode(),
-                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($object->$address_1()))),
-                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($object->$address_1())), '', trim($object->$address_1())),
+                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', $street)),
+                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', $street), '', $street),
                 'streetNotes'  => $object->$address_2()
             ];
 
