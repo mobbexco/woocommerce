@@ -18,11 +18,12 @@ class MobbexOrderHelper
     public $db;
 
     public $status_codes = [
-        'on-hold'            => [2, 100, 201],
-        'authorized'         => [3],
-        'approved'           => [200, 210, 300, 301, 302, 303],
-        'refunded'           => [602],
-        'failed'             => [],
+        'pending'    => [0, 1],
+        'on-hold'    => [2, 100, 201],
+        'authorized' => [3],
+        'approved'   => [200, 210, 300, 301, 302, 303],
+        'refunded'   => [602],
+        'failed'     => [],
     ];
 
     /**
