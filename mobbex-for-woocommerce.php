@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.9.1
+Version:      3.10.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -195,7 +195,7 @@ class MobbexGateway
             ));
 
         // Check if credentials are configured
-        if (self::$helper->settings['enabled'] && (!self::$helper->settings['api-key'] || !self::$helper->settings['access-token']))
+        if (self::$helper->settings['enabled'] == 'yes' && (!self::$helper->settings['api-key'] || !self::$helper->settings['access-token']))
             self::$logger->notice(sprintf(
                 'Debe especificar el API Key y Access Token en la <a href="%s">configuración</a>.',
                 admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex')

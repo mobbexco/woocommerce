@@ -47,6 +47,14 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.10.0 :: 2022-12-02
+- Force addresses street type to string to prevent errors
+- Fix order total updating on processing mail view
+- Add warning on wrong directory installs
+- Fix credentials check warning on admin panel
+- Add payment information widget in the order panel
+- Fix pending orders form submit handle
+
 ### 3.9.1 :: 2022-11-07
 - Add assets enqueue support for yith checkout manager
 - Fix logger duplicated ready notice
