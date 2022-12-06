@@ -122,20 +122,12 @@ class MobbexGateway
      */
     public static function check_dependencies()
     {
-        if (!class_exists('WooCommerce')) {
-            MobbexGateway::$errors[] = __('WooCommerce needs to be installed and activated.', 'mobbex-for-woocommerce');
-        }
-
-        if (!function_exists('WC')) {
-            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce to be activated', 'mobbex-for-woocommerce');
+        if (!class_exists('WooCommerce') || !function_exists('WC') || version_compare(defined('WC_VERSION') ? WC_VERSION : '', '2.6', '<')) {
+            MobbexGateway::$errors[] = __('WooCommerce version 2.6 or greater needs to be installed and activated.', 'mobbex-for-woocommerce');
         }
 
         if (!is_ssl()) {
             MobbexGateway::$errors[] = __('Your site needs to be served via HTTPS to comunicate securely with Mobbex.', 'mobbex-for-woocommerce');
-        }
-
-        if (version_compare(WC_VERSION, '2.6', '<')) {
-            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce version 2.6 or greater', 'mobbex-for-woocommerce');
         }
 
         if (!function_exists('curl_init')) {
