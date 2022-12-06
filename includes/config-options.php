@@ -311,4 +311,15 @@ return [
         'default' => 'no',
     ],
 
+    'timeout' => [
+        'title'             => __('Tiempo de vida Checkout', 'mobbex-for-woocommerce'),
+        'description'       => __('Establecer tiempo de vida del Checkout en minutos', 'mobbex-for-woocommerce'),
+        'class'             => 'mbbx-into-advanced',
+        'type'              => 'number',
+        'default'           => 5,
+        'custom_attributes' => [
+            'min'       => '1',
+        ],
+    ]
+
 ];
