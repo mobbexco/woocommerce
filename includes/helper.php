@@ -448,16 +448,15 @@ class MobbexHelper
             "version" => MOBBEX_VERSION,
         ];
 
-        if ($order_id) {
+        if ($order_id)
             $query['mobbex_order_id'] = $order_id;
-        }
-
+    
         if ($endpoint === 'mobbex_webhook') {
+            if ($this->settings['debug_mode'] != 'no')
+                $query['XDEBUG_SESSION_START'] = 'PHPSTORM';
             return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
-        } else {
+        } else 
             $query['wc-api'] = $endpoint;
-        }
-
         return add_query_arg($query, home_url('/'));
     }
 
