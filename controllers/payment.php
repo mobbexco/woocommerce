@@ -190,7 +190,6 @@ final class Payment
         $order->save();
 
         // Update totals
-        $order->set_total($data['total']);
         $this->update_order_total($order, $data);
 
         // Change status and send email
@@ -230,8 +229,11 @@ final class Payment
      */
     public function update_order_total($order, $data)
     {
-        if ($order->get_total() == $data['total'] || $order->get_meta('mbbx_total_updated'))
+        if ($order->get_total() == $data['total'])
             return;
+
+        // First remove previus fees
+        $order->remove_order_items('fee');
 
         // Add a fee item to order with the difference
         $item = new \WC_Order_Item_Fee;
@@ -242,9 +244,9 @@ final class Payment
         ]);
         $order->add_item($item);
 
-        // Recalculate totals and add flag to not do it again
+        // Recalculate totals
         $order->calculate_totals();
-        $order->update_meta_data('mbbx_total_updated', 1);
+        $order->set_total($data['total']);
     }
 
     /**
