@@ -10,7 +10,7 @@ class MobbexCheckout
 
     public $customer = [];
 
-    public $address = [];
+    public $addresses = [];
 
     public $items = [];
 
@@ -64,11 +64,12 @@ class MobbexCheckout
                 'multivendor'  => $this->settings['multivendor'] != 'no' ? $this->settings['multivendor'] : false,
                 'wallet'       => $this->settings['wallet'] == 'yes' && wp_get_current_user()->ID,
                 'intent'       => $this->settings['payment_mode'],
-                'timeout'      => 5,
+                'timeout'      => $this->settings['timeout'],
                 'items'        => $this->items,
                 'merchants'    => $this->merchants,
                 'installments' => $this->installments,
-                'customer'     => array_merge($this->customer, $this->address),
+                'customer'     => array_merge($this->customer),
+                'addresses'    => $this->addresses,
                 'options'      => [
                     'embed'    => $this->settings['button'] == 'yes',
                     'domain'   => str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
@@ -98,7 +99,6 @@ class MobbexCheckout
                 ],
             ], $this->relation)
         ];
-
         return $this->api->request($data);
     }
 
@@ -124,7 +124,6 @@ class MobbexCheckout
 
         $reference = [
             'wc_id:' . $id,
-            'time:' . time()
         ];
 
         // Add reseller id
@@ -151,24 +150,45 @@ class MobbexCheckout
     /**
      * Set address data.
      * 
-     * @param string|null $street Street name with house number.
-     * @param string|int|null $postcode Postal|ZIP code.
-     * @param string|null $state
-     * @param string|null $country Country ISO 3166-1 alpha-3 code.
-     * @param string|null $note
-     * @param string|null $agent User agent.
+     * @param Class $object Order or Customer class.
+     * 
      */
-    public function set_address($street = null, $postcode = null, $state = null, $country = null, $note = null, $agent = null)
+    public function set_addresses($object)
     {
-        $this->address = [
-            'address'       => trim(preg_replace('/[0-9]/', '', (string) $street)),
-            'addressNumber' => trim(preg_replace('/[^0-9]/', '', (string) $street)),
-            'zipCode'       => $postcode,
-            'state'         => $state,
-            'country'       => $country,
-            'addressNotes'  => $note,
-            'userAgent'     => $agent,
-        ];
+        foreach (['billing', 'shipping'] as $type) {
+            
+            foreach (['address_1', 'address_2', 'city', 'state', 'postcode', 'country'] as $method)
+                ${$method} = "get_".$type."_".$method;
+
+            // Force address 1 type to string and trim spaces
+            $street = trim((string) $object->$address_1());
+
+            $this->addresses[] = [
+                'type'         => $type,
+                'country'      => $this->convert_country_code($object->$country()),
+                'state'        => $object->$state(),
+                'city'         => $object->$city(),
+                'zipCode'      => $object->$postcode(),
+                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', $street)),
+                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', $street), '', $street),
+                'streetNotes'  => $object->$address_2()
+            ];
+
+        }
+    }
+
+    /**
+     * Converts the WooCommerce country codes to 3-letter ISO codes.
+     * 
+     * @param string $code 2-Letter ISO code.
+     * 
+     * @return string|null
+     */
+    public function convert_country_code($code)
+    {
+        $countries = include ('iso-3166.php') ?: [];
+
+        return isset($countries[$code]) ? $countries[$code] : null;
     }
 
     /**

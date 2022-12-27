@@ -20,19 +20,22 @@ class MobbexHelper
     public function __construct()
     {
         // Get default and saved values
-        $default_values = array_fill_keys(array_keys(include('config-options.php')), null);
+        $default_values = array_map(function($value) {
+            return isset($value['default']) ? $value['default'] : null;
+        }, include('config-options.php'));
         $saved_values   = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID .'_settings', null) ?: [];
+
+        // Merge into a single array
+        $this->settings = array_merge($default_values, $saved_values);
 
         // The intent constant overwrite payment mode setting
         if (defined('MOBBEX_CHECKOUT_INTENT')) {
-            $saved_values['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
-        } else if ($saved_values['payment_mode'] == 'yes') {
-            $saved_values['payment_mode'] = 'payment.2-step';
+            $this->settings['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
+        } else if ($this->settings['payment_mode'] == 'yes') {
+            $this->settings['payment_mode'] = 'payment.2-step';
         } else {
-            $saved_values['payment_mode'] = 'payment.v2';
+            $this->settings['payment_mode'] = 'payment.v2';
         }
-
-        $this->settings = array_merge($default_values, $saved_values);
 
         // Set settings as properties for backward support
         foreach ($this->settings as $key => $value) {
@@ -43,22 +46,21 @@ class MobbexHelper
         $this->api = new MobbexApi($this->settings['api-key'], $this->settings['access-token']);
     }
 
-    public function debug($message = 'debug', $data = [], $force = false)
-    {
-        if ($this->settings['debug_mode'] != 'yes' && !$force)
-            return;
-
-        apply_filters(
-            'simple_history_log',
-            'Mobbex: ' . $message,
-            $data,
-            'debug'
-        );
-    }
-
     public function isReady()
     {
         return ($this->enabled === 'yes' && !empty($this->api_key) && !empty($this->access_token));
+    }
+
+    /**
+     * Returns a query param with the installments of the product.
+     * @param int $total
+     * @param array $installments
+     * @return string $query
+     */
+    public function getInstallmentsQuery($total, $installments = [])
+    {
+        // Build query params and replace special chars
+        return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', http_build_query(compact('total', 'installments')));
     }
 
     /**
@@ -71,15 +73,11 @@ class MobbexHelper
      */
     public function get_sources($total = null, $installments = [])
     {
-        $entity = $this->get_entity();
-
-        if (empty($entity['countryReference']) || empty($entity['tax_id']))
-            return [];
+        $query = $this->getInstallmentsQuery($total, $installments);
 
         return $this->api->request([
-            'method' => 'POST',
-            'uri'    => "sources/list/$entity[countryReference]/$entity[tax_id]" . ($total ? "?total=$total" : ''),
-            'body'   => compact('installments'),
+            'method' => 'GET',
+            'uri'    => "sources" . ($query ? "?$query" : ''),
         ]) ?: [];
     }
 
@@ -129,30 +127,6 @@ class MobbexHelper
 
         // Remove duplicated plans and return
         return array_values(array_unique($installments));
-    }
-
-    /**
-     * Get entity data from Mobbex or db if possible.
-     * 
-     * @return string[] 
-     */
-    public function get_entity()
-    {
-        // First, try to get from db
-        $entity = get_option('mbbx_entity');
-
-        if ($entity)
-            return json_decode($entity, true);
-
-        $entity = $this->api->request([
-            'method' => 'GET',
-            'uri'    => 'entity/validate',
-        ]);
-
-        // Save on db
-        update_option('mbbx_entity', json_encode($entity));
-
-        return $entity;
     }
 
     /**
@@ -374,7 +348,7 @@ class MobbexHelper
     {
         $data = [
             'order_id'           => $order_id,
-            'parent'             => MobbexHelper::is_parent_webhook($res['payment']['operation']['type'], $multicard, $multivendor) ? 'yes' : 'no',
+            'parent'             => isset($res['payment']['id']) ? (self::is_parent_webhook($res['payment']['id']) ? 'yes' : 'no') : null,
             'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
             'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
             'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
@@ -407,21 +381,15 @@ class MobbexHelper
     }
 
     /**
-     * Receives the webhook "opartion type" and return true if the webhook is parent and false if not
+     * Check if webhook is parent type using him payment id.
      * 
-     * @param string $operationType
-     * @param bool $multicard
-     * @return bool true|false
-     * @return bool true|false
+     * @param string $paymentId
      * 
+     * @return bool
      */
-    public static function is_parent_webhook($operationType, $multicard, $multivendor)
+    public static function is_parent_webhook($payment_id)
     {
-        if ($operationType === "payment.v2") {
-            if ($multicard || $multivendor)
-                return false;
-        }
-        return true;
+        return strpos($payment_id, 'CHD-') !== 0;
     }
 
     /**
@@ -480,16 +448,15 @@ class MobbexHelper
             "version" => MOBBEX_VERSION,
         ];
 
-        if ($order_id) {
+        if ($order_id)
             $query['mobbex_order_id'] = $order_id;
-        }
-
-        if ($endpoint === 'mobbex_webhook' && $this->settings['use_webhook_api']) {
+    
+        if ($endpoint === 'mobbex_webhook') {
+            if ($this->settings['debug_mode'] != 'no')
+                $query['XDEBUG_SESSION_START'] = 'PHPSTORM';
             return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
-        } else {
+        } else 
             $query['wc-api'] = $endpoint;
-        }
-
         return add_query_arg($query, home_url('/'));
     }
 
@@ -514,29 +481,6 @@ class MobbexHelper
         $default = wc_placeholder_img_src('thumbnail');
 
         return $image ?: $default;
-    }
-
-    /**
-     * Update order total.
-     * 
-     * @param WC_Order $order
-     * @param int|string $total
-     */
-    public function update_order_total($order, $total)
-    {
-        if ($total == $order->get_total())
-            return;
-
-        // Create an item with total difference
-        $item = new WC_Order_Item_Fee();
-
-        $item->set_name($total > $order->get_total() ? __('Cargo financiero', 'mobbex-for-woocommerce') : __('Descuento', 'mobbex-for-woocommerce'));
-        $item->set_amount($total - $order->get_total());
-        $item->set_total($total - $order->get_total());
-
-        // Add the item and recalculate totals
-        $order->add_item($item);
-        $order->calculate_totals();
     }
 
     /**
@@ -569,17 +513,4 @@ class MobbexHelper
         return $response;
     }
 
-    /**
-     * Converts the WooCommerce country codes to 3-letter ISO codes.
-     * 
-     * @param string $code 2-Letter ISO code.
-     * 
-     * @return string|null
-     */
-    public function convert_country_code($code)
-    {
-        $countries = include('iso-3166.php') ?: [];
-
-        return isset($countries[$code]) ? $countries[$code] : null;
-    }
 }

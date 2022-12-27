@@ -47,6 +47,51 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.10.0 :: 2022-12-02
+- Force addresses street type to string to prevent errors
+- Fix order total updating on processing mail view
+- Add warning on wrong directory installs
+- Fix credentials check warning on admin panel
+- Add payment information widget in the order panel
+- Fix pending orders form submit handle
+
+### 3.9.1 :: 2022-11-07
+- Add assets enqueue support for yith checkout manager
+- Fix logger duplicated ready notice
+- Fix result code passing on checkout exception
+- New POSIX compatible script for build
+
+### 3.9.0 :: 2022-10-06
+- Allow to make refunds of operations paid with multiple cards (multicard) from platform.
+- Add notes with child transaction information to the order, once their are processed.
+- Use more specific selector when capturing the checkout completion event.
+- Modify address handling to improve data security.
+- Modify financing widget images routes to improve data security.
+- Fix order status and order amount update when payment fails.
+- Fix processing of webhooks received when doing partial returns from console.
+- Fix width of the images of the payment methods in checkout.
+- Fix getting Appearance tab "Font Size" option.
+- Fix addition of the operation risk note of each order.
+
+### 3.8.1 :: 2022-08-12
+- Fix PHP < 7.3 support.
+- Fix payment_mode config access on helper.
+
+### 3.8.0 :: 2022-06-27
+- Add custom order status options.
+- Add options to link products with subscriptions.
+- Support application/json type webhooks.
+- Use new woocommerce api method by default.
+- Refresh saved entity data on plugin deactivation.
+
+### 3.7.1 :: 2022-05-27
+- Fix mbbxToggleOptions function name conflict with subscriptions plugin
+- Fix parent webhooks check when using multivendor
+- Fix plugin default settings obtaining
+- Remove jQuery BlockUI plugin dependencies
+- Remove timestamp from checkout references to prevent duplicated payments.
+- Remove customer user agent from checkout data.
+
 ### 3.7.0 :: 2022-02-11
 - Add option to show finance widget on cart page
 - Apply title option to card_input method

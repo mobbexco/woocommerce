@@ -1,43 +1,40 @@
+
 jQuery(function ($) {
+        
     // Can submit from either checkout or order review forms
     var form = $('form.checkout, form#order_review');
-
+    
+    //Add mobbex render lock
+    renderLock();
+    
     // Add mobbex container to document
     $("body").append('<div id="mbbx-container"></div>');
 
-    // Intercept form button (Bind to click instead of WC trigger to avoid popup) 
-    $('form.checkout').on('click', ':submit', function (event) {
-        return executePayment(event);
-    });
+    // Intercept wc form handler (fired on checkout.js, line 480)
+    $('form.checkout').on('checkout_place_order_mobbex', executePayment);
 
     // Intercept submit for order review
-    $('form#order_review').on('submit', function (event) {
-        return executePayment(event);
-    });
+    $('form#order_review').on('submit', executePayment);
 
     // Some customers (Inky) have themes where the button is outside the form
-    $('#checkout_buttons button').on('click', function (event) {
-        $('form#order_review').submit();
-
-        return executePayment(event); // Don't fire the submit event twice if the buttons ARE in the form
-    });
+    $('#checkout_buttons button').on('click', executePayment);
 
     /**
      * Try to execute the payment.
      */
     function executePayment() {
-        let methodSelected = $('[name=payment_method]:checked');
+        // If it is not mobbex, continue event propagation
+        if ($('[name=payment_method]:checked').val() != 'mobbex')
+            return;
 
-        // Check payment method selected
-        if (methodSelected.val() == 'mobbex') {
-            if (methodSelected.attr('method-type') == 'card') {
-                processOrder(response => executeWallet(response));
-            } else {
-                processOrder(response => response.redirect ? redirectToCheckout(response) : openCheckoutModal(response));
-            }
-
-            return false;
+        // If using wallet
+        if ($('[name=payment_method]:checked').attr('method-type') == 'card') {
+            processOrder(response => executeWallet(response));
+        } else {
+            processOrder(response => response.redirect ? redirectToCheckout(response) : openCheckoutModal(response));
         }
+
+        return false;
     }
 
     /**
@@ -106,6 +103,7 @@ jQuery(function ($) {
 
         let mobbexEmbed = window.MobbexEmbed.init(options);
         mobbexEmbed.open();
+        unlockForm();
     }
 
     /**
@@ -114,8 +112,8 @@ jQuery(function ($) {
      * @param {array} response Mobbex checkout response.
      */
     function executeWallet(response) {
-        let card        = $('[name=payment_method]:checked').attr('key') ?? null;
-        let cardNumber  = $(`#wallet-${card}-number`).val();
+        let card = $('[name=payment_method]:checked').attr('key') ?? null;
+        let cardNumber = $(`#wallet-${card}-number`).val();
         let updatedCard = response.data.wallet.find(card => card.card.card_number == cardNumber);
 
         var options = {
@@ -138,14 +136,27 @@ jQuery(function ($) {
     }
 
     // Utils
-    function lockForm() {
-        form.addClass('processing').block();
+    /**
+     * Render form loader element.
+     */
+    function renderLock() {
+        let loaderModal = document.createElement("div")
+        loaderModal.id = "mbbx-loader-modal"
+        loaderModal.style.display = "none"
 
-        $('.blockMsg').hide();
+        let spinner = document.createElement("div")
+        spinner.id = "mbbx-spinner"
+
+        loaderModal.appendChild(spinner)
+        document.body.appendChild(loaderModal)
+    }
+
+    function lockForm() {
+        document.getElementById("mbbx-loader-modal").style.display = 'grid'
     }
 
     function unlockForm() {
-        form.removeClass('processing').unblock();
+        document.getElementById("mbbx-loader-modal").style.display = 'none'
     }
 
     // Shows any errors we encountered

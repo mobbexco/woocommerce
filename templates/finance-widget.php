@@ -16,7 +16,7 @@
             <?php if (!empty($source['source']['name'])) : ?>
                 <div id="<?= $source['source']['reference'] ?>" class="mobbexSource">
                     <p class="mobbexPaymentMethod">
-                        <img src="https://res.mobbex.com/images/sources/<?= $source['source']['reference'] ?>.jpg"><?= $source['source']['name'] ?>
+                        <img src="https://res.mobbex.com/images/sources/jpg/<?= $source['source']['reference'] ?>.jpg"><?= $source['source']['name'] ?>
                     </p>
                     <?php if (!empty($source['installments']['list'])) : ?>
                         <table>

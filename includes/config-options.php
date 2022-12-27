@@ -67,6 +67,48 @@ return [
         'default'     => '',
     ],
 
+    /* Orders options */
+    'orders_tab' => [
+        'title' => __('Orders Configuration', 'mobbex-for-woocommerce'),
+        'type'  => 'title',
+        'class' => 'mbbx-tab mbbx-tab-orders',
+    ],
+
+    'order_status_approved' => [
+        'title'       => __('Order status approve', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for approve orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => function_exists('wc_get_order_statuses') ? wc_get_order_statuses() : [],
+        'default'     => 'wc-processing',
+        'class'       => 'mbbx-into-orders',
+    ],
+
+    'order_status_on_hold' => [
+        'title'       => __('Order status on hold', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for on hold orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => function_exists('wc_get_order_statuses') ? wc_get_order_statuses() : [],
+        'default'     => 'wc-on-hold',
+        'class'       => 'mbbx-into-orders',
+    ],
+
+    'order_status_failed' => [
+        'title'       => __('Order status failed', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for failed orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => function_exists('wc_get_order_statuses') ? wc_get_order_statuses() : [],
+        'default'     => 'wc-failed',
+        'class'       => 'mbbx-into-orders',
+    ],
+    'order_status_refunded' => [
+        'title'       => __('Order status refunded', 'mobbex-for-woocommerce'),
+        'description' => __('Select the status for refunded orders.', 'mobbex-for-woocommerce'),
+        'type'        => 'select',
+        'options'     => function_exists('wc_get_order_statuses') ? wc_get_order_statuses() : [],
+        'default'     => 'wc-refunded',
+        'class'       => 'mbbx-into-orders',
+    ],
+
     /* Appearance options */
 
     'appearance_tab' => [
@@ -93,7 +135,7 @@ return [
     ],
 
     'mobbex_theme' => [
-        'title'       => __('Mobbex Theme', 'mobbex-for-woocommerce'),
+        'title'       => __('Visual Theme', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your Checkout Theme from here.', 'mobbex-for-woocommerce'),
         'type'        => 'select',
         'options'     => [
@@ -271,11 +313,15 @@ background-color: #6f00ff;
         'default' => 'no',
     ],
 
-    'use_webhook_api' => [
-        'title'   => __('Use new WebHook API', 'mobbex-for-woocommerce'),
-        'type'    => 'checkbox',
-        'label'   => __('Use the WebHook by API instead of old Controller. Permalinks must be Active to use it Safely', 'mobbex-for-woocommerce'),
-        'default' => 'no',
-        'class'   => 'mbbx-into-advanced',
-    ],
+    'timeout' => [
+        'title'             => __('Tiempo de vida Checkout', 'mobbex-for-woocommerce'),
+        'description'       => __('Establecer tiempo de vida del Checkout en minutos', 'mobbex-for-woocommerce'),
+        'class'             => 'mbbx-into-advanced',
+        'type'              => 'number',
+        'default'           => 5,
+        'custom_attributes' => [
+            'min'       => '1',
+        ],
+    ]
+
 ];

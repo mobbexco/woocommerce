@@ -1,4 +1,4 @@
-function mbbxsToggleOptions(optionToCheck, valueToShow, optionsToToggle, classUsed) {
+function mbbxToggleOptions(optionToCheck, valueToShow, optionsToToggle, classUsed) {
     // Works with multiple elements
     for (var option of optionsToToggle) {
         if (optionToCheck.checked === valueToShow || optionToCheck.value === valueToShow) {
@@ -20,9 +20,9 @@ window.addEventListener('load', function () {
     ];
 
     // Show all multisite options when is enabled
-    mbbxsToggleOptions(isMultisite, true, allOptions, 'really-hidden');
+    mbbxToggleOptions(isMultisite, true, allOptions, 'really-hidden');
     isMultisite.onclick = function () {
-        mbbxsToggleOptions(isMultisite, true, allOptions, 'really-hidden');
+        mbbxToggleOptions(isMultisite, true, allOptions, 'really-hidden');
     }
 
     var storeSelect = document.querySelector('select#mbbx_store');
@@ -32,17 +32,17 @@ window.addEventListener('load', function () {
         document.querySelector('.mbbx_access_token_field'),
     ];
 
-    mbbxsToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
+    mbbxToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
     storeSelect.onchange = function () {
-        mbbxsToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
+        mbbxToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
     }
 
     //subscription event
     var issubscription         = document.querySelector('#mbbx_sub_enable');
     var subscriptionUidOptions = document.querySelector('.mbbx_sub_uid_field');
     //show subscription uid if product is type subscription
-    mbbxsToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
+    mbbxToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
     issubscription.onclick = function () {
-        mbbxsToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
+        mbbxToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
     }
 });

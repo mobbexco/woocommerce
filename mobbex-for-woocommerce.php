@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.7.0
+Version:      3.10.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -11,6 +11,7 @@ Copyright: 2020 mobbex.com
 
 require_once 'includes/utils.php';
 require_once 'includes/helper.php';
+require_once 'includes/logger.php';
 require_once 'includes/class-api.php';
 require_once 'includes/class-checkout.php';
 require_once 'includes/class-exception.php';
@@ -18,11 +19,16 @@ require_once 'includes/admin/order.php';
 require_once 'includes/admin/product.php';
 require_once 'includes/helper/class-order-helper.php';
 require_once 'includes/helper/class-cart-helper.php';
+require_once 'controllers/payment.php';
+require_once 'controllers/checkout.php';
 
 class MobbexGateway
 {
     /** @var MobbexHelper */
     public static $helper;
+    
+    /** @var MobbexLogger */
+    public static $logger;
 
     /**
      * Errors Array
@@ -47,21 +53,22 @@ class MobbexGateway
 
     public function init()
     {
+        self::$helper = new \MobbexHelper();
+        self::$logger = new \MobbexLogger(self::$helper->settings);
+
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
         MobbexGateway::check_dependencies();
         MobbexGateway::check_upgrades();
 
-        if (count(MobbexGateway::$errors)) {
-
-            foreach (MobbexGateway::$errors as $error) {
-                MobbexGateway::notice('error', $error);
-            }
+        if (MobbexGateway::$errors) {
+            foreach (MobbexGateway::$errors as $error)
+                self::$logger->notice($error);
 
             return;
         }
 
-        self::$helper = new MobbexHelper();
+        self::check_warnings();
 
         // Init order and product admin settings
         Mbbx_Order_Admin::init();
@@ -71,11 +78,23 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
+        // Init controllers
+        new \Mobbex\Controller\Payment;
+        new \Mobbex\Controller\Checkout;
+
         if (self::$helper->settings['financial_info_active'] === 'yes')
             add_action('woocommerce_after_add_to_cart_form', [$this, 'display_finnacial_button']);
 
         if (self::$helper->settings['financial_widget_on_cart'] === 'yes')
             add_action('woocommerce_after_cart_totals', [$this, 'display_finnacial_button'], 1);
+
+        add_action('rest_api_init', function () {
+            register_rest_route('mobbex/v1', '/widget', [
+                'methods' => WP_REST_Server::CREATABLE,
+                'callback' => [$this, 'financial_widget_update'],
+                'permission_callback' => '__return_true',
+            ]);
+        });
 
         // Enqueue assets
         add_action('wp_enqueue_scripts', [$this, 'mobbex_assets_enqueue']);
@@ -87,19 +106,6 @@ class MobbexGateway
 
         // Validate Cart items
         add_filter('woocommerce_add_to_cart_validation', [$this, 'validate_cart_items'], 10, 2);
-
-        add_action('rest_api_init', function () {
-            register_rest_route('mobbex/v1', '/webhook', [
-                'methods' => WP_REST_Server::CREATABLE,
-                'callback' => [$this, 'mobbex_webhook_api'],
-                'permission_callback' => '__return_true',
-            ]);
-            register_rest_route('mobbex/v1', '/widget', [
-                'methods' => WP_REST_Server::CREATABLE,
-                'callback' => [$this, 'financial_widget_update'],
-                'permission_callback' => '__return_true',
-            ]);
-        });
 
         // Create financial widget shortcode
         add_shortcode('mobbex_button', [$this, 'shortcode_mobbex_button']);
@@ -116,20 +122,12 @@ class MobbexGateway
      */
     public static function check_dependencies()
     {
-        if (!class_exists('WooCommerce')) {
-            MobbexGateway::$errors[] = __('WooCommerce needs to be installed and activated.', 'mobbex-for-woocommerce');
-        }
-
-        if (!function_exists('WC')) {
-            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce to be activated', 'mobbex-for-woocommerce');
+        if (!class_exists('WooCommerce') || !function_exists('WC') || version_compare(defined('WC_VERSION') ? WC_VERSION : '', '2.6', '<')) {
+            MobbexGateway::$errors[] = __('WooCommerce version 2.6 or greater needs to be installed and activated.', 'mobbex-for-woocommerce');
         }
 
         if (!is_ssl()) {
             MobbexGateway::$errors[] = __('Your site needs to be served via HTTPS to comunicate securely with Mobbex.', 'mobbex-for-woocommerce');
-        }
-
-        if (version_compare(WC_VERSION, '2.6', '<')) {
-            MobbexGateway::$errors[] = __('Mobbex requires WooCommerce version 2.6 or greater', 'mobbex-for-woocommerce');
         }
 
         if (!function_exists('curl_init')) {
@@ -174,6 +172,28 @@ class MobbexGateway
         }
     }
 
+    /**
+     * Check and log minor problems of install.
+     */
+    public static function check_warnings()
+    {
+        // Check install directory
+        if (basename(__DIR__) == 'woocommerce-master')
+            self::$logger->notice(sprintf(
+                'El directorio de instalación es incorrecto (<code>%s</code>). Si descargó el zip directamente del repositorio, reinstale el plugin utilizando el archivo <code>%s</code> de <a href="%s">%3$s</a>',
+                basename(__DIR__),
+                'wc-mobbex.x.y.z.zip',
+                'https://github.com/mobbexco/woocommerce/releases/latest'
+            ));
+
+        // Check if credentials are configured
+        if (self::$helper->settings['enabled'] == 'yes' && (!self::$helper->settings['api-key'] || !self::$helper->settings['access-token']))
+            self::$logger->notice(sprintf(
+                'Debe especificar el API Key y Access Token en la <a href="%s">configuración</a>.',
+                admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex')
+            ));
+    }
+
     public function add_action_links($links)
     {
         $plugin_links = [
@@ -209,23 +229,6 @@ class MobbexGateway
         return $links;
     }
 
-    public function mobbex_webhook_api($request)
-    {
-        try {
-            mobbex_debug("REST API > Request", $request->get_params());
-
-            $mobbexGateway = WC()->payment_gateways->payment_gateways()[MOBBEX_WC_GATEWAY_ID];
-
-            return $mobbexGateway->mobbex_webhook_api($request);
-        } catch (Exception $e) {
-            mobbex_debug("REST API > Error", $e);
-
-            return [
-                "result" => false,
-            ];
-        }
-    }
-
     public static function load_textdomain()
     {
         load_plugin_textdomain('mobbex-for-woocommerce', false, dirname(plugin_basename(__FILE__)) . '/languages/');
@@ -257,28 +260,6 @@ class MobbexGateway
         });
     }
 
-    public static function notice($type, $msg)
-    {
-
-        add_action('admin_notices', function () use ($type, $msg) {
-            $class = esc_attr("notice notice-$type");
-            $msg = esc_html($msg);
-
-            ob_start();
-
-?>
-
-            <div class="<?= $class ?>">
-                <h2>Mobbex for Woocommerce</h2>
-                <p><?= $msg ?></p>
-            </div>
-
-<?php
-
-            echo ob_get_clean();
-        });
-    }
-
     public function mobbex_assets_enqueue()
     {
         global $post;
@@ -287,10 +268,10 @@ class MobbexGateway
 
         // Only if directory url looks good
         if (empty($dir_url) || substr($dir_url, -1) != '/')
-            return;
+            return self::$logger->debug('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
 
         // Product page
-        if (is_product() || has_shortcode($post->post_content, 'mobbex_button')) {
+        if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
             wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
@@ -301,7 +282,7 @@ class MobbexGateway
         }
 
         // Checkout page
-        if (is_checkout() && !is_order_received_page() && !is_cart() && self::$helper->isReady()) {
+        if (is_checkout()) {
             // Exclude scripts from cache plugins minification
             !defined('DONOTCACHEPAGE') && define('DONOTCACHEPAGE', true);
             !defined('DONOTMINIFY') && define('DONOTMINIFY', true);
@@ -529,3 +510,8 @@ function create_mobbex_transaction_table()
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
 register_activation_hook(__FILE__, 'create_mobbex_transaction_table');
+
+// Remove mbbx entity saved data on uninstall
+register_deactivation_hook(__FILE__, function() {
+    update_option('mbbx_entity', '');
+});
