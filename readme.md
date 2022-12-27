@@ -47,6 +47,12 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.11.0 :: 2022-12-27
+- Re-add finnacial cost/discount on every parent webhook
+- Enable webhook debugging with XDebug by option
+- Add the option to set the 'timeout' node in the checkout body
+- Improve dependencies error showing
+
 ## 3.10.0 :: 2022-12-02
 - Force addresses street type to string to prevent errors
 - Fix order total updating on processing mail view
