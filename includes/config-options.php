@@ -134,7 +134,7 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'mobbex_theme' => [
+    'visual_theme' => [
         'title'       => __('Visual Theme', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your Checkout Theme from here.', 'mobbex-for-woocommerce'),
         'type'        => 'select',

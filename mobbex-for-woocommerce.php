@@ -372,7 +372,7 @@ class MobbexGateway
             'sources' => self::$helper->get_sources($price, self::$helper->get_installments($products_ids)),
             'style'   => [
                 'show_button'   => isset($params['show_button']) ? $params['show_button'] : true,
-                'theme'         => self::$helper->mobbex_theme,
+                'theme'         => self::$helper->visual_theme,
                 'custom_styles' => self::$helper->financial_widget_styles,
                 'text'          => self::$helper->financial_widget_button_text,
                 'logo'          => self::$helper->financial_widget_button_logo

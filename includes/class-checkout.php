@@ -74,7 +74,7 @@ class MobbexCheckout
                     'embed'    => $this->settings['button'] == 'yes',
                     'domain'   => str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
                     'theme'    => [
-                        'type'       => $this->settings['checkout_theme'],
+                        'type'       => $this->settings['visual_theme'],
                         'background' => $this->settings['checkout_background_color'],
                         'header'     => [
                             'name' => $this->settings['checkout_title'] ?: get_bloginfo('name'),
