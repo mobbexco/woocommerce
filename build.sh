@@ -3,8 +3,8 @@
 VER="3.11.0"
 
 # Copy files to temp dir
-if robocopy > /dev/null; then
-    robocopy . woocommerce-mobbex /MIR /XD .git .vscode woocommerce-mobbex /XF .gitignore build.sh readme.md *.zip
+if type robocopy > /dev/null; then
+    robocopy . woocommerce-mobbex -MIR -XD .git .vscode woocommerce-mobbex -XF .gitignore build.sh readme.md *.zip
 elif type rsync > /dev/null; then
     rsync -r --exclude={'.git','.vscode','woocommerce-mobbex','.gitignore','build.sh','readme.md','*.zip'} . ./woocommerce-mobbex
 fi
