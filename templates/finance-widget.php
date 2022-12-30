@@ -46,14 +46,20 @@
     </div>
 </div>
 <?php if ($data['style']['show_button']) : ?>
-    <button id="mbbxProductBtn" class="button alt" style="
-    <?= 
-    ($data['style']['button_color']      ? 'background-color: ' . $data['style']['button_color'] . ';' : '') .
-    ($data['style']['button_font_color'] ? 'color: ' . $data['style']['button_font_color'] . ';' : '') .
-    ($data['style']['button_font_size']  ? 'font-size: ' . $data['style']['button_font_size'] . ';' : '') .
-    ($data['style']['button_padding']    ? 'padding: ' . $data['style']['button_padding'] . ';' : '')
-    ?>
-    ">
-    Ver Financiación
+    <button id="mbbxProductBtn" class="button alt">
+    <?php if($data['style']['logo']): ?>
+    <img src="<?=$data['style']['logo']?>" alt="" width="40" height="40" style="margin-right: 15px; border-radius: 40px;">
+    <?php endif; ?>
+    <?=$data['style']['text']?>
     </button>
 <?php endif; ?>
+
+<style>
+    /* Custom Styles */
+    <?= $data['style']['custom_styles'] ?>
+
+    #mbbxProductBtn {
+        display: flex;
+        align-items: center;
+    }
+</style>

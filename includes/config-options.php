@@ -134,8 +134,8 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'checkout_theme' => [
-        'title'       => __('Checkout Theme', 'mobbex-for-woocommerce'),
+    'visual_theme' => [
+        'title'       => __('Visual Theme', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your Checkout Theme from here.', 'mobbex-for-woocommerce'),
         'type'        => 'select',
         'options'     => [
@@ -186,47 +186,49 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'financial_widget_theme' => [
-        'title'       => __('Financial Widget Theme', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your Financial Widget Theme from here.', 'mobbex-for-woocommerce'),
-        'type'        => 'select',
-        'options'     => [
-            'light' => __('Light Theme', 'mobbex-for-woocommerce'),
-            'dark'  => __('Dark Theme', 'mobbex-for-woocommerce'),
-        ],
-        'default'     => 'light',
+    'financial_widget_button_text' => [
+        'title'       => __('Financial Widget Button text', 'mobbex-for-woocommerce'),
+        'description' => __('You can customize your financial widget button text from here.', 'mobbex-for-woocommerce'),
+        'type'        => 'text',
+        'default'     => 'Ver financiación',
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'financial_widget_button_color' => [
-        'title'       => __('Financial Widget Button Color', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your financial widget button color from here.', 'mobbex-for-woocommerce'),
+    'financial_widget_button_logo' => [
+        'title'       => __('Financial Widget Button logo', 'mobbex-for-woocommerce'),
+        'description' => __('You can customize your financial widget button logo from here.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
-        'default'     => null,
-        'class'       => 'colorpick mbbx-into-appearance',
-    ],
-
-    'financial_widget_button_font_color' => [
-        'title'       => __('Financial Widget Button Font Color', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your financial widget button font color from here.', 'mobbex-for-woocommerce'),
-        'type'        => 'text',
-        'default'     => null,
-        'class'       => 'colorpick mbbx-into-appearance',
-    ],
-
-    'financial_widget_button_font_size' => [
-        'title'       => __('Financial Widget Button Font Size', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your financial widget button font size from here.', 'mobbex-for-woocommerce'),
-        'type'        => 'text',
-        'default'     => null,
+        'default'     => 'https://res.mobbex.com/images/sources/mobbex.png',
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'financial_widget_button_padding' => [
-        'title'       => __('Financial Widget Button Padding', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your financial widget button padding from here.', 'mobbex-for-woocommerce'),
-        'type'        => 'text',
-        'default'     => null,
+    'financial_widget_styles' => [
+        'title'       => __('Financial Widget Button Styles', 'mobbex-for-woocommerce'),
+        'description' => __('You can customize your financial widget button styles from here.', 'mobbex-for-woocommerce'),
+        'type'        => 'textarea',
+        'default'     => '
+/* Modifica los valores para cambiar el estilo deseado. */
+#mbbxProductBtn {
+width: fit-content;
+min-height: 40px;
+border-radius: 6px;
+padding: 8px 18px; /* up/down, left/right*/
+font-size: 16px;
+color: #6f00ff; 
+background-color: #ffffff;
+border: 1.5px solid #6f00ff; /* Grosor de linea, estilo de linea, color. */
+/*box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, .2);*/
+}
+
+/* Hover Options */
+#mbbxProductBtn:hover {
+color: #ffffff;
+background-color: #6f00ff;
+}
+
+/* Los colores pueden ser hexadecimales o rgb */
+/* Para que los estilos funcionen deben respetar la sintaxys de CSS.*/
+        ',
         'class'       => 'mbbx-into-appearance',
     ],
 
