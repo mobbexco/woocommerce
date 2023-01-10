@@ -289,6 +289,14 @@ background-color: #6f00ff;
         'class'       => 'mbbx-into-advanced',
     ],
 
+    'site_id' => [
+        'title'       => __('Site ID', 'mobbex-for-woocommerce'),
+        'description' => __('You can customize your Site ID from here. This field is optional and must be used only if was specified by the main seller.', 'mobbex-for-woocommerce'),
+        'type'        => 'text',
+        'default'     => '',
+        'class'       => 'mbbx-into-advanced',
+    ],
+
     'debug_mode' => [
         'title'   => __('Modo Debug', 'mobbex-for-woocommerce'),
         'label'   => __('Activar Modo Debug.', 'mobbex-for-woocommerce'),
