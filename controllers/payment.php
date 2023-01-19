@@ -54,7 +54,7 @@ final class Payment
             // Redirect
             $redirect = $order->get_checkout_order_received_url();
         } else {
-            return $this->_redirect_to_cart_with_error('Transacción fallida. Reintente con otro método de pago.');
+            $this->helper->settings['redirection_endpoint'] ? $this->_redirect_to_config_endpoint('Transacción fallida. Redirigido a ruta configurada.', $this->helper->settings['redirection_endpoint']) :  $this->_redirect_to_cart_with_error('Transacción fallida. Reintente con otro método de pago.');
         }
 
         WC()->session->set('order_id', null);
@@ -69,6 +69,19 @@ final class Payment
         wp_redirect(wc_get_cart_url());
 
         return array('result' => 'error', 'redirect' => wc_get_cart_url());
+    }
+
+    /**
+     * Redirects to the route set in advanced settings
+     * 
+     * @param string $error_msg
+     * @param string $redirection_endpoint
+     * @return string
+     */
+    private function _redirect_to_config_endpoint($error_msg, $redirection_endpoint)
+    {
+        wc_add_notice($error_msg, 'error');
+        return wp_redirect( home_url('/'. $redirection_endpoint));
     }
 
     /**
