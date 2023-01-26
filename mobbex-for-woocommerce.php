@@ -268,7 +268,7 @@ class MobbexGateway
 
         // Only if directory url looks good
         if (empty($dir_url) || substr($dir_url, -1) != '/')
-            return self::$logger->debug('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
+            return self::$logger->debug(is_checkout() || is_product() ? 'error' : 'debug', 'mobbex-for-woocommerce > mobbex_assets_enqueue | Mobbex Enqueue Error: Invalid directory URL', ['url' => $dir_url]);
 
         // Product page
         if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
