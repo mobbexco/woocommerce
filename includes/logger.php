@@ -18,21 +18,28 @@ class MobbexLogger
     /**
      * Log a message to Simple History dashboard.
      * 
-     * @param string $message Log message.
-     * @param mixed $data Any extra data.
-     * @param bool $force True to force log (bypass debug mode option).
+     * Mode debug: Log data if debug mode is active
+     * Mode error: Always log data.
+     * Mode critical: Always log data & stop code execution.
+     * 
+     * @param string $mode debug | error | critical    
+     * @param string $message
+     * @param array $data
      */
-    public function debug($message = 'debug', $data = [], $force = false)
+    public function debug($mode, $message, $data = [])
     {
-        if (!$force && $this->settings['debug_mode'] != 'yes')
+        if ($mode === 'debug' && $this->settings['debug_mode'] != 'yes')
             return;
 
         apply_filters(
             'simple_history_log',
-            'Mobbex: ' . $message,
+            "Mobbex: " . $message,
             $data,
-            'debug'
+            $mode
         );
+
+        if ($mode === 'critical')
+            die;
     }
 
     /**

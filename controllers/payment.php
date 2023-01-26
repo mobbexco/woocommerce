@@ -80,14 +80,14 @@ final class Payment
     public function mobbex_webhook($request)
     {
         try {
-            $this->logger->debug("REST API > Request", $request->get_params());
+            $this->logger->debug('debug', "payment > mobbex_webhook | REST API > Request", $request->get_params());
             
             $requestData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? apply_filters('mobbex_order_webhook',  json_decode(file_get_contents('php://input'), true)) : apply_filters('mobbex_order_webhook', $request->get_params());
             $postData    = !empty($requestData['data']) ? $requestData['data'] : [];
             $id          = $request->get_param('mobbex_order_id');
             $token       = $request->get_param('mobbex_token');
 
-            $this->logger->debug('Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
+            $this->logger->debug('debug', 'payment > mobbex_webhook | Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
 
             //order webhook filter
             $webhookData = \MobbexHelper::format_webhook_data($id, $postData, $this->helper->multicard === 'yes', $this->helper->multivendor != 'no');
@@ -111,7 +111,7 @@ final class Payment
                 ],
             ];
         } catch (\Exception $e) {
-            $this->logger->debug("REST API > Error", $e->getMessage());
+            $this->logger->debug('error', "payment > mobbex_webhook | REST API > Error", $e->getMessage());
 
             return [
                 "result" => false,
@@ -133,10 +133,10 @@ final class Payment
         $status = $data['status_code'];
         $order  = wc_get_order($order_id);
 
-        $this->logger->debug('Mobbex Webhook: Processing data');
+        $this->logger->debug('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', ['order_id' => $order_id, 'data' => $data]);
 
         if (empty($status) || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
-            return $this->logger->debug('Mobbex Webhook: Invalid mobbex token or empty data');
+            return $this->logger->debug('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
 
         // Catch refunds webhooks
         if ($status == 602 || $status == 605)
