@@ -2,17 +2,17 @@
 
 class MobbexLogger
 {
-    /** Module configuration settings */
-    public $settings = [];
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public $config;
 
     /**
      * Logger constructor.
      * 
      * @param array $settings Module configuration values.
      */
-    public function __construct($settings)
+    public function __construct()
     {
-        $this->settings = $settings;
+        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
     }
 
     /**
@@ -24,7 +24,7 @@ class MobbexLogger
      */
     public function debug($message = 'debug', $data = [], $force = false)
     {
-        if (!$force && $this->settings['debug_mode'] != 'yes')
+        if (!$force && $this->config->debug_mode != 'yes')
             return;
 
         apply_filters(

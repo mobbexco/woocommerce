@@ -8,6 +8,9 @@ class MobbexOrderHelper
     /** @var WC_Order */
     public $order;
 
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public $config;
+
     /** @var MobbexHelper */
     public $helper;
 
@@ -37,6 +40,7 @@ class MobbexOrderHelper
     {
         $this->id     = is_int($order) ? $order : $order->get_id();
         $this->order  = is_int($order) ? wc_get_order($order) : $order;
+        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
         $this->helper = $helper ?: new MobbexHelper();
         $this->logger = new MobbexLogger($this->helper->settings);
         $this->db     = $GLOBALS['wpdb'];
@@ -56,7 +60,7 @@ class MobbexOrderHelper
         $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->helper->settings['access-token'];
 
         $api      = new MobbexApi($api_key, $access_token);
-        $checkout = new MobbexCheckout($this->helper->settings, $api);
+        $checkout = new MobbexCheckout($api);
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -106,8 +110,8 @@ class MobbexOrderHelper
                 $item->get_quantity(),
                 $item->get_name(),
                 $this->helper->get_product_image($item->get_product_id()),
-                $this->helper->get_product_entity($item->get_product_id()),
-                $this->helper->get_product_subscription($item->get_product_id())
+                $this->config->get_product_entity($item->get_product_id()),
+                $this->config->get_product_subscription($item->get_product_id())
             );
 
         foreach ($shipping_items as $item)
@@ -198,7 +202,7 @@ class MobbexOrderHelper
         $config_name = 'order_status_' . str_replace('-', '_', $status_name);
 
         // Try to get from config override or return directly
-        return isset($this->helper->settings[$config_name]) ? $this->helper->settings[$config_name] : "wc-$status_name";
+        return isset($this->config->$config_name) ? $this->config->$config_name : "wc-$status_name";
     }
 
     /**

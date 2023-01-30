@@ -16,12 +16,14 @@ return [
         'title'       => __('API Key', 'mobbex-for-woocommerce'),
         'description' => __('Your Mobbex API key.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
+        'default'     => '',
     ],
 
     'access-token' => [
         'title'       => __('Access Token', 'mobbex-for-woocommerce'),
         'description' => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
+        'default'     => '',
     ],
 
     'test_mode' => [
@@ -269,7 +271,7 @@ background-color: #6f00ff;
         'class'   => 'mbbx-into-advanced',
     ],
 
-    '2_step_processing_mail' => [
+    'two_step_processing_mail' => [
         'title'       => __('Mail de pedido procesado', 'mobbex-for-woocommerce'),
         'description' => __('Para uso de operatoria en 2 pasos', 'mobbex-for-woocommerce'),
         'type'        => 'select',

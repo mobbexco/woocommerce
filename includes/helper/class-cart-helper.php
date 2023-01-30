@@ -8,6 +8,9 @@ class MobbexCartHelper
     /** @var WC_Cart */
     public $cart;
 
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public $config;
+
     /** @var MobbexHelper */
     public $helper;
 
@@ -26,6 +29,7 @@ class MobbexCartHelper
     {
         $this->id     = $cart->get_cart_hash();
         $this->cart   = $cart;
+        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
         $this->helper = $helper ?: new MobbexHelper();
         $this->logger = new MobbexLogger($this->helper->settings);
     }
@@ -40,11 +44,11 @@ class MobbexCartHelper
         // Try to configure api with order store credentials
         $store = $this->get_store();
 
-        $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->helper->settings['api-key'];
-        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->helper->settings['access-token'];
+        $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->config->api_key;
+        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->config->access_token;
 
         $api      = new MobbexApi($api_key, $access_token);
-        $checkout = new MobbexCheckout($this->helper->settings, $api, 'mobbex_cart_checkout_custom_data');
+        $checkout = new MobbexCheckout($api, 'mobbex_cart_checkout_custom_data');
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -93,7 +97,7 @@ class MobbexCartHelper
                 $item['quantity'],
                 $item['data']->get_name(),
                 $this->helper->get_product_image($item['product_id']),
-                $this->helper->get_product_entity($item['product_id'])
+                $this->config->get_product_entity($item['product_id'])
             );
 
         $checkout->add_item($this->cart->get_shipping_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce'));
