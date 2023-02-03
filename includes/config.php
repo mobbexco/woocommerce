@@ -24,7 +24,7 @@ class Config
         //Create settings array
         foreach (include('config-options.php') as $key => $option) {
             if (isset($option['default']))
-            $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $option['default'];
+                $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $option['default'];
         }
 
         // The intent constant overwrite payment mode setting
@@ -60,11 +60,9 @@ class Config
      */
     public function get_catalog_settings($id, $field_name, $catalog_type = 'post')
     {
-        
-        if (strpos($field_name, '_plans')){
-            $method = "get_".$catalog_type."_meta";
-            return unserialize($method($id, $field_name, true)) ?: [];
-        }
+
+        if (strpos($field_name, '_plans'))
+        return get_metadata($catalog_type, $id, $field_name, true) ?: [];
 
         return get_metadata($catalog_type, $id, $field_name, true) ?: '';
     }
@@ -109,49 +107,23 @@ class Config
      * @param array $products
      * @return array $array
      */
-    public function get_product_plans($products)
+    public function get_catalog_plans($products, $catalog_type = 'post', $admin = false)
     {
+        $common_plans = $advanced_plans = [];
+
         foreach ($products as $id) {
             foreach (['common_plans', 'advanced_plans'] as $value) {
                 //Get product active plans
-                ${$value} = array_merge($this->get_catalog_settings($id, $value), ${$value});
+                ${$value} = array_merge($this->get_catalog_settings($id, $value, $catalog_type), ${$value});
                 //Get product category active plans
-                foreach (wc_get_product_term_ids($product_id, 'product_cat') as $categoryId)
-                    ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
-            }
-        }
-
-        return compact('common_plans', 'advanced_plans');
-    }
-
-    /**
-     * Method for compatibility with old plans saving method
-     * @param string $product_id
-     * @param array $plans
-     * @return array
-     */
-    public function get_old_plans($product_id, $plans)
-    {
-        $inactive_plans = [];
-
-        // Get inactive 'ahora' plans (previus save method)
-        foreach (['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'] as $plan) {
-            // Get from product
-            if (get_post_meta($product_id, $plan, true) === 'yes') {
-                $inactive_plans[] = $plan;
-                continue;
-            }
-
-            // Get from product categories
-            foreach (wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']) as $cat_id) {
-                if (get_term_meta($cat_id, $plan, true) === 'yes') {
-                    $inactive_plans[] = $plan;
-                    break;
+                if (!$admin) {
+                    foreach (wc_get_product_term_ids($product_id, 'product_cat') as $categoryId)
+                        ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
                 }
             }
         }
 
-        return array_merge($inactive_plans, $plans);
+        return compact('common_plans', 'advanced_plans');
     }
 
 }
