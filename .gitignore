@@ -12,3 +12,4 @@ wc-mobbex*.zip
 package.json
 package-lock.json
 node_modules
+/vendor/
