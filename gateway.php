@@ -9,6 +9,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         'refunds',
     );
 
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public $config;
+
     /** @var MobbexHelper */
     public $helper;
     
@@ -18,13 +21,14 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id     = MOBBEX_WC_GATEWAY_ID;
+        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
         $this->helper = new \MobbexHelper();
-        $this->logger = new \MobbexLogger($this->helper->settings);
+        $this->logger = new \MobbexLogger();
 
         // String variables. That's used on checkout view
         $this->icon        = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
-        $this->title       = $this->helper->settings['title'];
-        $this->description = $this->helper->settings['description'];
+        $this->title       = $this->config->title;
+        $this->description = $this->config->description;
 
         $this->method_title       = 'Mobbex';
         $this->method_description = __('Mobbex Payment Gateway redirects customers to Mobbex to enter their payment information.', 'mobbex-for-woocommerce');
@@ -35,7 +39,6 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // Always Required
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
-
     }
 
     /**
@@ -52,9 +55,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $saved = parent::process_admin_options();
 
         // Both fields cannot be filled at the same time
-        if ($this->get_option('own_dni') === 'yes' && $this->helper->settings['custom_dni'] != '') {
+        if ($this->get_option('own_dni') === 'yes' && $this->config->custom_dni != '')
             $this->update_option('custom_dni');
-        }
 
         return $saved;
     }
@@ -90,7 +92,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'result'     => 'success',
             'data'       => $checkout_data,
             'return_url' => $this->helper->get_api_endpoint('mobbex_return_url', $order_id),
-            'redirect'   => $this->helper->settings['button'] == 'yes' ? false : $checkout_data['url'],
+            'redirect'   => $this->config->button == 'yes' ? false : $checkout_data['url'],
         ];
 
         // Make sure to use json in pay for order page

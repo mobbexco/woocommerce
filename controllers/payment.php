@@ -4,6 +4,9 @@ namespace Mobbex\Controller;
 
 final class Payment
 {
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public $config;
+    
     /** @var \MobbexLogger */
     public $logger;
 
@@ -12,8 +15,9 @@ final class Payment
 
     public function __construct()
     {
+        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
         $this->helper = new \MobbexHelper();
-        $this->logger = new \MobbexLogger($this->helper->settings);
+        $this->logger = new \MobbexLogger();
 
         if ($this->helper->isReady())
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
@@ -90,7 +94,7 @@ final class Payment
             $this->logger->debug('Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
 
             //order webhook filter
-            $webhookData = \MobbexHelper::format_webhook_data($id, $postData, $this->helper->multicard === 'yes', $this->helper->multivendor != 'no');
+            $webhookData = \MobbexHelper::format_webhook_data($id, $postData);
             
             // Save transaction
             global $wpdb;

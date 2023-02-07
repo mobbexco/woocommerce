@@ -4,6 +4,9 @@ namespace Mobbex\Controller;
 
 final class Checkout
 {
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public $config;
+
     /** @var \MobbexHelper */
     public $helper;
 
@@ -12,13 +15,14 @@ final class Checkout
 
     public function __construct()
     {
+        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
         $this->helper = new \MobbexHelper();
-        $this->logger = new \MobbexLogger($this->helper->settings);
+        $this->logger = new \MobbexLogger();
 
         // Only if the plugin is enabled
         if ($this->helper->isReady()) {
             // Add additional checkout fields
-            if ($this->helper->settings['own_dni'] == 'yes')
+            if ($this->config->own_dni == 'yes')
                 add_filter('woocommerce_billing_fields', [$this, 'add_checkout_fields']);
 
             // Display fields on admin panel and try to save it
@@ -74,8 +78,8 @@ final class Checkout
     public function validate_checkout_fields()
     {
         // Get dni field key
-        $own_dni = $this->helper->settings['own_dni'] == 'yes' ? 'billing_dni' : false;
-        $dni     = $this->helper->settings['custom_dni'] ? $this->helper->settings['custom_dni'] : $own_dni;
+        $own_dni = $this->config->own_dni == 'yes' ? 'billing_dni' : false;
+        $dni     = $this->config->custom_dni ? $this->config->custom_dni : $own_dni;
 
         // Exit if field is not configured
         if (!$dni)
@@ -98,8 +102,8 @@ final class Checkout
         $customer_id = wc_get_order($order_id)->get_customer_id();
 
         // Get dni field key
-        $own_dni = $this->helper->settings['own_dni'] == 'yes' ? 'billing_dni' : false;
-        $dni     = $this->helper->settings['custom_dni'] ? $this->helper->settings['custom_dni'] : $own_dni;
+        $own_dni = $this->config->own_dni == 'yes' ? 'billing_dni' : false;
+        $dni     = $this->config->custom_dni ? $this->config->custom_dni : $own_dni;
 
         // Exit if field is not configured
         if (!$dni)

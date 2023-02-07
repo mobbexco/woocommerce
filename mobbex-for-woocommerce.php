@@ -10,6 +10,7 @@ Copyright: 2020 mobbex.com
  */
 
 require_once 'includes/utils.php';
+require_once 'includes/config.php';
 require_once 'includes/helper.php';
 require_once 'includes/logger.php';
 require_once 'includes/class-api.php';
@@ -24,6 +25,9 @@ require_once 'controllers/checkout.php';
 
 class MobbexGateway
 {
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public static $config;
+
     /** @var MobbexHelper */
     public static $helper;
     
@@ -53,8 +57,9 @@ class MobbexGateway
 
     public function init()
     {
+        self::$config = new \Mobbex\WP\Checkout\Includes\Config();
         self::$helper = new \MobbexHelper();
-        self::$logger = new \MobbexLogger(self::$helper->settings);
+        self::$logger = new \MobbexLogger();
 
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
@@ -82,10 +87,10 @@ class MobbexGateway
         new \Mobbex\Controller\Payment;
         new \Mobbex\Controller\Checkout;
 
-        if (self::$helper->settings['financial_info_active'] === 'yes')
+        if (self::$config->financial_info_active === 'yes')
             add_action('woocommerce_after_add_to_cart_form', [$this, 'display_finnacial_button']);
 
-        if (self::$helper->settings['financial_widget_on_cart'] === 'yes')
+        if (self::$config->financial_widget_on_cart === 'yes')
             add_action('woocommerce_after_cart_totals', [$this, 'display_finnacial_button'], 1);
 
         add_action('rest_api_init', function () {
@@ -187,7 +192,7 @@ class MobbexGateway
             ));
 
         // Check if credentials are configured
-        if (self::$helper->settings['enabled'] == 'yes' && (!self::$helper->settings['api-key'] || !self::$helper->settings['access-token']))
+        if (self::$config->enabled == 'yes' && (!self::$config->api_key || !self::$config->access_token))
             self::$logger->notice(sprintf(
                 'Debe especificar el API Key y Access Token en la <a href="%s">configuración</a>.',
                 admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex')
@@ -372,10 +377,10 @@ class MobbexGateway
             'sources' => self::$helper->get_sources($price, self::$helper->get_installments($products_ids)),
             'style'   => [
                 'show_button'   => isset($params['show_button']) ? $params['show_button'] : true,
-                'theme'         => self::$helper->visual_theme,
-                'custom_styles' => self::$helper->financial_widget_styles,
-                'text'          => self::$helper->financial_widget_button_text,
-                'logo'          => self::$helper->financial_widget_button_logo
+                'theme'         => self::$config->visual_theme,
+                'custom_styles' => self::$config->financial_widget_styles,
+                'text'          => self::$config->financial_widget_button_text,
+                'logo'          => self::$config->financial_widget_button_logo
             ]
         ];
 
@@ -461,7 +466,7 @@ class MobbexGateway
      */
     public function load_payment_template($template, $template_name, $args)
     {
-        if (!self::$helper->isReady() || $template_name != 'checkout/payment-method.php' || $args['gateway']->id != 'mobbex' || self::$helper->settings['disable_template'] == 'yes')
+        if (!self::$helper->isReady() || $template_name != 'checkout/payment-method.php' || $args['gateway']->id != 'mobbex' || self::$config->disable_template == 'yes')
             return $template;
 
         return plugin_dir_path(__FILE__) . 'templates/payment-options.php';
