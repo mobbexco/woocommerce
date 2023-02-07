@@ -53,7 +53,6 @@ class MobbexCheckout
      */
     public function create()
     {
-        error_log('lleog: ' . "\n" . json_encode('aca', JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         $data = [
             'uri'    => 'checkout',
             'method' => 'POST',

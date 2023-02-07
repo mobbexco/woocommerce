@@ -70,7 +70,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
      */
     public function process_payment($order_id)
     {
-        $this->logger->debug('Creating payment', compact('order_id'));
+        $this->logger->log('Creating payment', compact('order_id'));
 
         if (!$this->helper->isReady())
             return ['result' => 'error'];
@@ -81,7 +81,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order_helper  = new MobbexOrderHelper($order);
         $checkout_data = $order_helper->create_checkout();
 
-        $this->logger->debug('Checkout response', $checkout_data);
+        $this->logger->log('Checkout response', $checkout_data);
 
         if (!$checkout_data)
             return ['result' => 'error'];

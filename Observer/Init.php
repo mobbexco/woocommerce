@@ -29,7 +29,7 @@ class Init
 
         // Only if directory url looks good
         if (empty($dir_url) || substr($dir_url, -1) != '/')
-            return $this->logger->debug('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
+            return $this->logger->log('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
 
         // Product page
         if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
