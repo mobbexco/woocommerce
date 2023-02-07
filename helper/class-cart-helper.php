@@ -8,30 +8,30 @@ class MobbexCartHelper
     /** @var WC_Cart */
     public $cart;
 
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
-    /** @var MobbexHelper */
+    /** @var \Mobbex\WP\Checkout\Models\Helper */
     public $helper;
 
 
-    /** @var MobbexLogger */
+    /** @var \Mobbex\WP\Checkout\Models\Logger */
     public $logger;
 
     /**
     * Constructor.
     * 
     * @param WC_Cart WooCommerce Cart instance.
-    * @param MobbexHelper Base plugin helper.
-    * @param MobbexLogger Base plugin debugger.
+    * @param \Mobbex\WP\Checkout\Models\Helper Base plugin helper.
+    * @param \Mobbex\WP\Checkout\Models\Logger Base plugin debugger.
     */
     public function __construct($cart, $helper = null)
     {
         $this->id     = $cart->get_cart_hash();
         $this->cart   = $cart;
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
-        $this->helper = $helper ?: new MobbexHelper();
-        $this->logger = new MobbexLogger($this->helper->settings);
+        $this->config = new \Mobbex\WP\Checkout\Models\Config();
+        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Models\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
     }
 
     /**

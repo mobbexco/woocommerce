@@ -1,7 +1,9 @@
 <?php
-require_once 'utils.php';
+namespace Mobbex\WP\Checkout\Models;
 
-class MobbexHelper
+require_once __DIR__.'/../utils/defines.php';
+
+class Helper
 {
     /**
      * All 'ahora' plans.
@@ -11,7 +13,7 @@ class MobbexHelper
     /** Module configuration settings */
     public $settings = [];
 
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var Config */
     public $config;
 
     /** @var MobbexApi */
@@ -22,8 +24,8 @@ class MobbexHelper
      */
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
-        $this->api    = new MobbexApi($this->config->api_key, $this->config->access_token);
+        $this->config = new Config();
+        $this->api    = new \MobbexApi($this->config->api_key, $this->config->access_token);
     }
 
     public function isReady()

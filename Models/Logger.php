@@ -1,8 +1,9 @@
 <?php
+namespace Mobbex\WP\Checkout\Models;
 
-class MobbexLogger
+class Logger
 {
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
     /**
@@ -12,7 +13,7 @@ class MobbexLogger
      */
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
+        $this->config = new Config();
     }
 
     /**

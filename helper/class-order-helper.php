@@ -8,13 +8,13 @@ class MobbexOrderHelper
     /** @var WC_Order */
     public $order;
 
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
-    /** @var MobbexHelper */
+    /** @var \Mobbex\WP\Checkout\Models\Helper */
     public $helper;
 
-    /** @var MobbexLogger */
+    /** @var \Mobbex\WP\Checkout\Models\Logger */
     public $logger;
 
     /** @var wpdb */
@@ -33,16 +33,16 @@ class MobbexOrderHelper
     * Constructor.
     * 
     * @param WC_Order|int WooCommerce order instance or its id.
-    * @param MobbexHelper Base plugin helper.
-    * @param MobbexLogger Base plugin debugger.
+    * @param \Mobbex\WP\Checkout\Models\Helper Base plugin helper.
+    * @param \Mobbex\WP\Checkout\Models\Logger Base plugin debugger.
     */
     public function __construct($order, $helper = null)
     {
         $this->id     = is_int($order) ? $order : $order->get_id();
         $this->order  = is_int($order) ? wc_get_order($order) : $order;
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
-        $this->helper = $helper ?: new MobbexHelper();
-        $this->logger = new MobbexLogger($this->helper->settings);
+        $this->config = new \Mobbex\WP\Checkout\Models\Config();
+        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Models\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
         $this->db     = $GLOBALS['wpdb'];
     }
 
@@ -56,8 +56,8 @@ class MobbexOrderHelper
         // Try to configure api with order store credentials
         $store = $this->get_store();
 
-        $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->helper->settings['api-key'];
-        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->helper->settings['access-token'];
+        $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->config->api_key;
+        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->config->access_token;
 
         $api      = new MobbexApi($api_key, $access_token);
         $checkout = new MobbexCheckout($api);

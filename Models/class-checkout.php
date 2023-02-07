@@ -23,7 +23,7 @@ class MobbexCheckout
     /** Module configured options */
     public $settings = [];
 
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
     /** @var MobbexApi */
@@ -41,7 +41,7 @@ class MobbexCheckout
      */
     public function __construct($api, $filter = 'mobbex_checkout_custom_data')
     {
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config;
+        $this->config = new \Mobbex\WP\Checkout\Models\Config;
         $this->api    = $api;
         $this->filter = $filter;
     }
@@ -53,6 +53,7 @@ class MobbexCheckout
      */
     public function create()
     {
+        error_log('lleog: ' . "\n" . json_encode('aca', JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         $data = [
             'uri'    => 'checkout',
             'method' => 'POST',
@@ -60,7 +61,7 @@ class MobbexCheckout
                 'total'        => $this->total,
                 'webhook'      => $this->endpoints['webhook'],
                 'return_url'   => $this->endpoints['return'],
-                'reference'    => $this->reference,
+                'reference'    => $this->reference.'dsjgsgnjsdngjsn',
                 'description'  => 'Pedido #' . $this->relation,
                 'test'         => $this->config->test_mode == 'yes',
                 'multicard'    => $this->config->multicard == 'yes',

@@ -9,30 +9,26 @@ Author URI: https://mobbex.com/
 Copyright: 2020 mobbex.com
  */
 
-require_once 'includes/utils.php';
-require_once 'includes/config.php';
-require_once 'includes/helper.php';
-require_once 'includes/logger.php';
-require_once 'includes/class-api.php';
-require_once 'includes/class-checkout.php';
-require_once 'includes/class-exception.php';
-require_once 'includes/admin/order.php';
-require_once 'includes/admin/product.php';
-require_once 'includes/helper/class-order-helper.php';
-require_once 'includes/helper/class-cart-helper.php';
-require_once 'controllers/payment.php';
-require_once 'controllers/checkout.php';
+require_once 'vendor/autoload.php';
+require_once 'utils/defines.php';
+require_once 'Models/class-api.php';
+require_once 'Models/class-checkout.php';
+require_once 'helper/class-order-helper.php';
+require_once 'helper/class-cart-helper.php';
 
 class MobbexGateway
 {
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public static $config;
 
-    /** @var MobbexHelper */
+    /** @var \Mobbex\WP\Checkout\Models\Helper */
     public static $helper;
-    
-    /** @var MobbexLogger */
+
+    /** @var \Mobbex\WP\Checkout\Models\Logger */
     public static $logger;
+
+    /** @var \Mobbex\WP\Checkout\Observer\Registrar */
+    public static $registrar;
 
     /**
      * Errors Array
@@ -57,9 +53,11 @@ class MobbexGateway
 
     public function init()
     {
-        self::$config = new \Mobbex\WP\Checkout\Includes\Config();
-        self::$helper = new \MobbexHelper();
-        self::$logger = new \MobbexLogger();
+        self::$config    = new \Mobbex\WP\Checkout\Models\Config();
+        self::$helper    = new \Mobbex\WP\Checkout\Models\Helper();
+        self::$logger    = new \Mobbex\WP\Checkout\Models\Logger();
+        self::$registrar = new \Mobbex\WP\Checkout\Models\Registrar();
+
 
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
@@ -84,8 +82,7 @@ class MobbexGateway
         MobbexGateway::add_gateway();
 
         // Init controllers
-        new \Mobbex\Controller\Payment;
-        new \Mobbex\Controller\Checkout;
+        new \Mobbex\WP\Checkout\Controllers\Payment;
 
         if (self::$config->financial_info_active === 'yes')
             add_action('woocommerce_after_add_to_cart_form', [$this, 'display_finnacial_button']);

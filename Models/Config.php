@@ -1,6 +1,6 @@
 <?php 
 
-namespace Mobbex\WP\Checkout\Includes;
+namespace Mobbex\WP\Checkout\Models;
 
 class Config 
 {
@@ -22,7 +22,7 @@ class Config
         $saved_values = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', null);
 
         //Create settings array
-        foreach (include('config-options.php') as $key => $option) {
+        foreach (include(__DIR__.'/../utils/config-options.php') as $key => $option) {
             if (isset($option['default']))
             $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $option['default'];
         }
@@ -61,10 +61,8 @@ class Config
     public function get_catalog_settings($id, $field_name, $catalog_type = 'post')
     {
         
-        if (strpos($field_name, '_plans')){
-            $method = "get_".$catalog_type."_meta";
-            return unserialize($method($id, $field_name, true)) ?: [];
-        }
+        if (strpos($field_name, '_plans'))
+            return get_metadata($catalog_type, $id, $field_name, true) ?: [];
 
         return get_metadata($catalog_type, $id, $field_name, true) ?: '';
     }
@@ -103,55 +101,4 @@ class Config
         if ($this->get_catalog_settings($product_id, 'mbbx_enable_sus'))
             return $this->get_catalog_settings($product_id, 'mbbx_sus_uid');
     }
-
-    /**
-     * Get active plans for a given products.
-     * @param array $products
-     * @return array $array
-     */
-    public function get_product_plans($products)
-    {
-        foreach ($products as $id) {
-            foreach (['common_plans', 'advanced_plans'] as $value) {
-                //Get product active plans
-                ${$value} = array_merge($this->get_catalog_settings($id, $value), ${$value});
-                //Get product category active plans
-                foreach (wc_get_product_term_ids($product_id, 'product_cat') as $categoryId)
-                    ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
-            }
-        }
-
-        return compact('common_plans', 'advanced_plans');
-    }
-
-    /**
-     * Method for compatibility with old plans saving method
-     * @param string $product_id
-     * @param array $plans
-     * @return array
-     */
-    public function get_old_plans($product_id, $plans)
-    {
-        $inactive_plans = [];
-
-        // Get inactive 'ahora' plans (previus save method)
-        foreach (['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'] as $plan) {
-            // Get from product
-            if (get_post_meta($product_id, $plan, true) === 'yes') {
-                $inactive_plans[] = $plan;
-                continue;
-            }
-
-            // Get from product categories
-            foreach (wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']) as $cat_id) {
-                if (get_term_meta($cat_id, $plan, true) === 'yes') {
-                    $inactive_plans[] = $plan;
-                    break;
-                }
-            }
-        }
-
-        return array_merge($inactive_plans, $plans);
-    }
-
 }
