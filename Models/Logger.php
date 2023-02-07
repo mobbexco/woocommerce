@@ -23,7 +23,7 @@ class Logger
      * @param mixed $data Any extra data.
      * @param bool $force True to force log (bypass debug mode option).
      */
-    public function debug($message = 'debug', $data = [], $force = false)
+    public function log($message = 'debug', $data = [], $force = false)
     {
         if (!$force && $this->config->debug_mode != 'yes')
             return;
