@@ -56,8 +56,8 @@ class MobbexOrderHelper
         // Try to configure api with order store credentials
         $store = $this->get_store();
 
-        $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->helper->settings['api-key'];
-        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->helper->settings['access-token'];
+        $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->config->api_key;
+        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->config->access_token;
 
         $api      = new MobbexApi($api_key, $access_token);
         $checkout = new MobbexCheckout($api);
