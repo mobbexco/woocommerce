@@ -24,7 +24,7 @@ class Config
         //Create settings array
         foreach (include(__DIR__.'/../utils/config-options.php') as $key => $option) {
             if (isset($option['default']))
-            $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $option['default'];
+                $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $option['default'];
         }
 
         // The intent constant overwrite payment mode setting
@@ -60,7 +60,6 @@ class Config
      */
     public function get_catalog_settings($id, $field_name, $catalog_type = 'post')
     {
-        
         if (strpos($field_name, '_plans'))
             return get_metadata($catalog_type, $id, $field_name, true) ?: [];
 
@@ -116,7 +115,8 @@ class Config
                 //Get product active plans
                 ${$value} = array_merge($this->get_catalog_settings($id, $value, $catalog_type), ${$value});
                 //Get product category active plans
-                if(!$admin){
+
+                if (!$admin) {
                     foreach (wc_get_product_term_ids($product_id, 'product_cat') as $categoryId)
                         ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
                 }
