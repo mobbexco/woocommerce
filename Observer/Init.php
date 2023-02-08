@@ -29,7 +29,7 @@ class Init
 
         // Only if directory url looks good
         if (empty($dir_url) || substr($dir_url, -1) != '/')
-            return $this->logger->debug('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
+            return $this->logger->log('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
 
         // Product page
         if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
@@ -161,8 +161,8 @@ class Init
      */
     public function load_payment_options($options)
     {
-        if (is_cart() || is_order_received_page() || !is_checkout() || $this->helper->isReady() || empty($options['mobbex']))
-        return $options;
+        if (is_cart() || is_order_received_page() || !is_checkout() || !$this->helper->isReady() || empty($options['mobbex']))
+            return $options;
 
         // Get checkout from context loaded object
         $response = $this->helper->get_context_checkout();
@@ -183,7 +183,7 @@ class Init
      */
     public function load_payment_template($template, $template_name, $args)
     {
-        if ($this->helper->isReady() || $template_name != 'checkout/payment-method.php' || $args['gateway']->id != 'mobbex' || $this->config->disable_template == 'yes')
+        if (!$this->helper->isReady() || $template_name != 'checkout/payment-method.php' || $args['gateway']->id != 'mobbex' || $this->config->disable_template == 'yes')
             return $template;
 
         return __DIR__ . '/../templates/payment-options.php';

@@ -11,10 +11,6 @@ Copyright: 2020 mobbex.com
 
 require_once 'vendor/autoload.php';
 require_once 'utils/defines.php';
-require_once 'Models/class-api.php';
-require_once 'Models/class-checkout.php';
-require_once 'helper/class-order-helper.php';
-require_once 'helper/class-cart-helper.php';
 
 class MobbexGateway
 {
@@ -62,7 +58,6 @@ class MobbexGateway
         self::$logger    = new \Mobbex\WP\Checkout\Models\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Models\Registrar();
 
-
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
         MobbexGateway::check_dependencies();
@@ -103,7 +98,7 @@ class MobbexGateway
                 'Mobbex for Woocommerce' => MOBBEX_VERSION,
                 'sdk'                    => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
             ],
-            self::$config->settings,
+            self::$config->formated_settings(),
             [self::$registrar, 'execut_hook'],
             [self::$logger, 'log']
         );

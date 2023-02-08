@@ -10,9 +10,6 @@ class Helper
      */
     public static $ahora = ['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'];
 
-    /** Module configuration settings */
-    public $settings = [];
-
     /** @var Config */
     public $config;
 
@@ -25,7 +22,6 @@ class Helper
     public function __construct()
     {
         $this->config = new Config();
-        $this->api    = new \MobbexApi($this->config->api_key, $this->config->access_token);
     }
 
     public function isReady()
@@ -33,144 +29,6 @@ class Helper
         return ($this->config->enabled === 'yes' && !empty($this->config->api_key) && !empty($this->config->access_token));
     }
 
-    /**
-     * Returns a query param with the installments of the product.
-     * @param int $total
-     * @param array $installments
-     * @return string $query
-     */
-    public function getInstallmentsQuery($total, $installments = [])
-    {
-        // Build query params and replace special chars
-        return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', http_build_query(compact('total', 'installments')));
-    }
-
-    /**
-     * Get sources from Mobbex.
-     * 
-     * @param int|float|null $total Amount to calculate payment methods.
-     * @param array|null $installments Use +uid:<uid> to include and -<reference> to exclude.
-     * 
-     * @return array 
-     */
-    public function get_sources($total = null, $installments = [])
-    {
-        $query = $this->getInstallmentsQuery($total, $installments);
-
-        return $this->api->request([
-            'method' => 'GET',
-            'uri'    => "sources" . ($query ? "?$query" : ''),
-        ]) ?: [];
-    }
-
-    /**
-     * Get sources with advanced rule plans from mobbex.
-     * 
-     * @param string $rule
-     * 
-     * @return array
-     */
-    public function get_sources_advanced($rule = 'externalMatch')
-    {
-        return $this->api->request([
-            'method' => 'GET',
-            'uri'    => "sources/rules/$rule/installments",
-        ]) ?: [];
-    }
-
-    /**
-     * Retrieve installments checked on plans filter of each product.
-     * 
-     * @param array $products Array of products or their ids.
-     * 
-     * @return array
-     */
-    public function get_installments($products)
-    {
-        $installments = $inactive_plans = $active_plans = [];
-
-        // Get plans from products
-        foreach ($products as $product) {
-            $id = $product instanceOf WC_Product ? $product->get_id() : $product;
-
-            $inactive_plans = array_merge($inactive_plans, self::get_inactive_plans($id));
-            $active_plans   = array_merge($active_plans, self::get_active_plans($id));
-        }
-
-        // Add inactive (common) plans to installments
-        foreach ($inactive_plans as $plan)
-            $installments[] = '-' . $plan;
-
-        // Add active (advanced) plans to installments (only if the plan is active on all products)
-        foreach (array_count_values($active_plans) as $plan => $reps) {
-            if ($reps == count($products))
-                $installments[] = '+uid:' . $plan;
-        }
-
-        // Remove duplicated plans and return
-        return array_values(array_unique($installments));
-    }
-
-    /**
-     * Retrive inactive common plans from a product and its categories.
-     * 
-     * @param int $product_id
-     * 
-     * @return array
-     */
-    public static function get_inactive_plans($product_id)
-    {
-        $categories     = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
-        $inactive_plans = [];
-
-        // Get inactive 'ahora' plans (previus save method)
-        foreach (self::$ahora as $plan) {
-            // Get from product
-            if (get_post_meta($product_id, $plan, true) === 'yes') {
-                $inactive_plans[] = $plan;
-                continue;
-            }
-
-            // Get from product categories
-            foreach ($categories as $cat_id) {
-                if (get_term_meta($cat_id, $plan, true) === 'yes') {
-                    $inactive_plans[] = $plan;
-                    break;
-                }
-            }
-        }
-
-        // Get plans from product and product categories
-        $inactive_plans = array_merge($inactive_plans, self::unserialize_array(get_post_meta($product_id, 'common_plans', true)));
-
-        foreach ($categories as $cat_id)
-            $inactive_plans = array_merge($inactive_plans, self::unserialize_array(get_term_meta($cat_id, 'common_plans', true)));
-
-        // Remove duplicated and return
-        return array_unique($inactive_plans);
-    }
-
-    /**
-     * Retrive active advanced plans from a product and its categories.
-     * 
-     * @param int $product_id
-     * 
-     * @return array
-     */
-    public static function get_active_plans($product_id)
-    {
-        $categories     = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
-        $active_plans = [];
-
-        // Get plans from product and product categories
-        $active_plans = array_merge($active_plans, self::unserialize_array(get_post_meta($product_id, 'advanced_plans', true)));
-
-        foreach ($categories as $cat_id)
-            $active_plans = array_merge($active_plans, self::unserialize_array(get_term_meta($cat_id, 'advanced_plans', true)));
-
-        // Remove duplicated and return
-        return array_unique($active_plans);
-    }
 
     /**
      * Get all product IDs from Order.
@@ -254,29 +112,13 @@ class Helper
             throw new Exception(__('Empty Payment UID or params', 'mobbex-for-woocommerce'));
 
         // Capture payment
-        return $this->api->request([
+        return \Mobbex\Api::request([
             'method' => 'POST',
             'uri'    => "operations/$payment_id/capture",
             'body'   => compact('total'),
         ]);
     }
-
-    /**
-     * Try unserialize a string forcing an array as return.
-     * 
-     * @param mixed $var
-     * 
-     * @return array
-     */
-    public static function unserialize_array($var)
-    {
-        if (is_string($var))
-            $var = unserialize($var);
-
-        return is_array($var) ? $var : [];
-    }
     
-
     /* WEBHOOK METHODS */
 
     /**
@@ -440,7 +282,7 @@ class Helper
         $order = wc_get_order(get_query_var('order-pay'));
         $cart  = WC()->cart;
 
-        $helper = $order ? new MobbexOrderHelper($order) : new MobbexCartHelper($cart);
+        $helper = $order ? new \Mobbex\WP\Checkout\Helper\OrderHelper($order) : new \Mobbex\WP\Checkout\Helper\CartHelper($cart);
 
         // If is pending order page create checkout from order and return
         if ($order)

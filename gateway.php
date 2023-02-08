@@ -70,7 +70,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
      */
     public function process_payment($order_id)
     {
-        $this->logger->debug('Creating payment', compact('order_id'));
+        $this->logger->log('Creating payment', compact('order_id'));
 
         if (!$this->helper->isReady())
             return ['result' => 'error'];
@@ -78,10 +78,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
 
         // Create checkout from order
-        $order_helper  = new MobbexOrderHelper($order);
+        $order_helper  = new \Mobbex\WP\Checkout\Helper\OrderHelper($order);
         $checkout_data = $order_helper->create_checkout();
 
-        $this->logger->debug('Checkout response', $checkout_data);
+        $this->logger->log('Checkout response', $checkout_data);
 
         if (!$checkout_data)
             return ['result' => 'error'];
@@ -106,7 +106,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         try {
             // Get parent and child transactions
-            $helper   = new \MobbexOrderHelper($order_id);
+            $helper   = new \Mobbex\WP\Checkout\Helper\OrderHelper($order_id);
             $parent   = $helper->get_parent_transaction();
             $children = $helper->get_approved_children();
 
