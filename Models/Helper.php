@@ -289,11 +289,12 @@ class Helper
      * @return array $data
      * 
      */
-    public static function format_webhook_data($order_id, $res)
+    public static function format_webhook_data($order_id, $res, $multicard = '', $multivendor = '')
     {
         $data = [
             'order_id'           => $order_id,
             'parent'             => isset($res['payment']['id']) ? (self::is_parent_webhook($res['payment']['id']) ? 'yes' : 'no') : null,
+            'childs'             => isset($res['childs']) ? json_encode($res['childs']) : '',
             'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
             'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
             'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
@@ -317,11 +318,10 @@ class Helper
             'total'              => isset($res['payment']['total']) ? $res['payment']['total'] : '',
             'currency'           => isset($res['checkout']['currency']) ? $res['checkout']['currency'] : '',
             'risk_analysis'      => isset($res['payment']['riskAnalysis']['level']) ? $res['payment']['riskAnalysis']['level'] : '',
-            'data'               => json_encode($res),
+            'data'               => isset($res) ? json_encode($res) : '',
             'created'            => isset($res['payment']['created']) ? $res['payment']['created'] : '',
             'updated'            => isset($res['payment']['updated']) ? $res['payment']['created'] : '',
         ];
-
         return $data;
     }
 
