@@ -440,7 +440,7 @@ class Helper
         $order = wc_get_order(get_query_var('order-pay'));
         $cart  = WC()->cart;
 
-        $helper = $order ? new MobbexOrderHelper($order) : new MobbexCartHelper($cart);
+        $helper = $order ? new \MobbexOrderHelper($order) : new \MobbexCartHelper($cart);
 
         // If is pending order page create checkout from order and return
         if ($order)

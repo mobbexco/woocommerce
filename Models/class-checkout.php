@@ -189,7 +189,7 @@ class MobbexCheckout
      */
     public function convert_country_code($code)
     {
-        $countries = include ('iso-3166.php') ?: [];
+        $countries = include (__DIR__.'../utils/iso-3166.php') ?: [];
 
         return isset($countries[$code]) ? $countries[$code] : null;
     }
