@@ -174,19 +174,21 @@ class Order
             'Status'         => 'status_message'
         ];
 
-        //Creating payment info panel 
+        //Create payment info panel 
         echo $this->create_panel($paymentInfo, $parent);
 
         echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Method') . "</b></h4></th>";
 
-        //Creating sources info panel
+        //Create sources info panel
         self::create_sources_panel($parent, $childs);
 
         echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Entities') . "</b></h4></th>";
 
-        //Creating entities info panel
+        //Create entities info panel
         self::create_entities_panel($parent, $childs);
 
+        //Create Coupon
+        self::create_coupon($parent);
 ?>
         <style>
             .mbbx-color-column {
@@ -244,17 +246,26 @@ class Order
             'Name' => 'entity_name',
             'UID'  => 'entity_uid'
         ];
-        if (isset($parent["operation_type"]) && $parent["operation_type"] === "payment.multiple-vendor") :
+        if (isset($parent["operation_type"]) && $parent["operation_type"] === "payment.multiple-vendor")
             if ($childs) :
                 foreach ($childs as $entity)
                     self::create_panel($vendorArray, $entity);
-            elseif(isset($parent["operation_type"])) :
-                self::create_panel($vendorArray, $parent);
             endif;
-        endif;
+        else
+            self::create_panel($vendorArray, $parent);
+    }
+
+    /**
+     * Create Coupon section
+     * 
+     * @param array $parent
+     */
+
+     public static function create_coupon($parent)
+     {
         $mbbxCouponUrl = "https://mobbex.com/console/" . $parent['entity_uid'] . "/operations/?oid=" . $parent['payment_id'];
         echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($parent['entity_uid']) && isset($parent['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">VER</a>" : 'NO COUPON') . "</td></tr>";
-    }
+     }
 
     /**
      * Create panel
