@@ -57,7 +57,7 @@ class MobbexCheckout
                 'total'        => $this->total,
                 'webhook'      => $this->endpoints['webhook'],
                 'return_url'   => $this->endpoints['return'],
-                'reference'    => $this->reference = $this->settings['site_id'],
+                'reference'    => $this->reference,
                 'description'  => 'Pedido #' . $this->relation,
                 'test'         => $this->settings['test_mode'] == 'yes',
                 'multicard'    => $this->settings['multicard'] == 'yes',
@@ -127,7 +127,7 @@ class MobbexCheckout
         ];
         // Add site id
         if (!empty($this->settings['site_id']))
-        $reference[] = 'site_id:' . str_replace(' ', '-', trim($this->settings['site_id']));
+            $reference[] = 'site_id:' . str_replace(' ', '-', trim($this->settings['site_id']));
 
         // Add reseller id
         if (!empty($this->settings['reseller_id']))
