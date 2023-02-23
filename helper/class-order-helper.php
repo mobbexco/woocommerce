@@ -264,9 +264,8 @@ class MobbexOrderHelper
      */
     public function format_childs($order_id, $childsData)
     {
-        $i = 0;
         foreach ($childsData as $child)
-            $childs[++$i] = $this->helper->format_webhook_data($order_id, $child);
+            $childs[] = $this->helper->format_webhook_data($order_id, $child);
         return $childs;
     }
 

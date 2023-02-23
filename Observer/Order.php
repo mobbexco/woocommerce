@@ -209,7 +209,7 @@ class Order
      * @param array $parent
      * @param array $childs
      */
-    public function create_sources_panel($parent, $childs)
+    public static function create_sources_panel($parent, $childs)
     {
         if (isset($parent["operation_type"]) && $parent["operation_type"] === "payment.multiple-sources") {
             $multipleCardArray = [

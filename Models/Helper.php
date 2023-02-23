@@ -282,14 +282,12 @@ class Helper
     /**
      * Format the webhook data in an array.
      * 
-     * @param int $cart_id
+     * @param int $order_id
      * @param array $res
-     * @param bool $multivendor
-     * @param bool $multicard
      * @return array $data
      * 
      */
-    public static function format_webhook_data($order_id, $res, $multicard = '', $multivendor = '')
+    public static function format_webhook_data($order_id, $res)
     {
         $data = [
             'order_id'           => $order_id,
@@ -328,7 +326,7 @@ class Helper
     /**
      * Check if webhook is parent type using him payment id.
      * 
-     * @param string $paymentId
+     * @param string $payment_id
      * 
      * @return bool
      */
