@@ -291,7 +291,7 @@ background-color: #6f00ff;
 
     'site_id' => [
         'title'       => __('Site ID', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your Site ID from here. This field is optional and must be used only if was specified by the main seller.', 'mobbex-for-woocommerce'),
+        'description' => __('Si utiliza las mismas credenciales en otro sitio complete este campo con un identificador que permita diferenciar las referencias de sus operaciones.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
         'default'     => '',
         'class'       => 'mbbx-into-advanced',
