@@ -291,6 +291,14 @@ background-color: #6f00ff;
         'class'       => 'mbbx-into-advanced',
     ],
 
+    'site_id' => [
+        'title'       => __('Site ID', 'mobbex-for-woocommerce'),
+        'description' => __('Si utiliza las mismas credenciales en otro sitio complete este campo con un identificador que permita diferenciar las referencias de sus operaciones.', 'mobbex-for-woocommerce'),
+        'type'        => 'text',
+        'default'     => '',
+        'class'       => 'mbbx-into-advanced',
+    ],
+
     'debug_mode' => [
         'title'   => __('Modo Debug', 'mobbex-for-woocommerce'),
         'label'   => __('Activar Modo Debug.', 'mobbex-for-woocommerce'),
