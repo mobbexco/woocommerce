@@ -8,6 +8,8 @@ class MobbexCheckout
 
     public $relation = 0;
 
+    public $webhooksType = 'all';
+
     public $customer = [];
 
     public $addresses = [];
@@ -73,6 +75,7 @@ class MobbexCheckout
                 'installments' => $this->installments,
                 'customer'     => array_merge($this->customer),
                 'addresses'    => $this->addresses,
+                'webhooksType' => $this->webhooksType,
                 'options'      => [
                     'embed'    => $this->config->button == 'yes',
                     'domain'   => str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),

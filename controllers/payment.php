@@ -134,12 +134,12 @@ final class Payment
      */
     public function process_webhook($order_id, $token, $data)
     {
-        $status = $data['status_code'];
+        $status = isset($data['status_code']) ? $data['status_code'] : null;
         $order  = wc_get_order($order_id);
 
         $this->logger->debug('Mobbex Webhook: Processing data');
 
-        if (empty($status) || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
+        if (!$status || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
             return $this->logger->debug('Mobbex Webhook: Invalid mobbex token or empty data');
 
         // Catch refunds webhooks
@@ -149,6 +149,10 @@ final class Payment
         // Bypass any child webhook (except refunds)
         if ($data['parent'] != 'yes')
             return (bool) $this->add_child_note($order, $data);
+
+        // Exit if it is a expired operation and the order has already been paid
+        if ($order->is_paid() && $status == 401)
+            return true;
 
         $order->update_meta_data('mobbex_webhook', json_decode($data['data'], true));
         $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
@@ -210,19 +214,21 @@ final class Payment
      * 
      * @param WC_Order $order
      * @param array $data
+     * 
+     * @return bool Update result.
      */
     public function update_order_status($order, $data)
     {
         $helper = new \MobbexOrderHelper($order);
 
-        $order->update_status(
+        // Complete payment if status was approved and the order is not paid
+        if (in_array($data['status_code'], $helper->status_codes['approved']))
+            return $order->is_paid() || $order->payment_complete($data['payment_id']);
+
+        return $order->update_status(
             $helper->get_status_from_code($data['status_code']),
             $data['status_message']
         );
-
-        // Complete payment only if it's approved
-        if (in_array($data['status_code'], $helper->status_codes['approved']))
-            $order->payment_complete($data['payment_id']);
     }
 
     /**

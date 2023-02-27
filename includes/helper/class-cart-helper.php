@@ -74,6 +74,7 @@ class MobbexCartHelper
      */
     private function add_initial_data($checkout)
     {
+        $checkout->webhooksType = 'none';
         $checkout->set_reference($this->id);
         $checkout->set_total($this->cart->get_total(null));
         $checkout->set_endpoints(
