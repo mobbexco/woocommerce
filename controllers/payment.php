@@ -50,7 +50,7 @@ final class Payment
             $error = "Token de seguridad inválido.";
 
         if ($error)
-            return $this->_redirect_to_cart_with_error($error);
+            return $this->_redirect_to_error_endpoint($error);
 
         $order = wc_get_order($id);
 
@@ -58,7 +58,7 @@ final class Payment
             // Redirect
             $redirect = $order->get_checkout_order_received_url();
         } else {
-            return $this->_redirect_to_cart_with_error('Transacción fallida. Reintente con otro método de pago.');
+            return $this->_redirect_to_error_endpoint('Transacción fallida. Reintente con otro método de pago.');
         }
 
         WC()->session->set('order_id', null);
@@ -67,13 +67,24 @@ final class Payment
         wp_safe_redirect($redirect);
     }
 
-    private function _redirect_to_cart_with_error($error_msg)
+    /**
+     * Redirects to the error route or cart
+     * 
+     * @param string $error_msg
+     * @return array
+     */
+    private function _redirect_to_error_endpoint($error_msg)
     {
-        wc_add_notice($error_msg, 'error');
-        wp_redirect(wc_get_cart_url());
+        if ($this->helper->settings['error_redirection'])
+            $error_msg= 'Transacción Fallida. Redirigido a ruta configurada.';
 
-        return array('result' => 'error', 'redirect' => wc_get_cart_url());
-    }
+        $route = $this->helper->settings['error_redirection'] ? home_url('/' . $this->helper->settings['error_redirection']) : wc_get_cart_url();
+
+        wc_add_notice($error_msg, 'error');
+        wp_redirect($route);
+        
+        return array('result' => 'error', 'redirect' => $route);
+    }  
 
     /**
      * Process the Mobbex Webhook.
