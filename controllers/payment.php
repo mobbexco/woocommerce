@@ -46,7 +46,7 @@ final class Payment
             $error = "Token de seguridad inválido.";
 
         if ($error)
-            return $this->_redirect_to_cart_with_error($error);
+            return $this->_redirect_to_error_endpoint($error);
 
         $order = wc_get_order($id);
 
@@ -54,7 +54,7 @@ final class Payment
             // Redirect
             $redirect = $order->get_checkout_order_received_url();
         } else {
-            $this->helper->settings['error_redirection'] ? $this->_redirect_to_error_endpoint('Transacción fallida. Redirigido a ruta configurada.', $this->helper->settings['error_redirection']) :  $this->_redirect_to_cart_with_error('Transacción fallida. Reintente con otro método de pago.');
+            return $this->_redirect_to_error_endpoint($error);
         }
 
         WC()->session->set('order_id', null);
@@ -63,26 +63,26 @@ final class Payment
         wp_safe_redirect($redirect);
     }
 
-    private function _redirect_to_cart_with_error($error_msg)
-    {
-        wc_add_notice($error_msg, 'error');
-        wp_redirect(wc_get_cart_url());
-
-        return array('result' => 'error', 'redirect' => wc_get_cart_url());
-    }
-
     /**
-     * Redirects to the error route set in advanced settings
+     * Redirects to the error route or cart
      * 
      * @param string $error_msg
      * @param string $error_redirection
-     * @return string
+     * @return array
      */
-    private function _redirect_to_error_endpoint($error_msg, $error_redirection)
+    private function _redirect_to_error_endpoint($error_msg)
     {
+        if ($this->helper->settings['error_redirection']) {
+            $route = wp_redirect( home_url('/'. $this->helper->settings['error_redirection']));
+            $error_msg= 'Transacción Fallida. Redirigido a ruta configurada.';
+        } else {
+            $route = wp_redirect(wc_get_cart_url());
+        };
+
         wc_add_notice($error_msg, 'error');
-        return wp_redirect( home_url('/'. $error_redirection));
-    }
+        
+        return array('result' => 'error', 'redirect' => $route);
+    }  
 
     /**
      * Process the Mobbex Webhook.
