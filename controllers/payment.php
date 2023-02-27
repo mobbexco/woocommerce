@@ -186,7 +186,7 @@ final class Payment
 
         $order->add_order_note($main_mobbex_note);
 
-        if ($data['risk_analysis'] > 0) {
+        if (isset($data['risk_analysis']) && $data['risk_analisys'] > 0) {
             $order->add_order_note('El riesgo de la operación fue evaluado en: ' . $data['risk_analisys']);
             $order->update_meta_data('mobbex_risk_analysis', $data['risk_analisys']);
         }
