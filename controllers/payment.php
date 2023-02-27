@@ -54,7 +54,7 @@ final class Payment
             // Redirect
             $redirect = $order->get_checkout_order_received_url();
         } else {
-            return $this->_redirect_to_error_endpoint($error);
+            return $this->_redirect_to_error_endpoint('Transacción fallida. Reintente con otro método de pago.');
         }
 
         WC()->session->set('order_id', null);
@@ -67,17 +67,14 @@ final class Payment
      * Redirects to the error route or cart
      * 
      * @param string $error_msg
-     * @param string $error_redirection
      * @return array
      */
     private function _redirect_to_error_endpoint($error_msg)
     {
-        if ($this->helper->settings['error_redirection']) {
-            $route = wp_redirect( home_url('/'. $this->helper->settings['error_redirection']));
+        if ($this->helper->settings['error_redirection'])
             $error_msg= 'Transacción Fallida. Redirigido a ruta configurada.';
-        } else {
-            $route = wp_redirect(wc_get_cart_url());
-        };
+        
+        $this->helper->settings['error_redirection'] ? $route = wp_redirect( home_url('/'. $this->helper->settings['error_redirection'])) : $route = wp_redirect(wc_get_cart_url());
 
         wc_add_notice($error_msg, 'error');
         
