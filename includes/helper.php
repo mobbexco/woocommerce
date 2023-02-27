@@ -11,6 +11,9 @@ class MobbexHelper
     /** Module configuration settings */
     public $settings = [];
 
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public $config;
+
     /** @var MobbexApi */
     public $api;
 
@@ -19,36 +22,13 @@ class MobbexHelper
      */
     public function __construct()
     {
-        // Get default and saved values
-        $default_values = array_map(function($value) {
-            return isset($value['default']) ? $value['default'] : null;
-        }, include('config-options.php'));
-        $saved_values   = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID .'_settings', null) ?: [];
-
-        // Merge into a single array
-        $this->settings = array_merge($default_values, $saved_values);
-
-        // The intent constant overwrite payment mode setting
-        if (defined('MOBBEX_CHECKOUT_INTENT')) {
-            $this->settings['payment_mode'] = MOBBEX_CHECKOUT_INTENT;
-        } else if ($this->settings['payment_mode'] == 'yes') {
-            $this->settings['payment_mode'] = 'payment.2-step';
-        } else {
-            $this->settings['payment_mode'] = 'payment.v2';
-        }
-
-        // Set settings as properties for backward support
-        foreach ($this->settings as $key => $value) {
-            $key = str_replace('-', '_', $key);
-            $this->$key = $value;
-        }
-
-        $this->api = new MobbexApi($this->settings['api-key'], $this->settings['access-token']);
+        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
+        $this->api    = new MobbexApi($this->config->api_key, $this->config->access_token);
     }
 
     public function isReady()
     {
-        return ($this->enabled === 'yes' && !empty($this->api_key) && !empty($this->access_token));
+        return ($this->config->enabled === 'yes' && !empty($this->config->api_key) && !empty($this->config->access_token));
     }
 
     /**
@@ -293,44 +273,7 @@ class MobbexHelper
 
         return is_array($var) ? $var : [];
     }
-
-    /* MULTIVENDOR METHODS */
-
-    /**
-     * Return entity UID from a product ID.
-     * 
-     * @param int|string $product_id
-     * 
-     * @return string|null
-     */
-    public function get_product_entity($product_id)
-    {
-        if (get_metadata('post', $product_id, 'mbbx_entity', true)) {
-            return get_metadata('post', $product_id, 'mbbx_entity', true);
-        }
-        
-        $product_terms_ids = wc_get_product_term_ids($product_id, 'product_cat');
-        foreach ($product_terms_ids as $id) {
-            if (get_metadata('term', $id, 'mbbx_entity', true))
-                return get_metadata('term', $id, 'mbbx_entity', true);
-        }
-    }
     
-    /* SUBCRIPTION METHODS */
-
-    /**
-     * Return the subscription UID from a product ID.
-     * 
-     * @param int|string $product_id
-     * 
-     * @return string|null
-     */
-    public function get_product_subscription($product_id)
-    {
-        if (get_metadata('post', $product_id, 'mbbx_enable_sus', true)) {
-            return get_metadata('post', $product_id, 'mbbx_sus_uid', true);
-        }
-    }
 
     /* WEBHOOK METHODS */
 
@@ -344,7 +287,7 @@ class MobbexHelper
      * @return array $data
      * 
      */
-    public static function format_webhook_data($order_id, $res, $multicard, $multivendor)
+    public static function format_webhook_data($order_id, $res)
     {
         $data = [
             'order_id'           => $order_id,
@@ -452,7 +395,7 @@ class MobbexHelper
             $query['mobbex_order_id'] = $order_id;
     
         if ($endpoint === 'mobbex_webhook') {
-            if ($this->settings['debug_mode'] != 'no')
+            if ($this->config->debug_mode != 'no')
                 $query['XDEBUG_SESSION_START'] = 'PHPSTORM';
             return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
         } else 
@@ -467,7 +410,7 @@ class MobbexHelper
 
     public function generate_token()
     {
-        return md5($this->settings['api-key'] . '|' . $this->settings['access-token']);
+        return md5($this->config->api_key . '|' . $this->config->access_token);
     }
 
     public function get_product_image($product_id)

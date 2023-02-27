@@ -16,12 +16,14 @@ return [
         'title'       => __('API Key', 'mobbex-for-woocommerce'),
         'description' => __('Your Mobbex API key.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
+        'default'     => '',
     ],
 
     'access-token' => [
         'title'       => __('Access Token', 'mobbex-for-woocommerce'),
         'description' => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
+        'default'     => '',
     ],
 
     'test_mode' => [
@@ -269,7 +271,7 @@ background-color: #6f00ff;
         'class'   => 'mbbx-into-advanced',
     ],
 
-    '2_step_processing_mail' => [
+    'two_step_processing_mail' => [
         'title'       => __('Mail de pedido procesado', 'mobbex-for-woocommerce'),
         'description' => __('Para uso de operatoria en 2 pasos', 'mobbex-for-woocommerce'),
         'type'        => 'select',
@@ -292,6 +294,14 @@ background-color: #6f00ff;
     'error_redirection' => [
         'title'       => __('Redirection after error', 'mobbex-for-woocommerce'),
         'description' => __('You can customize the route to be redirected to after a payment error. It must be an existing path within the store.', 'mobbex-for-woocommerce'),
+        'type'        => 'text',
+        'default'     => '',
+        'class'       => 'mbbx-into-advanced',
+    ],
+
+    'site_id' => [
+        'title'       => __('Site ID', 'mobbex-for-woocommerce'),
+        'description' => __('Si utiliza las mismas credenciales en otro sitio complete este campo con un identificador que permita diferenciar las referencias de sus operaciones.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
         'default'     => '',
         'class'       => 'mbbx-into-advanced',

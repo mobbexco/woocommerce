@@ -2,11 +2,17 @@
 
 class Mbbx_Order_Admin
 {
+    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    public static $config;
+
     /** @var MobbexHelper */
     public static $helper;
 
     public static function init()
     {
+        // Load Configs
+        self::$config = new \Mobbex\WP\Checkout\Includes\Config;
+        
         // Load helper
         self::$helper = new MobbexHelper;
 
@@ -161,7 +167,7 @@ class Mbbx_Order_Admin
         $mailer['WC_Email_New_Order']->trigger($order_id);
 
         // If configured, also send processing mail
-        if (self::$helper->settings['2_step_processing_mail'] == 'authorize')
+        if (self::$config->two_step_processing_mail == 'authorize')
             $mailer['WC_Email_Customer_Processing_Order']->trigger($order_id);
     }
 
@@ -175,7 +181,7 @@ class Mbbx_Order_Admin
         $mailer = WC()->mailer()->get_emails();
 
         // By default send processing mail on capture
-        if (self::$helper->settings['2_step_processing_mail'] != 'authorize')
+        if (self::$config->two_step_processing_mail != 'authorize')
             $mailer['WC_Email_Customer_Processing_Order']->trigger($order_id);
     }
 
