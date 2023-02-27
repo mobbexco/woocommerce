@@ -289,7 +289,7 @@ background-color: #6f00ff;
         'class'       => 'mbbx-into-advanced',
     ],
 
-    'redirection_endpoint' => [
+    'error_redirection' => [
         'title'       => __('Redirection after error', 'mobbex-for-woocommerce'),
         'description' => __('You can customize the route to be redirected to after a payment error. It must be an existing path within the store.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
