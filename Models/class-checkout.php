@@ -67,7 +67,7 @@ class MobbexCheckout
                 'multivendor'  => $this->config->multivendor != 'no' ? $this->config->multivendor : false,
                 'wallet'       => $this->config->wallet == 'yes' && wp_get_current_user()->ID,
                 'intent'       => $this->config->payment_mode,
-                'timeout'      => $this->config->timeout,
+                'timeout'      => (int)$this->config->timeout,
                 'items'        => $this->items,
                 'merchants'    => $this->merchants,
                 'installments' => $this->installments,
