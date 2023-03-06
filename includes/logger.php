@@ -22,14 +22,17 @@ class MobbexLogger
      * Mode error: Always log data.
      * Mode critical: Always log data & stop code execution.
      * 
-     * @param string $mode debug | error | critical    
+     * @param string $mode debug | error | fatal    
      * @param string $message
      * @param array $data
      */
-    public function debug($mode, $message, $data = [])
+    public function log($mode, $message, $data = [])
     {
         if ($mode === 'debug' && $this->settings['debug_mode'] != 'yes')
             return;
+
+        if($mode === 'fatal')
+            $mode = 'critical';
 
         apply_filters(
             'simple_history_log',
@@ -39,7 +42,7 @@ class MobbexLogger
         );
 
         if ($mode === 'critical')
-            die;
+            die($message);
     }
 
     /**
