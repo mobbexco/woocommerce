@@ -231,15 +231,18 @@ final class Payment
     public function update_order_status($order, $data)
     {
         $helper = new \MobbexOrderHelper($order);
+        $status = $helper->get_status_from_code($data['status_code']);
 
-        // Complete payment if status was approved and the order is not paid
-        if (in_array($data['status_code'], $helper->status_codes['approved']))
-            return $order->is_paid() || $order->payment_complete($data['payment_id']);
+        // Try to complete payment if status was approved
+        if (in_array($data['status_code'], $helper->status_codes['approved'])) {
+            // If is configured a paid status, and is not paid yet complete payment and return
+            if (in_array($status, wc_get_is_paid_statuses()))
+                return $order->is_paid() || $order->payment_complete($data['payment_id']);
 
-        return $order->update_status(
-            $helper->get_status_from_code($data['status_code']),
-            $data['status_message']
-        );
+            $order->payment_complete($data['payment_id']);
+        }
+
+        return $order->update_status($status, $data['status_message']);
     }
 
     /**
