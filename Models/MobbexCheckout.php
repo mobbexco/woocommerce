@@ -1,5 +1,7 @@
 <?php
 
+namespace Mobbex\WP\Checkout\Models;
+
 class MobbexCheckout
 {
     public $total = 0;
@@ -60,7 +62,7 @@ class MobbexCheckout
                 'total'        => $this->total,
                 'webhook'      => $this->endpoints['webhook'],
                 'return_url'   => $this->endpoints['return'],
-                'reference'    => $this->reference.'dsjgsgnjsdngjsn',
+                'reference'    => $this->reference,
                 'description'  => 'Pedido #' . $this->relation,
                 'test'         => $this->config->test_mode == 'yes',
                 'multicard'    => $this->config->multicard == 'yes',
@@ -189,7 +191,7 @@ class MobbexCheckout
      */
     public function convert_country_code($code)
     {
-        $countries = include (__DIR__.'../utils/iso-3166.php') ?: [];
+        $countries = include (__DIR__.'/../utils/iso-3166.php') ?: [];
 
         return isset($countries[$code]) ? $countries[$code] : null;
     }

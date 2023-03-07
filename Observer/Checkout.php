@@ -58,6 +58,9 @@ class Checkout
      */
     public function add_checkout_fields($fields)
     {
+        if(!$this->helper->isReady() && $this->config->own_dni !== 'yes')
+            return $fields;
+            
         $cutomer_id = WC()->cart->get_customer()->get_id();
 
         $fields['billing_dni'] = [

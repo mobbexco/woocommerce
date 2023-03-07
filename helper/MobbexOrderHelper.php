@@ -1,5 +1,7 @@
 <?php
 
+namespace Mobbex\WP\Checkout\Helper;
+
 class MobbexOrderHelper
 {
     /** Order instance ID */
@@ -59,8 +61,8 @@ class MobbexOrderHelper
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->config->api_key;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->config->access_token;
 
-        $api      = new MobbexApi($api_key, $access_token);
-        $checkout = new MobbexCheckout($api);
+        $api      = new \Mobbex\WP\Checkout\Models\MobbexApi($api_key, $access_token);
+        $checkout = new \Mobbex\WP\Checkout\Models\MobbexCheckout($api);
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);

@@ -1,7 +1,6 @@
 <?php
 namespace Mobbex\WP\Checkout\Models;
 
-require_once __DIR__.'/../utils/defines.php';
 
 class Helper
 {
@@ -25,7 +24,7 @@ class Helper
     public function __construct()
     {
         $this->config = new Config();
-        $this->api    = new \MobbexApi($this->config->api_key, $this->config->access_token);
+        $this->api    = new MobbexApi($this->config->api_key, $this->config->access_token);
     }
 
     public function isReady()
@@ -440,7 +439,7 @@ class Helper
         $order = wc_get_order(get_query_var('order-pay'));
         $cart  = WC()->cart;
 
-        $helper = $order ? new \MobbexOrderHelper($order) : new \MobbexCartHelper($cart);
+        $helper = $order ? new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order) : new \Mobbex\WP\Checkout\Helper\MobbexCartHelper($cart);
 
         // If is pending order page create checkout from order and return
         if ($order)

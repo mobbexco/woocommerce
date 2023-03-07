@@ -213,7 +213,7 @@ final class Payment
      */
     public function update_order_status($order, $data)
     {
-        $helper = new \MobbexOrderHelper($order);
+        $helper = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order);
 
         $order->update_status(
             $helper->get_status_from_code($data['status_code']),

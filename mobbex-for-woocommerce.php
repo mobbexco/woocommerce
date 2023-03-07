@@ -10,11 +10,6 @@ Copyright: 2020 mobbex.com
  */
 
 require_once 'vendor/autoload.php';
-require_once 'utils/defines.php';
-require_once 'Models/class-api.php';
-require_once 'Models/class-checkout.php';
-require_once 'Helper/class-order-helper.php';
-require_once 'Helper/class-cart-helper.php';
 
 class MobbexGateway
 {
