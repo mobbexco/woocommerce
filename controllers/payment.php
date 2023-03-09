@@ -95,14 +95,10 @@ final class Payment
     public function mobbex_webhook($request)
     {
         try {
-            $this->logger->debug("REST API > Request", $request->get_params());
-            
             $requestData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? apply_filters('mobbex_order_webhook',  json_decode(file_get_contents('php://input'), true)) : apply_filters('mobbex_order_webhook', $request->get_params());
             $postData    = !empty($requestData['data']) ? $requestData['data'] : [];
             $id          = $request->get_param('mobbex_order_id');
             $token       = $request->get_param('mobbex_token');
-
-            $this->logger->debug('Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
 
             //order webhook filter
             $webhookData = \Mobbex\WP\Checkout\Models\Helper::format_webhook_data($id, $postData);

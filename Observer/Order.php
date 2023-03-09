@@ -161,12 +161,12 @@ class Order
         $mbbxOrderHelp = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper(wc_get_order($post->ID));
 
         // Get transaction data
-        $prntTrans  = $mbbxOrderHelp->get_parent_transaction();
-        $chldTrans  = $mbbxOrderHelp->get_child_transactions();
+        $parent  = $mbbxOrderHelp->get_parent_transaction();
+        $childs  = !empty($mbbxOrderHelp->get_child_transactions()) ? $mbbxOrderHelp->get_child_transactions() : $mbbxOrderHelp->format_childs($mbbxOrderHelp->id, json_decode($parent['childs'], true));
 
         echo "<table><th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Information') . "</b></h4></th>";
 
-        $payInfoArray = [
+        $paymentInfo = [
             'Transaction ID' => 'payment_id',
             'Risk Analysis'  => 'risk_analysis',
             'Currency'       => 'currency',
@@ -174,19 +174,21 @@ class Order
             'Status'         => 'status_message'
         ];
 
-        //Creating payment info panel 
-        echo $this->create_panel($payInfoArray, $prntTrans);
+        //Create payment info panel 
+        echo $this->create_panel($paymentInfo, $parent);
 
         echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Method') . "</b></h4></th>";
 
-        //Creating sources info panel
-        self::create_sources_panel($prntTrans, $chldTrans);
+        //Create sources info panel
+        self::create_sources_panel($parent, $childs);
 
         echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Entities') . "</b></h4></th>";
 
-        //Creating entities info panel
-        self::create_entities_panel($prntTrans, $chldTrans);
+        //Create entities info panel
+        self::create_entities_panel($parent, $childs);
 
+        //Create Coupon
+        self::create_coupon($parent);
 ?>
         <style>
             .mbbx-color-column {
@@ -204,19 +206,19 @@ class Order
     /**
      * Create payment source panel section.
      * 
-     * @param array $prntTrans
-     * @param array $chldTrans
+     * @param array $parent
+     * @param array $childs
      */
-    public function create_sources_panel($prntTrans, $chldTrans)
+    public static function create_sources_panel($parent, $childs)
     {
-        if (isset($prntTrans["operation_type"]) && $prntTrans["operation_type"] === "payment.multiple-sources") {
+        if (isset($parent["operation_type"]) && $parent["operation_type"] === "payment.multiple-sources") {
             $multipleCardArray = [
                 'Card'        => 'source_name',
                 'Number'      => 'source_number',
                 'Installment' => 'installment_count',
                 'Amount'      => 'installment_amount'
             ];
-            foreach ($chldTrans as $card) :
+            foreach ($childs as $card) :
                 $this->create_panel($multipleCardArray, $card);
                 echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
             endforeach;
@@ -226,38 +228,44 @@ class Order
                 'Payment Source' => 'source_name',
                 'Source Number'  => 'source_number'
             ];
-            $this->create_panel($simpleCardArray, $prntTrans);
-            if (!empty($prntTrans['source_installment']))
-                echo "<tr class='mobbex-color-column'><td>" . __('Source Installment:') . "</td><td>" . $prntTrans['installment_count'] . ' cuota/s de $' . $prntTrans['installment_amount'] . "</td></tr>";
+            $this->create_panel($simpleCardArray, $parent);
+            if (!empty($parent['source_installment']))
+                echo "<tr class='mobbex-color-column'><td>" . __('Source Installment:') . "</td><td>" . $parent['installment_count'] . ' cuota/s de $' . $parent['installment_amount'] . "</td></tr>";
         }
     }
+
     /**
      * Create entities panel section.
      * 
-     * @param array $prntTrans
-     * @param array $chldTrans
+     * @param array $parent
+     * @param array $childs
      */
-    public function create_entities_panel($prntTrans, $chldTrans)
+    public static function create_entities_panel($parent, $childs)
     {
         $vendorArray = [
             'Name' => 'entity_name',
             'UID'  => 'entity_uid'
         ];
-        if (isset($prntTrans["operation_type"]) && $prntTrans["operation_type"] === "payment.multiple-vendor") {
-            if ($chldTrans) {
-                foreach ($chldTrans as $entity) :
-                    $mbbxCouponUrl = "https://mobbex.com/console/" . $entity['entity_uid'] . "/operations/?oid=" . $entity['payment_id'];
-                    $this->create_panel($vendorArray, $entity);
-                    echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($entity['entity_uid']) && isset($entity['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">COUPON</a>" : '') . "</td></tr>";
-                    echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
-                endforeach;
-            }
-        } elseif (isset($prntTrans["operation_type"])) {
-            $mbbxCouponUrl = "https://mobbex.com/console/" . $prntTrans['entity_uid'] . "/operations/?oid=" . $prntTrans['payment_id'];
-            $this->create_panel($vendorArray, $prntTrans);
-            echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($prntTrans['entity_uid']) && isset($prntTrans['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">COUPON</a>" : 'NO COUPON') . "</td></tr>";
-        }
+        if (isset($parent["operation_type"]) && $parent["operation_type"] === "payment.multiple-vendor")
+            if ($childs) :
+                foreach ($childs as $entity)
+                    self::create_panel($vendorArray, $entity);
+            endif;
+        else
+            self::create_panel($vendorArray, $parent);
     }
+
+    /**
+     * Create Coupon section
+     * 
+     * @param array $parent
+     */
+
+     public static function create_coupon($parent)
+     {
+        $mbbxCouponUrl = "https://mobbex.com/console/" . $parent['entity_uid'] . "/operations/?oid=" . $parent['payment_id'];
+        echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($parent['entity_uid']) && isset($parent['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">VER</a>" : 'NO COUPON') . "</td></tr>";
+     }
 
     /**
      * Create panel

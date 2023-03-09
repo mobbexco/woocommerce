@@ -258,6 +258,20 @@ class MobbexOrderHelper
     }
 
     /**
+     * Formats the childs data
+     * 
+     * @param int $order_id
+     * @param array $childsData
+     * 
+     */
+    public function format_childs($order_id, $childsData)
+    {
+        foreach ($childsData as $child)
+            $childs[] = $this->helper->format_webhook_data($order_id, $child);
+        return $childs;
+    }
+
+    /**
      * Get approved child transactions from the order loaded (multicard only).
      * 
      * @return array[] Associative array with payment_id as key.
