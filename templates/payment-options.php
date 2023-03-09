@@ -1,4 +1,3 @@
-
 <?php if ($gateway->config->unified_mode != 'yes' && !empty($gateway->methods)) : ?>
     <?php foreach ($gateway->methods as $method) : ?>
         <li class="wc_payment_method payment_method_mobbex_method_<?= "$method[group].$method[subgroup]" ?>">
@@ -29,30 +28,30 @@
 
 <?php if (!empty($gateway->cards)) : ?>
     <?php foreach ($gateway->cards as $key => $card) : ?>
-        <li class="wc_payment_method payment_method_mobbex_card_<?= $key ?>">
-            <input id="payment_method_mobbex_card_<?= $key ?>" type="radio" class="input-radio" name="payment_method" value="<?= $gateway->id ?>" <?php checked($gateway->chosen, true); ?> method-type="card" key="<?= $key ?>" data-order_button_text="<?= $gateway->order_button_text ?>" />
-            <label for="payment_method_mobbex_card_<?= $key ?>">
-                <?= $card['name'] ?> <img src="<?= $card['source']['card']['product']['logo'] ?>">
-            </label>
-            <div class="payment_box payment_method_mobbex_card_<?= $key ?>" <?php if (!$gateway->chosen) : ?>style="display:none;" <?php endif; ?>>
-                <div id="wallet-<?= $key ?>">
-                    <p class="form-row mbbx-card-form-row">
-                        <label for="wallet-<?= $key ?>-installments">Cuotas</label>
-                        <select required id="wallet-<?= $key ?>-installments">
-                            <?php if (!empty($card['installments'])) : ?>
+        <?php if (!empty($card['installments'])) : ?>
+            <li class="wc_payment_method payment_method_mobbex_card_<?= $key ?>">
+                <input id="payment_method_mobbex_card_<?= $key ?>" type="radio" class="input-radio" name="payment_method" value="<?= $gateway->id ?>" <?php checked($gateway->chosen, true); ?> method-type="card" key="<?= $key ?>" data-order_button_text="<?= $gateway->order_button_text ?>" />
+                <label for="payment_method_mobbex_card_<?= $key ?>">
+                    <?= $card['name'] ?> <img src="<?= $card['source']['card']['product']['logo'] ?>">
+                </label>
+                <div class="payment_box payment_method_mobbex_card_<?= $key ?>" <?php if (!$gateway->chosen) : ?>style="display:none;" <?php endif; ?>>
+                    <div id="wallet-<?= $key ?>">
+                        <p class="form-row mbbx-card-form-row">
+                            <label for="wallet-<?= $key ?>-installments">Cuotas</label>
+                            <select required id="wallet-<?= $key ?>-installments">
                                 <?php foreach ($card['installments'] as $installment) : ?>
                                     <option value="<?= $installment['reference'] ?>"><?= $installment['name'] ?> (<?= $installment['totals']['installment']['count'] ?> cuota/s de $<?= $installment['totals']['installment']['amount'] ?>)</option>
                                 <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
-                    </p>
-                    <p class="form-row mbbx-card-form-row">
-                        <label for="wallet-<?= $key ?>-code">Código de seguridad</label>
-                        <input type="password" name="securityCode" maxlength="<?= $card['source']['card']['product']['code']['length'] ?>" placeholder="<?= $card['source']['card']['product']['code']['name'] ?>" id="wallet-<?= $key ?>-code" required>
-                    </p>
-                    <input type="hidden" name="cardNumber" value="<?= $card['card']['card_number'] ?>" id="wallet-<?= $key ?>-number">
+                            </select>
+                        </p>
+                        <p class="form-row mbbx-card-form-row">
+                            <label for="wallet-<?= $key ?>-code">Código de seguridad</label>
+                            <input type="password" name="securityCode" maxlength="<?= $card['source']['card']['product']['code']['length'] ?>" placeholder="<?= $card['source']['card']['product']['code']['name'] ?>" id="wallet-<?= $key ?>-code" required>
+                        </p>
+                        <input type="hidden" name="cardNumber" value="<?= $card['card']['card_number'] ?>" id="wallet-<?= $key ?>-number">
+                    </div>
                 </div>
-            </div>
-        </li>
+            </li>
+        <?php endif; ?>
     <?php endforeach; ?>
 <?php endif; ?>
