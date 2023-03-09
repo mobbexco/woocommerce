@@ -1,5 +1,7 @@
 <?php
 
+namespace Mobbex\WP\Checkout\Helper;
+
 class MobbexCartHelper
 {
     /** Cart instance ID */
@@ -13,7 +15,6 @@ class MobbexCartHelper
 
     /** @var \Mobbex\WP\Checkout\Models\Helper */
     public $helper;
-
 
     /** @var \Mobbex\WP\Checkout\Models\Logger */
     public $logger;
@@ -47,8 +48,8 @@ class MobbexCartHelper
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->config->api_key;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->config->access_token;
 
-        $api      = new MobbexApi($api_key, $access_token);
-        $checkout = new MobbexCheckout($api, 'mobbex_cart_checkout_custom_data');
+        $api      = new \Mobbex\WP\Checkout\Models\MobbexApi($api_key, $access_token);
+        $checkout = new \Mobbex\WP\Checkout\Models\MobbexCheckout($api, 'mobbex_cart_checkout_custom_data');
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -74,6 +75,7 @@ class MobbexCartHelper
      */
     private function add_initial_data($checkout)
     {
+        $checkout->webhooksType = 'none';
         $checkout->set_reference($this->id);
         $checkout->set_total($this->cart->get_total(null));
         $checkout->set_endpoints(

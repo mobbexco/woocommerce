@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.11.0
+Version:      3.12.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -10,11 +10,6 @@ Copyright: 2020 mobbex.com
  */
 
 require_once 'vendor/autoload.php';
-require_once 'utils/defines.php';
-require_once 'Models/class-api.php';
-require_once 'Models/class-checkout.php';
-require_once 'helper/class-order-helper.php';
-require_once 'helper/class-cart-helper.php';
 
 class MobbexGateway
 {

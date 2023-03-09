@@ -11,5 +11,6 @@ wc-mobbex*.zip
 
 package.json
 package-lock.json
+composer.lock
 node_modules
 /vendor/

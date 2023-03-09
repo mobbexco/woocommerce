@@ -1,5 +1,7 @@
 <?php
 
+namespace Mobbex\WP\Checkout\Models;
+
 class MobbexCheckout
 {
     public $total = 0;
@@ -7,6 +9,8 @@ class MobbexCheckout
     public $reference = '';
 
     public $relation = 0;
+
+    public $webhooksType = 'all';
 
     public $customer = [];
 
@@ -60,19 +64,20 @@ class MobbexCheckout
                 'total'        => $this->total,
                 'webhook'      => $this->endpoints['webhook'],
                 'return_url'   => $this->endpoints['return'],
-                'reference'    => $this->reference.'dsjgsgnjsdngjsn',
+                'reference'    => $this->reference,
                 'description'  => 'Pedido #' . $this->relation,
                 'test'         => $this->config->test_mode == 'yes',
                 'multicard'    => $this->config->multicard == 'yes',
                 'multivendor'  => $this->config->multivendor != 'no' ? $this->config->multivendor : false,
                 'wallet'       => $this->config->wallet == 'yes' && wp_get_current_user()->ID,
                 'intent'       => $this->config->payment_mode,
-                'timeout'      => $this->config->timeout,
+                'timeout'      => (int)$this->config->timeout,
                 'items'        => $this->items,
                 'merchants'    => $this->merchants,
                 'installments' => $this->installments,
-                'customer'     => array_merge($this->customer),
+                'customer'     => $this->customer,
                 'addresses'    => $this->addresses,
+                'webhooksType' => $this->webhooksType,
                 'options'      => [
                     'embed'    => $this->config->button == 'yes',
                     'domain'   => str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
@@ -128,6 +133,9 @@ class MobbexCheckout
         $reference = [
             'wc_id:' . $id,
         ];
+        // Add site id
+        if (!empty($this->settings['site_id']))
+            $reference[] = 'site_id:' . str_replace(' ', '-', trim($this->settings['site_id']));
 
         // Add reseller id
         if (!empty($this->config->reseller_id))
@@ -189,7 +197,7 @@ class MobbexCheckout
      */
     public function convert_country_code($code)
     {
-        $countries = include (__DIR__.'../utils/iso-3166.php') ?: [];
+        $countries = include (__DIR__.'/../utils/iso-3166.php') ?: [];
 
         return isset($countries[$code]) ? $countries[$code] : null;
     }
