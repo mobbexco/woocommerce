@@ -60,8 +60,8 @@ class Checkout
     {
         if(!$this->helper->isReady() && $this->config->own_dni !== 'yes')
             return $fields;
-            
-        $cutomer_id = WC()->cart->get_customer()->get_id();
+
+        $cutomer_id = WC()->customer ? WC()->customer->get_id() : null;
 
         $fields['billing_dni'] = [
             'type'        => 'text',

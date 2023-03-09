@@ -47,6 +47,16 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.12.0 :: 2023-02-27
+- Fix wc cianbox support
+- Improve expired webhooks processing and prevent duplicated status change
+- Fix that check if risk analysis is set
+- Refactor: added new model to manage the module settings
+- Fix: updated the js sdk of mobbex embed from v1.0.20 to v1.0.23
+- Add an option to customize the route to be redirected to when there is an error
+- Add the option to configure the site-id in advanced options
+- Add improved customizations options
+
 ## 3.11.0 :: 2022-12-27
 - Re-add finnacial cost/discount on every parent webhook
 - Enable webhook debugging with XDebug by option

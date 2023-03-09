@@ -50,7 +50,7 @@ final class Payment
             $error = "Token de seguridad inválido.";
 
         if ($error)
-            return $this->_redirect_to_cart_with_error($error);
+            return $this->_redirect_to_error_endpoint($error);
 
         $order = wc_get_order($id);
 
@@ -58,7 +58,7 @@ final class Payment
             // Redirect
             $redirect = $order->get_checkout_order_received_url();
         } else {
-            return $this->_redirect_to_cart_with_error('Transacción fallida. Reintente con otro método de pago.');
+            return $this->_redirect_to_error_endpoint('Transacción fallida. Reintente con otro método de pago.');
         }
 
         WC()->session->set('order_id', null);
@@ -67,13 +67,24 @@ final class Payment
         wp_safe_redirect($redirect);
     }
 
-    private function _redirect_to_cart_with_error($error_msg)
+    /**
+     * Redirects to the error route or cart
+     * 
+     * @param string $error_msg
+     * @return array
+     */
+    private function _redirect_to_error_endpoint($error_msg)
     {
-        wc_add_notice($error_msg, 'error');
-        wp_redirect(wc_get_cart_url());
+        if ($this->helper->settings['error_redirection'])
+            $error_msg= 'Transacción Fallida. Redirigido a ruta configurada.';
 
-        return array('result' => 'error', 'redirect' => wc_get_cart_url());
-    }
+        $route = $this->helper->settings['error_redirection'] ? home_url('/' . $this->helper->settings['error_redirection']) : wc_get_cart_url();
+
+        wc_add_notice($error_msg, 'error');
+        wp_redirect($route);
+        
+        return array('result' => 'error', 'redirect' => $route);
+    }  
 
     /**
      * Process the Mobbex Webhook.
@@ -134,12 +145,12 @@ final class Payment
      */
     public function process_webhook($order_id, $token, $data)
     {
-        $status = $data['status_code'];
+        $status = isset($data['status_code']) ? $data['status_code'] : null;
         $order  = wc_get_order($order_id);
 
         $this->logger->debug('Mobbex Webhook: Processing data');
 
-        if (empty($status) || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
+        if (!$status || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
             return $this->logger->debug('Mobbex Webhook: Invalid mobbex token or empty data');
 
         // Catch refunds webhooks
@@ -149,6 +160,10 @@ final class Payment
         // Bypass any child webhook (except refunds)
         if ($data['parent'] != 'yes')
             return (bool) $this->add_child_note($order, $data);
+
+        // Exit if it is a expired operation and the order has already been paid
+        if ($order->is_paid() && $status == 401)
+            return true;
 
         $order->update_meta_data('mobbex_webhook', json_decode($data['data'], true));
         $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
@@ -182,7 +197,7 @@ final class Payment
 
         $order->add_order_note($main_mobbex_note);
 
-        if ($data['risk_analysis'] > 0) {
+        if (isset($data['risk_analysis']) && $data['risk_analisys'] > 0) {
             $order->add_order_note('El riesgo de la operación fue evaluado en: ' . $data['risk_analisys']);
             $order->update_meta_data('mobbex_risk_analysis', $data['risk_analisys']);
         }
@@ -210,19 +225,24 @@ final class Payment
      * 
      * @param WC_Order $order
      * @param array $data
+     * 
+     * @return bool Update result.
      */
     public function update_order_status($order, $data)
     {
         $helper = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order);
+        $status = $helper->get_status_from_code($data['status_code']);
 
-        $order->update_status(
-            $helper->get_status_from_code($data['status_code']),
-            $data['status_message']
-        );
+        // Try to complete payment if status was approved
+        if (in_array($data['status_code'], $helper->status_codes['approved'])) {
+            // If is configured a paid status, and is not paid yet complete payment and return
+            if (in_array($status, wc_get_is_paid_statuses()))
+                return $order->is_paid() || $order->payment_complete($data['payment_id']);
 
-        // Complete payment only if it's approved
-        if (in_array($data['status_code'], $helper->status_codes['approved']))
             $order->payment_complete($data['payment_id']);
+        }
+
+        return $order->update_status($status, $data['status_message']);
     }
 
     /**

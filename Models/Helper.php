@@ -25,6 +25,7 @@ class Helper
     {
         $this->config = new Config();
         $this->api    = new MobbexApi($this->config->api_key, $this->config->access_token);
+        $this->settings = $this->config->settings;
     }
 
     public function isReady()
