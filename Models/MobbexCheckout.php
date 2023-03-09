@@ -1,5 +1,7 @@
 <?php
 
+namespace Mobbex\WP\Checkout\Models;
+
 class MobbexCheckout
 {
     public $total = 0;
@@ -25,7 +27,7 @@ class MobbexCheckout
     /** Module configured options */
     public $settings = [];
 
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
     /** @var MobbexApi */
@@ -43,7 +45,7 @@ class MobbexCheckout
      */
     public function __construct($api, $filter = 'mobbex_checkout_custom_data')
     {
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config;
+        $this->config = new \Mobbex\WP\Checkout\Models\Config;
         $this->api    = $api;
         $this->filter = $filter;
     }
@@ -69,7 +71,7 @@ class MobbexCheckout
                 'multivendor'  => $this->config->multivendor != 'no' ? $this->config->multivendor : false,
                 'wallet'       => $this->config->wallet == 'yes' && wp_get_current_user()->ID,
                 'intent'       => $this->config->payment_mode,
-                'timeout'      => $this->config->timeout,
+                'timeout'      => (int)$this->config->timeout,
                 'items'        => $this->items,
                 'merchants'    => $this->merchants,
                 'installments' => $this->installments,
@@ -195,7 +197,7 @@ class MobbexCheckout
      */
     public function convert_country_code($code)
     {
-        $countries = include ('iso-3166.php') ?: [];
+        $countries = include (__DIR__.'/../utils/iso-3166.php') ?: [];
 
         return isset($countries[$code]) ? $countries[$code] : null;
     }

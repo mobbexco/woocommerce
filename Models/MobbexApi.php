@@ -1,5 +1,7 @@
 <?php
 
+namespace Mobbex\WP\Checkout\Models;
+
 class MobbexApi
 {
     public $ready = false;
@@ -36,18 +38,18 @@ class MobbexApi
      * 
      * @return mixed Result status or data if exists.
      * 
-     * @throws \MobbexException
+     * @throws \Mobbex\Exception
      */
     public function request($data)
     {
         if (!$this->ready)
-            return false;
-
+        return false;
+        
         if (empty($data['method']) || empty($data['uri']))
-            throw new \MobbexException('Mobbex request error: Missing arguments', 0, $data);
-
+            throw new \Mobbex\Exception('Mobbex request error: Missing arguments', 0, $data);
+        
         $curl = curl_init();
-
+        
         curl_setopt_array($curl, [
             CURLOPT_URL            => $this->api_url . $data['uri'] . (!empty($data['params']) ? '?' . http_build_query($data['params']) : null),
             CURLOPT_HTTPHEADER     => $this->get_headers(),
@@ -58,24 +60,24 @@ class MobbexApi
             CURLOPT_CUSTOMREQUEST  => $data['method'],
             CURLOPT_POSTFIELDS     => !empty($data['body']) ? json_encode($data['body']) : null,
         ]);
-
+        
         $response = curl_exec($curl);
         $error    = curl_error($curl);
-
+        
         curl_close($curl);
-
+        
         // Throw curl errors
         if ($error)
-            throw new \MobbexException('Curl error in Mobbex request #:' . $error, curl_errno($curl), $data);
-
+         throw new \Mobbex\Exception('Curl error in Mobbex request #:' . $error, curl_errno($curl), $data);
+        
         $result = json_decode($response, true);
 
         // Throw request errors
         if (!$result)
-            throw new \MobbexException('Mobbex request error: Invalid response format', 0, $data);
+            throw new \Mobbex\Exception('Mobbex request error: Invalid response format', 0, $data);
 
         if (!$result['result'])
-            throw new \MobbexException(
+            throw new \Mobbex\Exception(
                 sprintf(
                     'Mobbex request error #%s: %s',
                     isset($result['code']) ? $result['code'] : '',

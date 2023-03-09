@@ -1,5 +1,7 @@
 <?php
 
+namespace Mobbex\WP\Checkout\Helper;
+
 class MobbexCartHelper
 {
     /** Cart instance ID */
@@ -8,30 +10,29 @@ class MobbexCartHelper
     /** @var WC_Cart */
     public $cart;
 
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
-    /** @var MobbexHelper */
+    /** @var \Mobbex\WP\Checkout\Models\Helper */
     public $helper;
 
-
-    /** @var MobbexLogger */
+    /** @var \Mobbex\WP\Checkout\Models\Logger */
     public $logger;
 
     /**
     * Constructor.
     * 
     * @param WC_Cart WooCommerce Cart instance.
-    * @param MobbexHelper Base plugin helper.
-    * @param MobbexLogger Base plugin debugger.
+    * @param \Mobbex\WP\Checkout\Models\Helper Base plugin helper.
+    * @param \Mobbex\WP\Checkout\Models\Logger Base plugin debugger.
     */
     public function __construct($cart, $helper = null)
     {
         $this->id     = $cart->get_cart_hash();
         $this->cart   = $cart;
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
-        $this->helper = $helper ?: new MobbexHelper();
-        $this->logger = new MobbexLogger($this->helper->settings);
+        $this->config = new \Mobbex\WP\Checkout\Models\Config();
+        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Models\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
     }
 
     /**
@@ -47,8 +48,8 @@ class MobbexCartHelper
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->config->api_key;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->config->access_token;
 
-        $api      = new MobbexApi($api_key, $access_token);
-        $checkout = new MobbexCheckout($api, 'mobbex_cart_checkout_custom_data');
+        $api      = new \Mobbex\WP\Checkout\Models\MobbexApi($api_key, $access_token);
+        $checkout = new \Mobbex\WP\Checkout\Models\MobbexCheckout($api, 'mobbex_cart_checkout_custom_data');
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -59,7 +60,7 @@ class MobbexCartHelper
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->logger->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
+            $this->logger->log('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
         do_action('mobbex_cart_checkout_process', $response, $this->id);

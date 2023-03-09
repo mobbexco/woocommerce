@@ -1,6 +1,6 @@
 <?php 
 
-namespace Mobbex\WP\Checkout\Includes;
+namespace Mobbex\WP\Checkout\Models;
 
 class Config 
 {
@@ -22,7 +22,7 @@ class Config
         $saved_values = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', null);
 
         //Create settings array
-        foreach (include('config-options.php') as $key => $option) {
+        foreach (include(__DIR__.'/../utils/config-options.php') as $key => $option) {
             if (isset($option['default']))
                 $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $option['default'];
         }
@@ -60,9 +60,8 @@ class Config
      */
     public function get_catalog_settings($id, $field_name, $catalog_type = 'post')
     {
-
         if (strpos($field_name, '_plans'))
-        return get_metadata($catalog_type, $id, $field_name, true) ?: [];
+            return get_metadata($catalog_type, $id, $field_name, true) ?: [];
 
         return get_metadata($catalog_type, $id, $field_name, true) ?: '';
     }
@@ -116,6 +115,7 @@ class Config
                 //Get product active plans
                 ${$value} = array_merge($this->get_catalog_settings($id, $value, $catalog_type), ${$value});
                 //Get product category active plans
+
                 if (!$admin) {
                     foreach (wc_get_product_term_ids($product_id, 'product_cat') as $categoryId)
                         ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
@@ -126,4 +126,53 @@ class Config
         return compact('common_plans', 'advanced_plans');
     }
 
+    /**
+     * Get current store data from product or product category.
+     * 
+     * @param string $meta_type 'post'|'term'.
+     * @param int|string $id
+     */
+    public function get_store_data($meta_type, $id)
+    {
+        // Get store saved data
+        $stores        = get_option('mbbx_stores') ?: [];
+        $current_store = $this->get_catalog_settings($id, 'mbbx_store', $meta_type);
+
+        return [
+            'enable_ms'   => $this->get_catalog_settings($id, 'mbbx_enable_multisite', $meta_type),
+            'store_names' => array_combine(array_keys($stores), array_column($stores, 'name')) ?: [],
+            'store'       => [
+                'id'           => $current_store,
+                'name'         => isset($stores[$current_store]['name']) ? $stores[$current_store]['name'] : '',
+                'api_key'      => isset($stores[$current_store]['api_key']) ? $stores[$current_store]['api_key'] : '',
+                'access_token' => isset($stores[$current_store]['access_token']) ? $stores[$current_store]['access_token'] : '',
+            ],
+        ];
+    }
+
+    /**
+     * Save a store or create a new one as appropriate.
+     * 
+     * @param string $meta_type 'post'|'term'.
+     * @param int|string $id
+     * @param string $store ID of the store. Use "new" to create a new one.
+     * @param array $new_store_data
+     */
+    public function save_store($meta_type, $id, $store, $new_store_data)
+    {
+        // Get current existing stores
+        $stores = get_option('mbbx_stores') ?: [];
+
+        // If store already exists, save selection
+        if (array_key_exists($store, $stores)) {
+            update_metadata($meta_type, $id, 'mbbx_store', $store);
+        } else if ($store === 'new' && $new_store_data['name'] && $new_store_data['api_key'] && $new_store_data['access_token']) {
+            // Create new store
+            $new_store          = md5($new_store_data['api_key'] . '|' . $new_store_data['access_token']);
+            $stores[$new_store] = $new_store_data;
+
+            // Save selection and new store data
+            update_option('mbbx_stores', $stores) && update_metadata($meta_type, $id, 'mbbx_store', $new_store);
+        }
+    }
 }

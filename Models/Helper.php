@@ -1,7 +1,8 @@
 <?php
-require_once 'utils.php';
+namespace Mobbex\WP\Checkout\Models;
 
-class MobbexHelper
+
+class Helper
 {
     /**
      * All 'ahora' plans.
@@ -11,7 +12,7 @@ class MobbexHelper
     /** Module configuration settings */
     public $settings = [];
 
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var Config */
     public $config;
 
     /** @var MobbexApi */
@@ -22,7 +23,7 @@ class MobbexHelper
      */
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
+        $this->config = new Config();
         $this->api    = new MobbexApi($this->config->api_key, $this->config->access_token);
         $this->settings = $this->config->settings;
     }
@@ -439,7 +440,7 @@ class MobbexHelper
         $order = wc_get_order(get_query_var('order-pay'));
         $cart  = WC()->cart;
 
-        $helper = $order ? new MobbexOrderHelper($order) : new MobbexCartHelper($cart);
+        $helper = $order ? new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order) : new \Mobbex\WP\Checkout\Helper\MobbexCartHelper($cart);
 
         // If is pending order page create checkout from order and return
         if ($order)

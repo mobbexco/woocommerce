@@ -1,23 +1,23 @@
 <?php
 
-namespace Mobbex\Controller;
+namespace Mobbex\WP\Checkout\Controllers;
 
 final class Payment
 {
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
     
-    /** @var \MobbexLogger */
+    /** @var \Mobbex\WP\Checkout\Models\Logger */
     public $logger;
 
-    /** @var \MobbexHelper */
+    /** @var \Mobbex\WP\Checkout\Models\Helper */
     public $helper;
 
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
-        $this->helper = new \MobbexHelper();
-        $this->logger = new \MobbexLogger();
+        $this->config = new \Mobbex\WP\Checkout\Models\Config();
+        $this->helper = new \Mobbex\WP\Checkout\Models\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
 
         if ($this->helper->isReady())
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
@@ -105,11 +105,11 @@ final class Payment
             $this->logger->debug('Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
 
             //order webhook filter
-            $webhookData = \MobbexHelper::format_webhook_data($id, $postData);
+            $webhookData = \Mobbex\WP\Checkout\Models\Helper::format_webhook_data($id, $postData);
             
             // Save transaction
             global $wpdb;
-            $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \MobbexHelper::db_column_format($webhookData));
+            $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \Mobbex\WP\Checkout\Models\Helper::db_column_format($webhookData));
 
             // Try to process webhook
             $result = $this->process_webhook($id, $token, $webhookData);
@@ -125,7 +125,7 @@ final class Payment
                     ]
                 ],
             ];
-        } catch (\Exception $e) {
+        } catch (\Mobbex\Exception $e) {
             $this->logger->debug("REST API > Error", $e->getMessage());
 
             return [
@@ -230,7 +230,7 @@ final class Payment
      */
     public function update_order_status($order, $data)
     {
-        $helper = new \MobbexOrderHelper($order);
+        $helper = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order);
         $status = $helper->get_status_from_code($data['status_code']);
 
         // Try to complete payment if status was approved

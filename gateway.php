@@ -1,7 +1,5 @@
 <?php
 
-require_once 'includes/utils.php';
-
 class WC_Gateway_Mobbex extends WC_Payment_Gateway
 {
     public $supports = array(
@@ -9,21 +7,21 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         'refunds',
     );
 
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
-    /** @var MobbexHelper */
+    /** @var \Mobbex\WP\Checkout\Models\Helper */
     public $helper;
-    
-    /** @var MobbexLogger */
+
+    /** @var \Mobbex\WP\Checkout\Models\Logger */
     public $logger;
 
     public function __construct()
     {
         $this->id     = MOBBEX_WC_GATEWAY_ID;
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
-        $this->helper = new \MobbexHelper();
-        $this->logger = new \MobbexLogger();
+        $this->config = new \Mobbex\WP\Checkout\Models\Config();
+        $this->helper = new \Mobbex\WP\Checkout\Models\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
 
         // String variables. That's used on checkout view
         $this->icon        = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
@@ -47,7 +45,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
      */
     public function init_form_fields()
     {
-        $this->form_fields = include 'includes/config-options.php';
+        $this->form_fields = include 'utils/config-options.php';
     }
 
     public function process_admin_options()
@@ -70,7 +68,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
      */
     public function process_payment($order_id)
     {
-        $this->logger->debug('Creating payment', compact('order_id'));
+        $this->logger->log('Creating payment', compact('order_id'));
 
         if (!$this->helper->isReady())
             return ['result' => 'error'];
@@ -78,10 +76,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
 
         // Create checkout from order
-        $order_helper  = new MobbexOrderHelper($order);
+        $order_helper  = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order);
         $checkout_data = $order_helper->create_checkout();
 
-        $this->logger->debug('Checkout response', $checkout_data);
+        $this->logger->log('Checkout response', $checkout_data);
 
         if (!$checkout_data)
             return ['result' => 'error'];
@@ -106,7 +104,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         try {
             // Get parent and child transactions
-            $helper   = new \MobbexOrderHelper($order_id);
+            $helper   = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order_id);
             $parent   = $helper->get_parent_transaction();
             $children = $helper->get_approved_children();
 
@@ -114,11 +112,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             $child = isset($children[$reason]) ? $children[$reason] : (sizeof($children) == 1 ? reset($children) : null);
 
             if (!$parent)
-                throw new \MobbexException('No se encontró información de la transacción padre.', 596);
+                throw new \Mobbex\Exception('No se encontró información de la transacción padre.', 596);
 
             // If use multicard and is not a total refund
             if ($helper->has_childs($parent) && !$child && (float) $helper->order->get_remaining_refund_amount())
-                throw new \MobbexException('Para realizar una devolución parcial en este pedido, especifique el id de la transacción en el campo "Razón".', 596);
+                throw new \Mobbex\Exception('Para realizar una devolución parcial en este pedido, especifique el id de la transacción en el campo "Razón".', 596);
 
             // Make request
             return $this->helper->api->request([

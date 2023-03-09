@@ -1,35 +1,52 @@
 <?php
 
-namespace Mobbex\Controller;
+namespace Mobbex\WP\Checkout\Observer;
 
-final class Checkout
+class Checkout
 {
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
-    /** @var \MobbexHelper */
+    /** @var \Mobbex\WP\Checkout\Models\Helper */
     public $helper;
 
-    /** @var \MobbexLogger */
+    /** @var \Mobbex\WP\Checkout\Models\Logger */
     public $logger;
 
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
-        $this->helper = new \MobbexHelper();
-        $this->logger = new \MobbexLogger();
+        $this->config = new \Mobbex\WP\Checkout\Models\Config();
+        $this->helper = new \Mobbex\WP\Checkout\Models\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
+    }
 
-        // Only if the plugin is enabled
-        if ($this->helper->isReady()) {
-            // Add additional checkout fields
-            if ($this->config->own_dni == 'yes')
-                add_filter('woocommerce_billing_fields', [$this, 'add_checkout_fields']);
+    /**
+     * Check that the Cart does not have products from different stores.
+     * 
+     * @param bool $valid
+     * @param int $product_id
+     * 
+     * @return bool $valid
+     */
+    public function validate_cart_items($valid, $product_id)
+    {
+        $cart_items = !empty(WC()->cart->get_cart()) ? WC()->cart->get_cart() : [];
 
-            // Display fields on admin panel and try to save it
-            add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'display_checkout_fields_data']);
-            add_action('woocommerce_after_checkout_validation', [$this, 'validate_checkout_fields']);
-            add_action('woocommerce_checkout_update_order_meta', [$this, 'save_checkout_fields']);
+        // Get store from current product
+        $product_store = \Mobbex\WP\Checkout\Models\Helper::get_store_from_product($product_id);
+
+        // Get stores from cart items
+        foreach ($cart_items as $item) {
+            $item_store = \Mobbex\WP\Checkout\Models\Helper::get_store_from_product($item['product_id']);
+
+            // If there are different stores in the cart items
+            if ($product_store != $item_store) {
+                wc_add_notice(__('The cart cannot have products from different sellers at the same time.', 'mobbex-for-woocommerce'), 'error');
+                return false;
+            }
         }
+
+        return $valid;
     }
 
     /**
@@ -41,6 +58,9 @@ final class Checkout
      */
     public function add_checkout_fields($fields)
     {
+        if(!$this->helper->isReady() && $this->config->own_dni !== 'yes')
+            return $fields;
+
         $cutomer_id = WC()->customer ? WC()->customer->get_id() : null;
 
         $fields['billing_dni'] = [
@@ -63,12 +83,12 @@ final class Checkout
      */
     public function display_checkout_fields_data($order)
     {
-        ?>
+?>
         <p>
             <strong>DNI:</strong>
             <?= get_post_meta($order->get_id(), '_billing_dni', true) ?: get_post_meta($order->get_id(), 'billing_dni', true) ?>
         </p>
-        <?php
+<?php
     }
 
     /**

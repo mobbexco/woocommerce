@@ -1,5 +1,5 @@
 
-<?php if ($gateway->helper->settings['unified_mode'] != 'yes' && !empty($gateway->methods)) : ?>
+<?php if ($gateway->config->unified_mode != 'yes' && !empty($gateway->methods)) : ?>
     <?php foreach ($gateway->methods as $method) : ?>
         <li class="wc_payment_method payment_method_mobbex_method_<?= "$method[group].$method[subgroup]" ?>">
             <input id="payment_method_mobbex_method_<?= "$method[group].$method[subgroup]" ?>" type="radio" class="input-radio" name="payment_method" value="<?= $gateway->id ?>" <?php checked($gateway->chosen, true); ?> method-type="method" group="<?= "$method[group]:$method[subgroup]" ?>" data-order_button_text="<?= $gateway->order_button_text ?>" />

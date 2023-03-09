@@ -1,8 +1,9 @@
 <?php
+namespace Mobbex\WP\Checkout\Models;
 
-class MobbexLogger
+class Logger
 {
-    /** @var \Mobbex\WP\Checkout\Includes\Config */
+    /** @var \Mobbex\WP\Checkout\Models\Config */
     public $config;
 
     /**
@@ -12,7 +13,7 @@ class MobbexLogger
      */
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Includes\Config();
+        $this->config = new Config();
     }
 
     /**
@@ -22,7 +23,7 @@ class MobbexLogger
      * @param mixed $data Any extra data.
      * @param bool $force True to force log (bypass debug mode option).
      */
-    public function debug($message = 'debug', $data = [], $force = false)
+    public function log($message = 'debug', $data = [], $force = false)
     {
         if (!$force && $this->config->debug_mode != 'yes')
             return;
