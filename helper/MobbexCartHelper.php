@@ -98,7 +98,7 @@ class MobbexCartHelper
                 $item['line_total'],
                 $item['quantity'],
                 $item['data']->get_name(),
-                $this->helper->get_product_image($item['product_id']),
+                $this->config->get_product_image($item['product_id']),
                 $this->config->get_product_entity($item['product_id'])
             );
 
@@ -164,7 +164,7 @@ class MobbexCartHelper
 
         // Search current store configured
         foreach ($items as $item) {
-            $store_id = $this->helper::get_store_from_product($item['product_id']);
+            $store_id = $this->config->get_store_from_product($item['product_id']);
 
             if ($store_id && isset($stores[$store_id]))
                 return $stores[$store_id];

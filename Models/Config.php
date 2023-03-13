@@ -12,6 +12,21 @@ class Config
         $this->setProperties();
     }
 
+    public function isReady()
+    {
+        return ($this->enabled === 'yes' && !empty($this->api_key) && !empty($this->access_token));
+    }
+
+    public function generate_token()
+    {
+        return md5($this->config->api_key . '|' . $this->config->access_token);
+    }
+
+    public function valid_mobbex_token($token)
+    {
+        return $token == $this->generate_token();
+    }
+
     /**
      * Return an array with all Mobbex settings & his values
      * @return array $settings
@@ -101,6 +116,19 @@ class Config
             return $this->get_catalog_settings($product_id, 'mbbx_sus_uid');
     }
 
+    public function get_product_image($product_id)
+    {
+        $product = wc_get_product($product_id);
+
+        if (!$product)
+            return;
+
+        $image   = wp_get_attachment_image_url($product->get_image_id(), 'thumbnail');
+        $default = wc_placeholder_img_src('thumbnail');
+
+        return $image ?: $default;
+    }
+
     /**
      * Get active plans for a given products.
      * @param array $products
@@ -173,6 +201,34 @@ class Config
 
             // Save selection and new store data
             update_option('mbbx_stores', $stores) && update_metadata($meta_type, $id, 'mbbx_store', $new_store);
+        }
+    }
+
+    /**
+     * Get Store ID from product and its categories.
+     * 
+     * @param int|string $product_id
+     * 
+     * @return string|null $store_id
+     */
+    public function get_store_from_product($product_id)
+    {
+        $stores     = get_option('mbbx_stores') ?: [];
+        $store      = get_post_meta($product_id, 'mbbx_store', true);
+        $ms_enabled = get_post_meta($product_id, 'mbbx_enable_multisite', true);
+
+        if ($ms_enabled && !empty($store) && !empty($stores[$store]))
+            return $store;
+
+        // Get stores from product categories
+        $categories = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'ids']);
+
+        foreach ($categories as $cat_id) {
+            $store      = get_term_meta($cat_id, 'mbbx_store', true);
+            $ms_enabled = get_term_meta($cat_id, 'mbbx_enable_multisite', true);
+
+            if ($ms_enabled && !empty($store) && !empty($stores[$store]))
+                return $store;
         }
     }
 }

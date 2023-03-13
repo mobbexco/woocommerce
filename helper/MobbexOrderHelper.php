@@ -73,7 +73,7 @@ class MobbexOrderHelper
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->logger->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '', true);
+            $this->logger->log('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '', true);
         }
 
         do_action('mobbex_checkout_process', $response, $this->id);
@@ -111,7 +111,7 @@ class MobbexOrderHelper
                 $item->get_total(),
                 $item->get_quantity(),
                 $item->get_name(),
-                $this->helper->get_product_image($item->get_product_id()),
+                $this->config->get_product_image($item->get_product_id()),
                 $this->config->get_product_entity($item->get_product_id()),
                 $this->config->get_product_subscription($item->get_product_id())
             );
@@ -179,7 +179,7 @@ class MobbexOrderHelper
 
         // Search store configured
         foreach ($items as $item) {
-            $store_id = $this->helper::get_store_from_product($item->get_product_id());
+            $store_id = $this->config->get_store_from_product($item->get_product_id());
 
             if ($store_id && !empty($stores[$store_id]))
                 return $stores[$store_id];
@@ -208,79 +208,15 @@ class MobbexOrderHelper
     }
 
     /**
-     * Retrieve the latest parent transaction for the order loaded.
-     * 
-     * @return array|null An asociative array with transaction values.
-     */
-    public function get_parent_transaction()
-    {
-        // Generate query params
-        $query = [
-            'operation' => 'SELECT *',
-            'table'     => $this->db->prefix . 'mobbex_transaction',
-            'condition' => "WHERE `order_id`='{$this->id}' AND `parent`='yes'",
-            'order'     => 'ORDER BY `id` DESC',
-            'limit'     => 'LIMIT 1',
-        ];
-
-        // Make request to db
-        $result = $this->db->get_results(
-            "$query[operation] FROM $query[table] $query[condition] $query[order] $query[limit];",
-            ARRAY_A
-        );
-
-        return isset($result[0]) ? $result[0] : null;
-    }
-
-    /**
-     * Retrieve all child transactions for the order loaded.
-     * 
-     * @return array[] A list of asociative arrays with transaction values.
-     */
-    public function get_child_transactions()
-    {
-        // Generate query params
-        $query = [
-            'operation' => 'SELECT *',
-            'table'     => $this->db->prefix . 'mobbex_transaction',
-            'condition' => "WHERE `order_id`='{$this->id}' AND `parent`='no'",
-            'order'     => 'ORDER BY `id` ASC',
-            'limit'     => 'LIMIT 50',
-        ];
-
-        // Make request to db
-        $result = $this->db->get_results(
-            "$query[operation] FROM $query[table] $query[condition] $query[order] $query[limit];",
-            ARRAY_A
-        );
-
-        return $result ?: [];
-    }
-
-    /**
-     * Formats the childs data
-     * 
-     * @param int $order_id
-     * @param array $childsData
-     * 
-     */
-    public function format_childs($order_id, $childsData)
-    {
-        foreach ($childsData as $child)
-            $childs[] = $this->helper->format_webhook_data($order_id, $child);
-        return $childs;
-    }
-
-    /**
      * Get approved child transactions from the order loaded (multicard only).
      * 
      * @return array[] Associative array with payment_id as key.
      */
-    public function get_approved_children()
+    public function get_approved_children($transaction)
     {
         $methods = [];
 
-        foreach ($this->get_child_transactions() as $child) {
+        foreach ($transaction->childs as $child) {
             // Filter cash methods and failed status
             if (!$child['source_number'] || !in_array($child['status_code'], $this->status_codes['approved']))
                 continue;
@@ -292,14 +228,39 @@ class MobbexOrderHelper
     }
 
     /**
-     * Check if the transaction given has multicard childs.
+     * Get all product IDs from Order.
      * 
-     * @param array $parent An asociative array with transaction values.
-     * 
-     * @return bool
+     * @param WP_Order $order
+     * @return array $products
      */
-    public function has_childs($parent)
+    public static function get_product_ids($order)
     {
-        return isset($parent['operation_type']) && $parent['operation_type'] == 'payment.multiple-sources';
+        $products = [];
+
+        foreach ($order->get_items() as $item)
+            $products[] = $item->get_product_id();
+
+        return $products;
+    }
+
+    /**
+     * Get all category IDs from Order.
+     * Duplicates are removed.
+     * 
+     * @param WP_Order $order
+     * @return array $categories
+     */
+    public static function get_category_ids($order)
+    {
+        $categories = [];
+
+        // Get Products Ids
+        $products = self::get_product_ids($order);
+
+        foreach ($products as $product)
+            $categories = array_merge($categories, wp_get_post_terms($product, 'product_cat', ['fields' => 'ids']));
+
+        // Remove duplicated IDs and return
+        return array_unique($categories);
     }
 }
