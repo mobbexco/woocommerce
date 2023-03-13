@@ -76,7 +76,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
 
         // Create checkout from order
-        $order_helper  = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order);
+        $order_helper  = new \Mobbex\WP\Checkout\Helper\OrderHelper($order);
         $checkout_data = $order_helper->create_checkout();
 
         $this->logger->log('Checkout response', $checkout_data);
@@ -104,9 +104,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         try {
             // Get parent and child transactions
-            $order_helper      = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order_id);
-            $transaction = new \Mobbex\WP\Checkout\Models\Transaction($order_id);
-            $children    = $order_helper->get_approved_children($transaction);
+            $order_helper = new \Mobbex\WP\Checkout\Helper\OrderHelper($order_id);
+            $transaction  = new \Mobbex\WP\Checkout\Models\Transaction($order_id);
+            $children     = $order_helper->get_approved_children($transaction);
 
             // Try to get child transaction from reason field
             $child = isset($children[$reason]) ? $children[$reason] : (sizeof($children) == 1 ? reset($children) : null);

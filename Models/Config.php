@@ -62,6 +62,33 @@ class Config
             $this->$key = $value;
     }
 
+    /**
+     * Returns formated Mobbex settings to be used in php sdk
+     * @return array
+     */
+    public function formated_settings()
+    {
+        $formatedSettings = [];
+
+        foreach ($this->settings as $key => $value) {
+
+            switch ($value) {
+                case 'yes':
+                    $formatedSettings[$key] = true;
+                    break;
+                case 'no':
+                    $formatedSettings[$key] = false;
+                    break;
+                default:
+                    $formatedSettings[$key] = $value;
+                    break;
+            }
+
+        }
+
+        return $formatedSettings;
+    }
+
     /** CATALOG SETTINGS **/
 
     /**
@@ -137,15 +164,15 @@ class Config
     public function get_catalog_plans($products, $catalog_type = 'post', $admin = false)
     {
         $common_plans = $advanced_plans = [];
-
+        
         foreach ($products as $id) {
             foreach (['common_plans', 'advanced_plans'] as $value) {
                 //Get product active plans
                 ${$value} = array_merge($this->get_catalog_settings($id, $value, $catalog_type), ${$value});
                 //Get product category active plans
 
-                if (!$admin) {
-                    foreach (wc_get_product_term_ids($product_id, 'product_cat') as $categoryId)
+                if (!$admin && $catalog_type === 'post') {
+                    foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
                         ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
                 }
             }

@@ -158,10 +158,8 @@ class Order
     {
         global $post;
 
-        $order_helper = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper(wc_get_order($post->ID));
-
         // Get transaction data
-        $transaction = new \Mobbex\WP\Checkout\Models\Webhook($post->ID);
+        $transaction = new \Mobbex\WP\Checkout\Models\Transaction($post->ID);
 
         echo "<table><th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Information') . "</b></h4></th>";
 
