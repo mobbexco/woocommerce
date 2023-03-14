@@ -216,7 +216,7 @@ class Order
                 'Amount'      => 'installment_amount'
             ];
             foreach ($childs as $card) :
-                $this->create_panel($multipleCardArray, $card);
+                self::create_panel($multipleCardArray, $card);
                 echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
             endforeach;
         } else {
@@ -255,7 +255,7 @@ class Order
     /**
      * Create Coupon section
      * 
-     * @param \Mobbex\WP\Checkout\Models\Webhook $parent
+     * @param \Mobbex\WP\Checkout\Models\Transaction $transaction
      */
      public static function create_coupon($transaction)
      {

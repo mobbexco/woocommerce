@@ -10,11 +10,38 @@ class Transaction
     /** @var Config */
     public $config;
 
+    public $parent = '';
+    public $operation_type = '';
+    public $payment_id = '';
+    public $description = '';
+    public $status_code = '';
+    public $status_message = '';
+    public $source_name = '';
+    public $source_type = '';
+    public $source_reference = '';
+    public $source_number = '';
+    public $source_expiration = '';
+    public $source_installment = '';
+    public $installment_name = '';
+    public $installment_count = '';
+    public $source_url = '';
+    public $cardholder = '';
+    public $entity_name = '';
+    public $entity_uid = '';
+    public $customer = '';
+    public $checkout_uid = '';
+    public $total = '';
+    public $currency = '';
+    public $risk_analysis = '';
+    public $childs = [];
+    public $data = [];
+
     public function __construct($order_id)
     {
         $this->db       = $GLOBALS['wpdb'];
         $this->order_id = $order_id;
         $this->config   = new Config();
+        $this->logger   = new Logger();
         
         $this->load();
     }
@@ -30,7 +57,7 @@ class Transaction
             return $this->logger->log('error', 'webhook > load | Failed to obtain the transaction: '. $this->db->last_error, ['order_id' => $this->order_id]);
             
         foreach ($result as $key => $value)
-            $this->$key = strpos($value, '{"') ? json_decode($value, true) : $value;
+            $this->$key = $key === 'data' ? json_decode($value, true) : $value;
     }
 
     /**
@@ -95,7 +122,7 @@ class Transaction
             'updated'            => isset($webhook['payment']['updated']) ? $webhook['payment']['created'] : '',
         ];
 
-        $this->data = $data;
+        return $data;
     }
 
     /**
@@ -147,7 +174,6 @@ class Transaction
             'order'     => 'ORDER BY `id` DESC',
             'limit'     => "LIMIT $limit",
         ];
-
         // Make request to db
         $result = $wpdb->get_results(
             "$query[operation] FROM $query[table] $query[condition] $query[order] $query[limit];",
@@ -190,7 +216,7 @@ class Transaction
             $i++;
         }
 
-       return $condition .= ";";
+       return $condition;
     }
 
     /**

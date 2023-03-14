@@ -105,13 +105,13 @@ final class Payment
             $this->logger->log('Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
 
             //Load Webhook
-            $webhook = new \Mobbex\WP\Checkout\Models\Webhook($id);
+            $webhook = new \Mobbex\WP\Checkout\Models\Transaction($id);
             //save data
             $webhook->save($postData);
 
             // Try to process webhook
             $result = $this->process_webhook($id, $token, $webhook);
-            
+
             return [
                 'result'   => $result,
                 'platform' => [
@@ -120,21 +120,21 @@ final class Payment
                     'ecommerce' => [
                         'wordpress'   => get_bloginfo('version'),
                         'woocommerce' => WC_VERSION
-                    ]
-                ],
-            ];
-        } catch (\Mobbex\Exception $e) {
-            $this->logger->log("REST API > Error", $e->getMessage());
-
-            return [
-                "result" => false,
-            ];
+                        ]
+                    ],
+                ];
+            } catch (\Mobbex\Exception $e) {
+                $this->logger->log("REST API > Error", $e->getMessage());
+                
+                return [
+                    "result" => false,
+                ];
+            }
         }
-    }
 
-    /**
-     * Process & store the data of the Mobbex webhook.
-     * 
+        /**
+         * Process & store the data of the Mobbex webhook.
+         * 
      * @param int $order_id
      * @param string $token
      * @param array $data
@@ -215,7 +215,7 @@ final class Payment
      * Update order status using webhook formatted data.
      * 
      * @param WC_Order $order
-     * @param \Mobbex\WP\Checkout\Models\Webhook $webhook
+     * @param \Mobbex\WP\Checkout\Models\Transaction $webhook
      */
     public function update_order_status($order, $webhook)
     {
@@ -262,7 +262,7 @@ final class Payment
     /**
      * Try to refund an order using webhook formatted data.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Webhook $webhook
+     * @param \Mobbex\WP\Checkout\Models\Transaction $webhook
      * 
      * @return WC_Order_Refund|WP_Error
      */
@@ -278,7 +278,7 @@ final class Payment
      * Add a note with the child transaction data to the order given.
      * 
      * @param WC_Order $order
-     * @param \Mobbex\WP\Checkout\Models\Webhook $webhook Webhook child tansaction.
+     * @param \Mobbex\WP\Checkout\Models\Transaction $webhook Webhook child tansaction.
      * 
      * @return int Comment id.
      */
