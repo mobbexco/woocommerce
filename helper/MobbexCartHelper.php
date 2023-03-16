@@ -7,7 +7,7 @@ class MobbexCartHelper
     /** Cart instance ID */
     public $id;
 
-    /** @var WC_Cart */
+    /** @var \WC_Cart */
     public $cart;
 
     /** @var \Mobbex\WP\Checkout\Models\Config */
@@ -22,7 +22,7 @@ class MobbexCartHelper
     /**
     * Constructor.
     * 
-    * @param WC_Cart WooCommerce Cart instance.
+    * @param \WC_Cart WooCommerce Cart instance.
     * @param \Mobbex\WP\Checkout\Models\Helper Base plugin helper.
     * @param \Mobbex\WP\Checkout\Models\Logger Base plugin debugger.
     */

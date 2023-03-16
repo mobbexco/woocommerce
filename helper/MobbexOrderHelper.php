@@ -7,7 +7,7 @@ class MobbexOrderHelper
     /** Order instance ID */
     public $id;
 
-    /** @var WC_Order */
+    /** @var \WC_Order */
     public $order;
 
     /** @var \Mobbex\WP\Checkout\Models\Config */
@@ -73,7 +73,7 @@ class MobbexOrderHelper
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->logger->debug('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '', true);
+            $this->logger->log('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '', true);
         }
 
         do_action('mobbex_checkout_process', $response, $this->id);
@@ -154,7 +154,7 @@ class MobbexOrderHelper
      */
     private function add_customer($checkout)
     {
-        $user = new WP_User($this->order->get_user_id());
+        $user = new \WP_User($this->order->get_user_id());
 
         $checkout->set_customer(
             $this->order->get_formatted_billing_full_name() ?: $user->display_name,
