@@ -167,19 +167,17 @@ jQuery(function ($) {
             return;
         }
 
-        // Notices wrapper on WooCommerce
-        var noticesWrapper = $(".woocommerce-notices-wrapper");
-
         // Add new errors
         if (response.messages) {
-            // Remove old errors
-            noticesWrapper.empty();
-
+            var checkout_form = $(".woocommerce-checkout"); 
+            //Remove old errors
+            $(".woocommerce-checkout .woocommerce-error").remove()
+            //Show errors
             if (typeof (response.messages) === 'string') {
-                noticesWrapper.append(response.messages);
+                checkout_form.prepend(response.messages);
             } else {
                 for (var message of response.messages) {
-                    noticesWrapper.append(`<ul class="woocommerce-error" role="alert"><li>${message}</li></ul>`);
+                    checkout_form.prepend('<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout"><ul class="woocommerce-error" role="alert"><li>'+message+'</li></ul></div>')
                 }
             }
         }
