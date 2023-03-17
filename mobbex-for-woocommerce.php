@@ -194,8 +194,7 @@ class MobbexGateway
 
     public static function load_update_checker()
     {
-        require 'plugin-update-checker/plugin-update-checker.php';
-        $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+        $myUpdateChecker = \Puc_v4_Factory::buildUpdateChecker(
             'https://github.com/mobbexco/woocommerce/',
             __FILE__,
             'mobbex-plugin-update-checker'
