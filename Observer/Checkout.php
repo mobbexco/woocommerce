@@ -4,20 +4,20 @@ namespace Mobbex\WP\Checkout\Observer;
 
 class Checkout
 {
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
 
-    /** @var \Mobbex\WP\Checkout\Models\Logger */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Models\Config();
-        $this->helper = new \Mobbex\WP\Checkout\Models\Helper();
-        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
     }
 
     /**
@@ -33,11 +33,11 @@ class Checkout
         $cart_items = !empty(WC()->cart->get_cart()) ? WC()->cart->get_cart() : [];
 
         // Get store from current product
-        $product_store = \Mobbex\WP\Checkout\Models\Helper::get_store_from_product($product_id);
+        $product_store = \Mobbex\WP\Checkout\Model\Helper::get_store_from_product($product_id);
 
         // Get stores from cart items
         foreach ($cart_items as $item) {
-            $item_store = \Mobbex\WP\Checkout\Models\Helper::get_store_from_product($item['product_id']);
+            $item_store = \Mobbex\WP\Checkout\Model\Helper::get_store_from_product($item['product_id']);
 
             // If there are different stores in the cart items
             if ($product_store != $item_store) {

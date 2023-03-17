@@ -10,29 +10,29 @@ class Cart
     /** @var \WC_Cart */
     public $cart;
 
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
 
-    /** @var \Mobbex\WP\Checkout\Models\Logger */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
     /**
     * Constructor.
     * 
     * @param \WC_Cart WooCommerce Cart instance.
-    * @param \Mobbex\WP\Checkout\Models\Helper Base plugin helper.
-    * @param \Mobbex\WP\Checkout\Models\Logger Base plugin debugger.
+    * @param \Mobbex\WP\Checkout\Model\Helper Base plugin helper.
+    * @param \Mobbex\WP\Checkout\Model\Logger Base plugin debugger.
     */
     public function __construct($cart, $helper = null)
     {
         $this->id     = $cart->get_cart_hash();
         $this->cart   = $cart;
-        $this->config = new \Mobbex\WP\Checkout\Models\Config();
-        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Models\Helper();
-        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Model\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
     }
 
     /**
@@ -48,8 +48,8 @@ class Cart
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->config->api_key;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->config->access_token;
 
-        $api      = new \Mobbex\WP\Checkout\Models\MobbexApi($api_key, $access_token);
-        $checkout = new \Mobbex\WP\Checkout\Models\MobbexCheckout($api, 'mobbex_cart_checkout_custom_data');
+        $api      = new \Mobbex\WP\Checkout\Model\MobbexApi($api_key, $access_token);
+        $checkout = new \Mobbex\WP\Checkout\Model\MobbexCheckout($api, 'mobbex_cart_checkout_custom_data');
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);

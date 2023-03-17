@@ -13,13 +13,13 @@ require_once 'vendor/autoload.php';
 
 class MobbexGateway
 {
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public static $config;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public static $helper;
 
-    /** @var \Mobbex\WP\Checkout\Models\Logger */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public static $logger;
 
     /** @var \Mobbex\WP\Checkout\Observer\Registrar */
@@ -48,14 +48,14 @@ class MobbexGateway
 
     public function init()
     {
-        self::$config    = new \Mobbex\WP\Checkout\Models\Config();
+        self::$config    = new \Mobbex\WP\Checkout\Model\Config();
         
         //Init de Mobbex php sdk
         $this->init_sdk();
         
-        self::$helper    = new \Mobbex\WP\Checkout\Models\Helper();
-        self::$logger    = new \Mobbex\WP\Checkout\Models\Logger();
-        self::$registrar = new \Mobbex\WP\Checkout\Models\Registrar();
+        self::$helper    = new \Mobbex\WP\Checkout\Model\Helper();
+        self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
+        self::$registrar = new \Mobbex\WP\Checkout\Model\Registrar();
 
 
         MobbexGateway::load_textdomain();
@@ -77,7 +77,7 @@ class MobbexGateway
         MobbexGateway::add_gateway();
 
         // Init controllers
-        new \Mobbex\WP\Checkout\Controllers\Payment;
+        new \Mobbex\WP\Checkout\Controller\Payment;
 
         //Register hooks
         self::$registrar->register_hooks();

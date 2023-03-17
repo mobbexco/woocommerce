@@ -1,6 +1,6 @@
 <?php
 
-namespace Mobbex\WP\Checkout\Models;
+namespace Mobbex\WP\Checkout\Model;
 
 class MobbexCheckout
 {
@@ -27,7 +27,7 @@ class MobbexCheckout
     /** Module configured options */
     public $settings = [];
 
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
     /** @var MobbexApi */
@@ -45,7 +45,7 @@ class MobbexCheckout
      */
     public function __construct($api, $filter = 'mobbex_checkout_custom_data')
     {
-        $this->config = new \Mobbex\WP\Checkout\Models\Config;
+        $this->config = new \Mobbex\WP\Checkout\Model\Config;
         $this->api    = $api;
         $this->filter = $filter;
     }
