@@ -158,7 +158,7 @@ class Order
     {
         global $post;
 
-        $mbbxOrderHelp = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper(wc_get_order($post->ID));
+        $mbbxOrderHelp = new \Mobbex\WP\Checkout\Helper\Order(wc_get_order($post->ID));
 
         // Get transaction data
         $parent  = $mbbxOrderHelp->get_parent_transaction();

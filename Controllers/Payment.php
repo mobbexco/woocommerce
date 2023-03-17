@@ -226,7 +226,7 @@ final class Payment
      */
     public function update_order_status($order, $data)
     {
-        $helper = new \Mobbex\WP\Checkout\Helper\MobbexOrderHelper($order);
+        $helper = new \Mobbex\WP\Checkout\Helper\Order($order);
         $status = $helper->get_status_from_code($data['status_code']);
 
         // Try to complete payment if status was approved

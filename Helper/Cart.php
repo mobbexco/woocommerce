@@ -2,7 +2,7 @@
 
 namespace Mobbex\WP\Checkout\Helper;
 
-class MobbexCartHelper
+class Cart
 {
     /** Cart instance ID */
     public $id;

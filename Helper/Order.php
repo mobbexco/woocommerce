@@ -2,7 +2,7 @@
 
 namespace Mobbex\WP\Checkout\Helper;
 
-class MobbexOrderHelper
+class Order
 {
     /** Order instance ID */
     public $id;
