@@ -252,6 +252,7 @@ final class Payment
         //Store original order total & update order with mobbex total
         $order_total = $order->get_total();
         $order->set_total($data['total']);
+        $order->save();
         
         if($order_total == $data['total'])
             return
