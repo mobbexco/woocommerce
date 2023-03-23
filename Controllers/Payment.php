@@ -100,6 +100,8 @@ final class Payment
             $id          = $request->get_param('mobbex_order_id');
             $token       = $request->get_param('mobbex_token');
 
+            $this->logger->log('debug', 'payment > mobbex_webhook | Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
+
             //order webhook filter
             $webhookData = \Mobbex\WP\Checkout\Models\Helper::format_webhook_data($id, $postData);
             
@@ -121,8 +123,8 @@ final class Payment
                     ]
                 ],
             ];
-        } catch (\Mobbex\Exception $e) {
-            $this->logger->log("REST API > Error", $e->getMessage());
+        } catch (\Exception $e) {
+            $this->logger->log('error', "payment > mobbex_webhook | REST API > Error", $e->getMessage());
 
             return [
                 "result" => false,
@@ -144,10 +146,10 @@ final class Payment
         $status = isset($data['status_code']) ? $data['status_code'] : null;
         $order  = wc_get_order($order_id);
 
-        $this->logger->log('Mobbex Webhook: Processing data');
+        $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', ['order_id' => $order_id, 'data' => $data]);
 
         if (!$status || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
-            return $this->logger->log('Mobbex Webhook: Invalid mobbex token or empty data');
+            return $this->logger->log('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
 
         // Catch refunds webhooks
         if ($status == 602 || $status == 605)

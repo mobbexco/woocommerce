@@ -73,7 +73,8 @@ class Order
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->logger->log('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '', true);
+
+            $this->logger->log('error', 'class-order-helper > create_checkout | Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
         do_action('mobbex_checkout_process', $response, $this->id);
