@@ -5,17 +5,17 @@
     <div class="mbbx_plans_cont">
         <div class="mbbx_plan_list">
             <p><?= __('Common plans', 'mobbex-for-woocommerce') ?></p>
-            <?php foreach ($common_fields as $field) : ?>
+            <?php foreach ($commonFields as $field) : ?>
                 <input type="hidden" name=" <?= $field['id'] ?>" value="no">
                 <?php woocommerce_wp_checkbox($field); ?>
             <?php endforeach; ?>
         </div>
         <div class="mbbx_plan_list">
             <p><?= __('Plans with advanced rules', 'mobbex-for-woocommerce') ?></p>
-            <?php foreach ($advanced_fields as $source_ref => $fields) : ?>
+            <?php foreach ($advancedFields as $source_ref => $fields) : ?>
                 <div class='mbbx_plan_source'>
                     <img src='https://res.mobbex.com/images/sources/<?= $source_ref ?>.png'>
-                    <p><?= $source_names[$source_ref] ?></p>
+                    <p><?= $sourceNames[$source_ref] ?></p>
                 </div>
                 <?php foreach ($fields as $field) {
                     woocommerce_wp_checkbox($field);

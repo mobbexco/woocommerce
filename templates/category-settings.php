@@ -13,7 +13,7 @@
         </tr>
         <tr class="form-field mbbx-plans-cont">
             <td>
-                <?php foreach ($common_fields as $field) : ?>
+                <?php foreach ($commonFields as $field) : ?>
                     <div class="mbbx-plan">
                         <input type="hidden" name="<?= $field['id'] ?>" value="no">
                         <input type="checkbox" name="<?= $field['id'] ?>" id="<?= $field['id'] ?>" value="<?= $field['value'] ?>" <?= checked($field['value'], 'yes', false) ?>>
@@ -24,10 +24,10 @@
         </tr>
         <tr class="form-field mbbx-plans-cont advanced">
             <td>
-                <?php foreach ($advanced_fields as $source_ref => $fields) : ?>
+                <?php foreach ($advancedFields as $source_ref => $fields) : ?>
                     <div class="mbbx-plan-source">
                         <img src='https://res.mobbex.com/images/sources/<?= $source_ref ?>.png'>
-                        <p><?= $source_names[$source_ref] ?></p>
+                        <p><?= $sourceNames[$source_ref] ?></p>
                     </div>
                     <?php foreach ($fields as $field) : ?>
                         <div class="mbbx-plan">
