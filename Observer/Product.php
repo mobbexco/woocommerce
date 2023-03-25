@@ -176,7 +176,7 @@ class Product
         if (isset($params['price'])) {
             $price        = $params['price'];
             $products_ids = isset($params['products_ids']) ? explode(',', $params['products_ids']) : [];
-        } else if (is_cart()) {
+        } else if (is_cart() || is_checkout()) {
             $price        = WC()->cart->get_total(null);
             $products_ids = array_column(WC()->cart->get_cart() ?: [], 'product_id');
         } else if ($post && $post->post_type == 'product') {

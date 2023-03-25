@@ -188,6 +188,14 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
+    'financial_widget_on_checkout' => [
+        'title'       => __('Widget de financiación en el checkout', 'mobbex-for-woocommerce'),
+        'description' => __('Mostrar el botón de financiación en la página de checkout.', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'no',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
     'financial_widget_button_text' => [
         'title'       => __('Financial Widget Button text', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your financial widget button text from here.', 'mobbex-for-woocommerce'),
