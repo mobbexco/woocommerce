@@ -251,12 +251,14 @@ final class Payment
     {
         //Store original order total & update order with mobbex total
         $order_total = $order->get_total();
+        
+        if($order_total == $data['total'])
+            return;
+
+        //update the order total
         $order->set_total($data['total']);
         $order->save();
         
-        if($order_total == $data['total'])
-            return
-
         // First remove previus fees
         $order->remove_order_items('fee');
 
