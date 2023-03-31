@@ -146,7 +146,7 @@ final class Payment
         $status = isset($data['status_code']) ? $data['status_code'] : null;
         $order  = wc_get_order($order_id);
 
-        $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', ['order_id' => $order_id, 'data' => $data]);
+        $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', compact('order_id', 'data'));
 
         if (!$status || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
             return $this->logger->log('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
