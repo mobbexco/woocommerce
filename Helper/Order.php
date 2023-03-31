@@ -2,7 +2,7 @@
 
 namespace Mobbex\WP\Checkout\Helper;
 
-class OrderHelper
+class Order
 {
     /** Order instance ID */
     public $id;
@@ -73,7 +73,8 @@ class OrderHelper
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->logger->log('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '', true);
+
+            $this->logger->log('error', 'class-order-helper > create_checkout | Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
         do_action('mobbex_checkout_process', $response, $this->id);
@@ -250,6 +251,20 @@ class OrderHelper
         );
 
         return $result ?: [];
+    }
+
+    /**
+     * Formats the childs data
+     * 
+     * @param int $order_id
+     * @param array $childsData
+     * 
+     */
+    public function format_childs($order_id, $childsData)
+    {
+        foreach ($childsData as $child)
+            $childs[] = $this->helper->format_webhook_data($order_id, $child);
+        return $childs;
     }
 
     /**

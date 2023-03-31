@@ -88,12 +88,9 @@ class Registrar
             ['name' => 'woocommerce_add_to_cart_validation', 'callback' => [$this->checkout, 'validate_cart_items'], 'params' => 2],
             //Order observer
             ['name' => 'wc_order_statuses', 'callback' => [$this->order, 'add_authorized_order_status']],
-
+            //Checkout observer
+            ['name' => 'woocommerce_billing_fields', 'callback' => [$this->checkout, 'add_checkout_fields']]
         ];
-
-        //Checkout observer
-        if ($this->helper->isReady() && $this->config->own_dni == 'yes')
-            $filters[] = ['name' => 'woocommerce_billing_fields', 'callback' => [$this->checkout, 'add_checkout_fields']];
 
         return $filters;
     }

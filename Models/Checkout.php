@@ -10,6 +10,8 @@ class Checkout
 
     public $relation = 0;
 
+    public $webhooksType = 'all';
+
     public $customer = [];
 
     public $addresses = [];
@@ -81,6 +83,9 @@ class Checkout
         $reference = [
             'wc_id:' . $id,
         ];
+        // Add site id
+        if (!empty($this->settings['site_id']))
+            $reference[] = 'site_id:' . str_replace(' ', '-', trim($this->settings['site_id']));
 
         // Add reseller id
         if (!empty($this->config->reseller_id))

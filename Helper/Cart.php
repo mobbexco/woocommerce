@@ -2,12 +2,12 @@
 
 namespace Mobbex\WP\Checkout\Helper;
 
-class CartHelper
+class Cart
 {
     /** Cart instance ID */
     public $id;
 
-    /** @var WC_Cart */
+    /** @var \WC_Cart */
     public $cart;
 
     /** @var \Mobbex\WP\Checkout\Models\Config */
@@ -16,14 +16,13 @@ class CartHelper
     /** @var \Mobbex\WP\Checkout\Models\Helper */
     public $helper;
 
-
     /** @var \Mobbex\WP\Checkout\Models\Logger */
     public $logger;
 
     /**
     * Constructor.
     * 
-    * @param WC_Cart WooCommerce Cart instance.
+    * @param \WC_Cart WooCommerce Cart instance.
     * @param \Mobbex\WP\Checkout\Models\Helper Base plugin helper.
     * @param \Mobbex\WP\Checkout\Models\Logger Base plugin debugger.
     */
@@ -49,6 +48,7 @@ class CartHelper
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : null;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : null;
 
+
         \Mobbex\Api::init($api_key, $access_token);
         $checkout = new \Mobbex\WP\Checkout\Models\Checkout('mobbex_cart_checkout_custom_data');
 
@@ -61,7 +61,7 @@ class CartHelper
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->logger->log('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
+            $this->logger->log('error', 'class-cart-helper > create_checkout | Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
         do_action('mobbex_cart_checkout_process', $response, $this->id);
@@ -76,6 +76,7 @@ class CartHelper
      */
     private function add_initial_data($checkout)
     {
+        $checkout->webhooksType = 'none';
         $checkout->set_reference($this->id);
         $checkout->set_total($this->cart->get_total(null));
         $checkout->set_endpoints(

@@ -1,21 +1,12 @@
 {
-    "name": "mobbex/woocommerce",
-    "description": "Mobbex Payment Module",
-    "type": "woocommerce-module",
     "require": {
-        "mobbexco/php-plugins-sdk": "dev-master"
+        "mobbexco/php-plugins-sdk": "1.3.0",
+        "yahnis-elsts/plugin-update-checker": "v4.10"
     },
-    "license": ["OSL-3.0", "AFL-3.0"],
     "autoload": {
         "psr-4": {
             "Mobbex\\WP\\Checkout\\": ""
-        }
-    },
-    "authors": [
-        {
-            "name": "Mobbex",
-            "email": "info@mobbex.com"
-        }
-    ],
-    "minimum-stability": "dev"
+        },
+        "files": ["utils/defines.php"]
+    }
 }

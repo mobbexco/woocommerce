@@ -1,7 +1,6 @@
 <?php
 namespace Mobbex\WP\Checkout\Models;
 
-require_once __DIR__.'/../utils/defines.php';
 
 class Helper
 {
@@ -124,10 +123,8 @@ class Helper
     /**
      * Format the webhook data in an array.
      * 
-     * @param int $cart_id
+     * @param int $order_id
      * @param array $res
-     * @param bool $multivendor
-     * @param bool $multicard
      * @return array $data
      * 
      */
@@ -136,6 +133,7 @@ class Helper
         $data = [
             'order_id'           => $order_id,
             'parent'             => isset($res['payment']['id']) ? (self::is_parent_webhook($res['payment']['id']) ? 'yes' : 'no') : null,
+            'childs'             => isset($res['childs']) ? json_encode($res['childs']) : '',
             'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
             'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
             'description'        => isset($res['payment']['description']) ? $res['payment']['description'] : '',
@@ -159,18 +157,17 @@ class Helper
             'total'              => isset($res['payment']['total']) ? $res['payment']['total'] : '',
             'currency'           => isset($res['checkout']['currency']) ? $res['checkout']['currency'] : '',
             'risk_analysis'      => isset($res['payment']['riskAnalysis']['level']) ? $res['payment']['riskAnalysis']['level'] : '',
-            'data'               => json_encode($res),
+            'data'               => isset($res) ? json_encode($res) : '',
             'created'            => isset($res['payment']['created']) ? $res['payment']['created'] : '',
             'updated'            => isset($res['payment']['updated']) ? $res['payment']['created'] : '',
         ];
-
         return $data;
     }
 
     /**
      * Check if webhook is parent type using him payment id.
      * 
-     * @param string $paymentId
+     * @param string $payment_id
      * 
      * @return bool
      */
@@ -282,7 +279,7 @@ class Helper
         $order = wc_get_order(get_query_var('order-pay'));
         $cart  = WC()->cart;
 
-        $helper = $order ? new \Mobbex\WP\Checkout\Helper\OrderHelper($order) : new \Mobbex\WP\Checkout\Helper\CartHelper($cart);
+        $helper = $order ? new \Mobbex\WP\Checkout\Helper\Order($order) : new \Mobbex\WP\Checkout\Helper\Cart($cart);
 
         // If is pending order page create checkout from order and return
         if ($order)

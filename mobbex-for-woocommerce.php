@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.11.0
+Version:      3.12.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -10,7 +10,6 @@ Copyright: 2020 mobbex.com
  */
 
 require_once 'vendor/autoload.php';
-require_once 'utils/defines.php';
 
 class MobbexGateway
 {
@@ -154,7 +153,8 @@ class MobbexGateway
             $db_version = get_option('woocommerce-mobbex-version');
 
             if ($db_version < '3.6.0')
-                create_mobbex_transaction_table();
+                alt_mobbex_transaction_table();
+
 
             // Update db version
             if ($db_version != MOBBEX_VERSION)
@@ -193,8 +193,7 @@ class MobbexGateway
 
     public static function load_update_checker()
     {
-        require 'plugin-update-checker/plugin-update-checker.php';
-        $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+        $myUpdateChecker = \Puc_v4_Factory::buildUpdateChecker(
             'https://github.com/mobbexco/woocommerce/',
             __FILE__,
             'mobbex-plugin-update-checker'
@@ -225,15 +224,39 @@ class MobbexGateway
     }
 }
 
+/** 
+ * Adds childs column to mobbex transaction table if exists
+ * 
+ */
+
+ function alt_mobbex_transaction_table()
+ {
+    global $wpdb;
+     
+    $tableExist = $wpdb->get_results('SHOW TABLES LIKE ' . "'$wpdb->prefix" . "mobbex_transaction';");
+     
+    if ($tableExist) :
+        $columnExist = $wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = '. "'childs';" );
+        if (!$columnExist) :
+            $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
+        else :
+            return;
+        endif;
+    else :
+        create_mobbex_transaction_table();
+    endif;
+ }
+
 function create_mobbex_transaction_table()
 {
     global $wpdb;
 
     $wpdb->get_results(
-        'CREATE TABLE IF NOT EXISTS ' . $wpdb->prefix . 'mobbex_transaction('
+        'CREATE TABLE ' . $wpdb->prefix . 'mobbex_transaction('
             . 'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
             . 'order_id INT(11) NOT NULL,'
             . 'parent TEXT NOT NULL,'
+            . 'childs TEXT NOT NULL,'
             . 'operation_type TEXT NOT NULL,'
             . 'payment_id TEXT NOT NULL,'
             . 'description TEXT NOT NULL,'
