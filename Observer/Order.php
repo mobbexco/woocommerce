@@ -175,7 +175,7 @@ class Order
         ];
 
         //Create payment info panel 
-        echo $this->create_panel($paymentInfo, $parent);
+        echo self::create_panel($paymentInfo, $parent);
 
         echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Method') . "</b></h4></th>";
 
@@ -219,7 +219,7 @@ class Order
                 'Amount'      => 'installment_amount'
             ];
             foreach ($childs as $card) :
-                $this->create_panel($multipleCardArray, $card);
+                self::create_panel($multipleCardArray, $card);
                 echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
             endforeach;
         } else {
