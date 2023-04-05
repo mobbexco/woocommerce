@@ -262,6 +262,7 @@ class Order
      */
     public function format_childs($order_id, $childsData)
     {
+        $childs = [];
         foreach ($childsData as $child)
             $childs[] = $this->helper->format_webhook_data($order_id, $child);
         return $childs;
