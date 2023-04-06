@@ -52,7 +52,7 @@ class MobbexGateway
         
         //Init de Mobbex php sdk
         $this->init_sdk();
-        
+     
         self::$helper    = new \Mobbex\WP\Checkout\Models\Helper();
         self::$logger    = new \Mobbex\WP\Checkout\Models\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Models\Registrar();
@@ -100,6 +100,11 @@ class MobbexGateway
             self::$config->formated_settings(),
             [self::$registrar, 'execut_hook'],
             [self::$logger, 'log']
+        );
+
+        //Load Mobbex models in sdk
+        \Mobbex\Platform::loadModels(
+            new \Mobbex\WP\Checkout\Models\Cache()
         );
 
         // Init api conector
@@ -155,6 +160,8 @@ class MobbexGateway
             if ($db_version < '3.6.0')
                 alt_mobbex_transaction_table();
 
+            if($db_version <= '3.13.0')
+                install_table('mobbex_cache');
 
             // Update db version
             if ($db_version != MOBBEX_VERSION)
@@ -222,6 +229,23 @@ class MobbexGateway
         
         return $method($name, $route, null, MOBBEX_VERSION);
     }
+}
+
+/**
+ * Install a table from sdk sql scripts.
+ * @param string $table Table name without db prefix.
+ */
+function install_table($table)
+{
+    global $wpdb;
+    //Get query
+    $query = str_replace(
+        ['DB_PREFIX_', 'ENGINE_TYPE'],
+        [$wpdb->prefix, $wpdb->get_var("SHOW ENGINES;")],
+        file_get_contents(__DIR__."/vendor/mobbexco/php-plugins-sdk/src/sql/$table.sql")
+    );
+    //Execute query
+    $wpdb->query($query);
 }
 
 /** 
