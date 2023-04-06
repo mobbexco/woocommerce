@@ -47,6 +47,17 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.13.0 :: 2023-04-06
+- Add divi theme support
+- Update childs management to new unique webhook format
+- Optimize order total update for prevent discount duplication
+- Fix approved order status update when is configured as not paid
+- Fix description obtaining on checkout methods
+- Update timeout option for strict type
+- Avoid to show cards without installments available
+- Integrate php plugins sdk and composer autoload
+- Refactor and improve logger
+
 ## 3.12.0 :: 2023-02-27
 - Fix wc cianbox support
 - Improve expired webhooks processing and prevent duplicated status change
