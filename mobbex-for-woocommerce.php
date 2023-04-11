@@ -95,7 +95,7 @@ class MobbexGateway
             [
                 'Woocommerce'            => WC_VERSION,
                 'Mobbex for Woocommerce' => MOBBEX_VERSION,
-                'sdk'                    => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
+                'sdk'                    => class_exists('\Composer\InstalledVersions') && \Composer\InstalledVersions::isInstalled('mobbexco/php-plugins-sdk') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
             ],
             self::$config->formated_settings(),
             [self::$registrar, 'execut_hook'],
