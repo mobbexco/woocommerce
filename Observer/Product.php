@@ -32,7 +32,7 @@ class Product
         $id        = is_object($term) ? $term->term_id : get_the_ID();
 
         // Get plan fields and current store data to use in template
-        extract($this->config->get_catalog_plans([$id], $meta_type, true));
+        extract($this->config->get_catalog_plans($id, $meta_type, true));
         extract($this->format_fields(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans)));
         extract($this->config->get_store_data($meta_type, $id));
 
@@ -193,7 +193,7 @@ class Product
         wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
         //Get product plans
-        extract($this->config->get_catalog_plans($products_ids));
+        extract($this->config->get_products_plans($products_ids));
 
         $data = [
             'price'   => $price,

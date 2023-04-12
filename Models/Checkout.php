@@ -54,6 +54,7 @@ class Checkout
             $this->installments,
             array_merge($this->customer),
             $this->addresses,
+            'all',
             $this->filter
         );
 
@@ -171,22 +172,13 @@ class Checkout
     }
 
     /**
-     * Add an installment to show in checkout.
-     * 
-     * @param string $uid UID of a plan configured with advanced rules
+     * Add an installments to show in checkout.
+     * @param array $products List of product id's
+     * @param array $common_plans List of product common plans
+     * @param array $advanced_plans List of product advanced plans
      */
-    public function add_installment($uid)
+    public function add_installments($products, $common_plans, $advanced_plans)
     {
-        $this->installments[] = '+uid:' . $uid;
-    }
-
-    /**
-     * Block an installment type in checkout.
-     * 
-     * @param string $reference Reference of the plans to hide
-     */
-    public function block_installment($reference)
-    {
-        $this->installments[] = '-' . $reference;
+        $this->installments = \Mobbex\Repository::getInstallments($products, $common_plans, $advanced_plans);
     }
 }

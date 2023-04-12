@@ -130,69 +130,49 @@ class Config
 
     /**
      * Get active plans for a given products.
-     * @param array $products
+     * @param array $ids Products ids
      * @return array $array
      */
-    public function get_catalog_plans($products, $catalog_type = 'post', $admin = false)
+    public function get_products_plans($ids)
     {
-        $common_plans = $advanced_plans = $advanced_cat_plans = [];
+        $common_plans = $advanced_plans = [];
 
-        foreach ($products as $id) {
-
-            $common_plans = array_merge($this->get_catalog_settings($id, 'common_plans', $catalog_type), $common_plans);
-
-            if(empty($advanced_plans))
-                $advanced_plans = array_merge($this->get_catalog_settings($id, 'advanced_plans', $catalog_type), $advanced_plans);
-            else
-                $advanced_plans = array_intersect($this->get_catalog_settings($id, 'advanced_plans', $catalog_type), $advanced_plans);
-
-            //Get product category active plans
-            if (!$admin && $catalog_type === 'post') {
-                //Add categories common plans
-                foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
-                    $common_plans = array_unique(array_merge($common_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term')));
-                
-                //Add categories advanced plans
-                foreach ($this->filter_categories($products) as $categoryId){
-                    //Filter categories advanced plans
-                    if(empty($advanced_cat_plans))
-                        $advanced_cat_plans = array_merge($advanced_cat_plans, $this->get_catalog_settings($categoryId, 'adva$advanced_cat_plans', 'term'));
-                    else    
-                        $advanced_cat_plans = array_intersect($advanced_cat_plans, $this->get_catalog_settings($categoryId, 'advanced_plans', 'term'));
-                    //Merge categories advanced plans with product advanced plans
-                    $advanced_plans = array_unique(array_merge($advanced_plans, $advanced_cat_plans));
-                }
-            }
+        foreach ($ids as $id) {
+            $product_plans = $this->get_catalog_plans($id); 
+            //Merge all catalog plans
+            $common_plans   = array_merge($common_plans, $product_plans['common_plans']);
+            $advanced_plans = array_merge($advanced_plans, $product_plans['advanced_plans']);
         }
 
         return compact('common_plans', 'advanced_plans');
     }
 
     /**
-     * Returns the categories in common between a list of products.
-     * @param array $products List of product ids.
-     * @return array Filtered categories.
+     * Get all the Mobbex plans from a given product or term id.
+     * @param string $id Product/Term id.
+     * @param string $catalog_type 
      */
-    public function filter_categories($products)
+    public function get_catalog_plans($id, $catalog_type = 'post', $admin = false)
     {
-        $categories = $filtered_categories = [];
+        //Get product plans
+        $common_plans   = $this->get_catalog_settings($id, 'common_plans', $catalog_type) ?: [];
+        $advanced_plans = $this->get_catalog_settings($id, 'advanced_plans', $catalog_type) ?: [];
 
-        //Get categories id's
-        foreach ($products as $id) {
-            foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
-                $categories[$id][] = $categoryId;
+        //Get plans from categories
+        if(!$admin && $catalog_type === 'post') {
+            foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId){
+                $common_plans   = array_merge($common_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term'));
+                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term'));
+            }
         }
 
-        //Filter categories
-        foreach ($categories as $key => $value) {
-            if(empty($filtered_categories))
-                $filtered_categories = array_merge($filtered_categories, $value);
-            else
-                $filtered_categories =  array_intersect($filtered_categories, $value);
-        }
+        //Avoid duplicated plans
+        $common_plans   = array_unique($common_plans);
+        $advanced_plans = array_unique($advanced_plans);
 
-        return $filtered_categories;
+       return compact('common_plans', 'advanced_plans');
     }
+
 
     /**
      * Get current store data from product or product category.
