@@ -135,22 +135,63 @@ class Config
      */
     public function get_catalog_plans($products, $catalog_type = 'post', $admin = false)
     {
-        $common_plans = $advanced_plans = [];
+        $common_plans = $advanced_plans = $advanced_cat_plans = [];
 
         foreach ($products as $id) {
-            foreach (['common_plans', 'advanced_plans'] as $plan) {
-                //Get product active plans
-                ${$plan} = strpos($plan, 'advanced') && !empty($advanced_plans) ? array_intersect($this->get_catalog_settings($id, $plan, $catalog_type), ${$plan}) : array_merge($this->get_catalog_settings($id, $plan, $catalog_type), ${$plan});
 
-                //Get product category active plans
-                if (!$admin && $catalog_type === 'post') {
-                    foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
-                        ${$plan} = array_unique(strpos($plan, 'advanced') && !empty($advanced_plans) ? array_intersect(${$plan}, $this->get_catalog_settings($categoryId, $plan, 'term')) : array_merge(${$plan}, $this->get_catalog_settings($categoryId, $plan, 'term')));
+            $common_plans = array_merge($this->get_catalog_settings($id, 'common_plans', $catalog_type), $common_plans);
+
+            if(empty($advanced_plans))
+                $advanced_plans = array_merge($this->get_catalog_settings($id, 'advanced_plans', $catalog_type), $advanced_plans);
+            else
+                $advanced_plans = array_intersect($this->get_catalog_settings($id, 'advanced_plans', $catalog_type), $advanced_plans);
+
+            //Get product category active plans
+            if (!$admin && $catalog_type === 'post') {
+                //Add categories common plans
+                foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
+                    $common_plans = array_unique(array_merge($common_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term')));
+                
+                //Add categories advanced plans
+                foreach ($this->filter_categories($products) as $categoryId){
+                    //Filter categories advanced plans
+                    if(empty($advanced_cat_plans))
+                        $advanced_cat_plans = array_merge($advanced_cat_plans, $this->get_catalog_settings($categoryId, 'adva$advanced_cat_plans', 'term'));
+                    else    
+                        $advanced_cat_plans = array_intersect($advanced_cat_plans, $this->get_catalog_settings($categoryId, 'advanced_plans', 'term'));
+                    //Merge categories advanced plans with product advanced plans
+                    $advanced_plans = array_unique(array_merge($advanced_plans, $advanced_cat_plans));
                 }
             }
         }
 
         return compact('common_plans', 'advanced_plans');
+    }
+
+    /**
+     * Returns the categories in common between a list of products.
+     * @param array $products List of product ids.
+     * @return array Filtered categories.
+     */
+    public function filter_categories($products)
+    {
+        $categories = $filtered_categories = [];
+
+        //Get categories id's
+        foreach ($products as $id) {
+            foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
+                $categories[$id][] = $categoryId;
+        }
+
+        //Filter categories
+        foreach ($categories as $key => $value) {
+            if(empty($filtered_categories))
+                $filtered_categories = array_merge($filtered_categories, $value);
+            else
+                $filtered_categories =  array_intersect($filtered_categories, $value);
+        }
+
+        return $filtered_categories;
     }
 
     /**
