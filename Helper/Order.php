@@ -137,10 +137,8 @@ class Order
             $checkout->block_installment($plan_ref);
 
         // Add advanced plans to installments (only if the plan is active on all products)
-        foreach (array_count_values($advanced_plans) as $plan_uid => $reps) {
-            if ($reps == count($products))
-                $checkout->add_installment($plan_uid);
-        }
+        foreach ($advanced_plans as $plan_uid)
+            $checkout->add_installment($plan_uid);
     }
 
     /**

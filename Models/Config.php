@@ -136,16 +136,16 @@ class Config
     public function get_catalog_plans($products, $catalog_type = 'post', $admin = false)
     {
         $common_plans = $advanced_plans = [];
-        
-        foreach ($products as $id) {
-            foreach (['common_plans', 'advanced_plans'] as $value) {
-                //Get product active plans
-                ${$value} = array_merge($this->get_catalog_settings($id, $value, $catalog_type), ${$value});
-                //Get product category active plans
 
+        foreach ($products as $id) {
+            foreach (['common_plans', 'advanced_plans'] as $plan) {
+                //Get product active plans
+                ${$plan} = strpos($plan, 'advanced') && !empty($advanced_plans) ? array_intersect($this->get_catalog_settings($id, $plan, $catalog_type), ${$plan}) : array_merge($this->get_catalog_settings($id, $plan, $catalog_type), ${$plan});
+
+                //Get product category active plans
                 if (!$admin && $catalog_type === 'post') {
                     foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
-                        ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
+                        ${$plan} = array_unique(strpos($plan, 'advanced') && !empty($advanced_plans) ? array_intersect(${$plan}, $this->get_catalog_settings($categoryId, $plan, 'term')) : array_merge(${$plan}, $this->get_catalog_settings($categoryId, $plan, 'term')));
                 }
             }
         }
