@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.12.0
+Version:      3.13.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -95,7 +95,7 @@ class MobbexGateway
             [
                 'Woocommerce'            => WC_VERSION,
                 'Mobbex for Woocommerce' => MOBBEX_VERSION,
-                'sdk'                    => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
+                'sdk'                    => class_exists('\Composer\InstalledVersions') && \Composer\InstalledVersions::isInstalled('mobbexco/php-plugins-sdk') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
             ],
             self::$config->formated_settings(),
             [self::$registrar, 'execut_hook'],
@@ -155,17 +155,15 @@ class MobbexGateway
     public static function check_upgrades()
     {
         try {
-            $db_version = get_option('woocommerce-mobbex-version');
+            // Check current version updated
+            if (get_option('woocommerce-mobbex-version') == MOBBEX_VERSION)
+                return;
 
-            if ($db_version < '3.6.0')
-                alt_mobbex_transaction_table();
-
-            if($db_version <= '3.13.0')
-                install_table('mobbex_cache');
+            // Apply upgrades
+            upgrade_mobbex_db();
 
             // Update db version
-            if ($db_version != MOBBEX_VERSION)
-                update_option('woocommerce-mobbex-version', MOBBEX_VERSION);
+            update_option('woocommerce-mobbex-version', MOBBEX_VERSION);
         } catch (\Exception $e) {
             self::$errors[] = 'Mobbex DB Upgrade error';
         }
@@ -233,87 +231,55 @@ class MobbexGateway
 
 /**
  * Install a table from sdk sql scripts.
- * @param string $table Table name without db prefix.
+ * @param string $table Table name without db & mobbex prefix .
+ * @param object $db global wpdb.
  */
-function install_table($table)
+function install_table($table, $db)
 {
-    global $wpdb;
     //Get query
     $query = str_replace(
         ['DB_PREFIX_', 'ENGINE_TYPE'],
-        [$wpdb->prefix, $wpdb->get_var("SHOW ENGINES;")],
-        file_get_contents(__DIR__."/vendor/mobbexco/php-plugins-sdk/src/sql/$table.sql")
+        [$db->prefix, $db->get_var("SHOW ENGINES;")],
+        file_get_contents(__DIR__."/vendor/mobbexco/php-plugins-sdk/src/sql/mobbex_$table.sql")
     );
+
     //Execute query
-    $wpdb->query($query);
+    $db->query($query);
+    
+    //log errors
+    if($db->last_error){
+        $logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $logger->log('error', "mobbex-for-woocommerce > install_table $db->last_error", ['query' => $query]);
+    }
 }
 
 /** 
- * Adds childs column to mobbex transaction table if exists
- * 
+ * Upgrade Mobbex db data.
  */
-
- function alt_mobbex_transaction_table()
+ function upgrade_mobbex_db()
  {
     global $wpdb;
-     
-    $tableExist = $wpdb->get_results('SHOW TABLES LIKE ' . "'$wpdb->prefix" . "mobbex_transaction';");
-     
-    if ($tableExist) :
-        $columnExist = $wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = '. "'childs';" );
-        if (!$columnExist) :
-            $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
-        else :
-            return;
+
+    foreach (['transaction', 'cache'] as  $table) {
+        $tableExist = $wpdb->get_results('SHOW TABLES LIKE ' . "'$wpdb->prefix" . "mobbex_$table';");
+
+        if ($tableExist && $table === 'transaction') :
+            $columnExist = $wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = '. "'childs';" );
+            if (!$columnExist) :
+                $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
+            else :
+                return;
+            endif;
+        elseif(!$tableExist) :
+            install_table($table, $wpdb);
         endif;
-    else :
-        create_mobbex_transaction_table();
-    endif;
+    }
  }
 
-function create_mobbex_transaction_table()
-{
-    global $wpdb;
-
-    $wpdb->get_results(
-        'CREATE TABLE ' . $wpdb->prefix . 'mobbex_transaction('
-            . 'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
-            . 'order_id INT(11) NOT NULL,'
-            . 'parent TEXT NOT NULL,'
-            . 'childs TEXT NOT NULL,'
-            . 'operation_type TEXT NOT NULL,'
-            . 'payment_id TEXT NOT NULL,'
-            . 'description TEXT NOT NULL,'
-            . 'status_code TEXT NOT NULL,'
-            . 'status_message TEXT NOT NULL,'
-            . 'source_name TEXT NOT NULL,'
-            . 'source_type TEXT NOT NULL,'
-            . 'source_reference TEXT NOT NULL,'
-            . 'source_number TEXT NOT NULL,'
-            . 'source_expiration TEXT NOT NULL,'
-            . 'source_installment TEXT NOT NULL,'
-            . 'installment_name TEXT NOT NULL,'
-            . 'installment_amount DECIMAL(18,2) NOT NULL,'
-            . 'installment_count TEXT NOT NULL,'
-            . 'source_url TEXT NOT NULL,'
-            . 'cardholder TEXT NOT NULL,'
-            . 'entity_name TEXT NOT NULL,'
-            . 'entity_uid TEXT NOT NULL,'
-            . 'customer TEXT NOT NULL,'
-            . 'checkout_uid TEXT NOT NULL,'
-            . 'total DECIMAL(18,2) NOT NULL,'
-            . 'currency TEXT NOT NULL,'
-            . 'risk_analysis TEXT NOT NULL,'
-            . 'data TEXT NOT NULL,'
-            . 'created TEXT NOT NULL,'
-            . 'updated TEXT NOT NULL'
-            . ');'
-    );
-}
 
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
-register_activation_hook(__FILE__, 'create_mobbex_transaction_table');
+register_activation_hook(__FILE__, 'upgrade_mobbex_db');
 
 // Remove mbbx entity saved data on uninstall
 register_deactivation_hook(__FILE__, function() {
