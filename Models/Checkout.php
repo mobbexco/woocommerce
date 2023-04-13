@@ -52,8 +52,9 @@ class Checkout
             $this->endpoints['webhook'],
             $this->items,
             $this->installments,
-            array_merge($this->customer),
+            $this->customer,
             $this->addresses,
+            $this->webhooksType,
             $this->filter
         );
 
@@ -84,8 +85,8 @@ class Checkout
             'wc_id:' . $id,
         ];
         // Add site id
-        if (!empty($this->settings['site_id']))
-            $reference[] = 'site_id:' . str_replace(' ', '-', trim($this->settings['site_id']));
+        if (!empty($this->config->site_id))
+            $reference[] = 'site_id:' . str_replace(' ', '-', trim($this->config->site_id));
 
         // Add reseller id
         if (!empty($this->config->reseller_id))
@@ -171,22 +172,13 @@ class Checkout
     }
 
     /**
-     * Add an installment to show in checkout.
-     * 
-     * @param string $uid UID of a plan configured with advanced rules
+     * Add an installments to show in checkout.
+     * @param array $products List of product id's
+     * @param array $common_plans List of product common plans
+     * @param array $advanced_plans List of product advanced plans
      */
-    public function add_installment($uid)
+    public function add_installments($products, $common_plans, $advanced_plans)
     {
-        $this->installments[] = '+uid:' . $uid;
-    }
-
-    /**
-     * Block an installment type in checkout.
-     * 
-     * @param string $reference Reference of the plans to hide
-     */
-    public function block_installment($reference)
-    {
-        $this->installments[] = '-' . $reference;
+        $this->installments = \Mobbex\Repository::getInstallments($products, $common_plans, $advanced_plans);
     }
 }
