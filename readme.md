@@ -47,6 +47,12 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.13.1 :: 2023-04-13
+- Prevent possible db upgrade errors
+- Prevent some notices and exceptions
+- Fix advanced plans obtaining on checkout
+- Fix webhooks type obtaining on checkout
+
 ## 3.13.0 :: 2023-04-06
 - Add divi theme support
 - Update childs management to new unique webhook format
