@@ -54,7 +54,7 @@ class Checkout
             $this->installments,
             array_merge($this->customer),
             $this->addresses,
-            'all',
+            $this->webhooksType,
             $this->filter
         );
 
