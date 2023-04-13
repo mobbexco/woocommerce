@@ -52,7 +52,7 @@ class Checkout
             $this->endpoints['webhook'],
             $this->items,
             $this->installments,
-            array_merge($this->customer),
+            $this->customer,
             $this->addresses,
             $this->webhooksType,
             $this->filter
@@ -85,8 +85,8 @@ class Checkout
             'wc_id:' . $id,
         ];
         // Add site id
-        if (!empty($this->settings['site_id']))
-            $reference[] = 'site_id:' . str_replace(' ', '-', trim($this->settings['site_id']));
+        if (!empty($this->config->site_id))
+            $reference[] = 'site_id:' . str_replace(' ', '-', trim($this->config->site_id));
 
         // Add reseller id
         if (!empty($this->config->reseller_id))
