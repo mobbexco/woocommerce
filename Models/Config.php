@@ -162,7 +162,7 @@ class Config
         if(!$admin && $catalog_type === 'post') {
             foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId){
                 $common_plans   = array_merge($common_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term'));
-                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term'));
+                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'advanced_plans', 'term'));
             }
         }
 
