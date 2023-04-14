@@ -132,7 +132,7 @@ class Helper
     {
         $data = [
             'order_id'           => $order_id,
-            'parent'             => isset($res['payment']['id']) ? (self::is_parent_webhook($res['payment']['id']) ? 'yes' : 'no') : null,
+            'parent'             => isset($res['payment']['id']) ? (self::is_parent_webhook($res['payment']['id']) ? 'yes' : 'no') : '',
             'childs'             => isset($res['childs']) ? json_encode($res['childs']) : '',
             'operation_type'     => isset($res['payment']['operation']['type']) ? $res['payment']['operation']['type'] : '',
             'payment_id'         => isset($res['payment']['id']) ? $res['payment']['id'] : '',
