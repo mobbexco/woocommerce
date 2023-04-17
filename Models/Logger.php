@@ -29,7 +29,7 @@ class Logger
      */
     public function log($mode, $message, $data = [])
     {
-        if ($mode === 'debug' && $this->settings['debug_mode'] != 'yes')
+        if ($mode === 'debug' && $this->config->debug_mode != 'yes')
             return;
 
         if($mode === 'fatal')
