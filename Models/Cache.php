@@ -12,7 +12,7 @@ class Cache extends \Mobbex\Model\AbstractCache
      * @param string $key Identifier to obtain the data.
      * @return bool|array Return the searched data or false in case there isnt.
      */
-    public static function getCacheData($key)
+    public static function getData($key)
     {
         global $wpdb;
 
@@ -29,7 +29,7 @@ class Cache extends \Mobbex\Model\AbstractCache
      * @param string $key Identifier to save the data.
      * @param string $data Data to be stored.
      */
-    public static function saveCacheData($key, $data)
+    public static function storeData($key, $data)
     {
         global $wpdb;
         $wpdb->insert($wpdb->prefix.'mobbex_cache', ['key' => $key, 'data' => $data]);
