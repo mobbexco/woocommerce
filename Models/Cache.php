@@ -12,14 +12,14 @@ class Cache extends \Mobbex\Model\AbstractCache
      * @param string $key Identifier to obtain the data.
      * @return bool|array Return the searched data or false in case there isnt.
      */
-    public static function getData($key)
+    public function get($key)
     {
         global $wpdb;
 
         //Delete expired cache
         $wpdb->query("DELETE FROM ".$wpdb->prefix."mobbex_cache WHERE `date` < DATE_SUB(NOW(), INTERVAL 5 MINUTE);");
         //Try to get results
-        $result = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."mobbex_cache WHERE `key`='$key';");
+        $result = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."mobbex_cache WHERE `cache_key`='$key';");
 
         return !empty($result[0]) ? json_decode($result[0]->data, true) : [];
     }
@@ -29,9 +29,9 @@ class Cache extends \Mobbex\Model\AbstractCache
      * @param string $key Identifier to save the data.
      * @param string $data Data to be stored.
      */
-    public static function storeData($key, $data)
+    public function store($key, $data)
     {
         global $wpdb;
-        $wpdb->insert($wpdb->prefix.'mobbex_cache', ['key' => $key, 'data' => $data]);
+        $wpdb->insert($wpdb->prefix.'mobbex_cache', ['cache_key' => $key, 'data' => $data]);
     }
 }
