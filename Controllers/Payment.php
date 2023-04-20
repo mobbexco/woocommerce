@@ -46,7 +46,7 @@ final class Payment
         if (empty($status) || empty($id) || empty($token))
             $error = "No se pudo validar la transacción. Contacte con el administrador de su sitio";
 
-        if (!$this->helper->valid_mobbex_token($token))
+        if (!\Mobbex\Repository::validateToken($token))
             $error = "Token de seguridad inválido.";
 
         if ($error)
@@ -148,7 +148,7 @@ final class Payment
 
         $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', compact('order_id', 'data'));
 
-        if (!$status || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
+        if (!$status || !$order_id || !$token || !\Mobbex\Repository::validateToken($token))
             return $this->logger->log('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
 
         // Catch refunds webhooks
