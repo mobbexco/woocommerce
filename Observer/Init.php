@@ -21,10 +21,14 @@ class Init
         $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
     }
 
+    /**
+     * Enqueues the necessary scripts according to the actual woocommerce page
+     */
     public function mobbex_assets_enqueue()
     {
         global $post;
 
+        // Gets plugin url
         $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
         // Only if directory url looks good
@@ -33,6 +37,7 @@ class Init
 
         // Product page
         if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
+            // Enqueue button scripts
             wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
@@ -48,6 +53,7 @@ class Init
             !defined('DONOTCACHEPAGE') && define('DONOTCACHEPAGE', true);
             !defined('DONOTMINIFY') && define('DONOTMINIFY', true);
 
+            // Enqueue embed scripts
             wp_enqueue_script('mobbex-embed', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_VERSION);
             wp_enqueue_script('mobbex-sdk', 'https://res.mobbex.com/js/sdk/mobbex@' . MOBBEX_SDK_VERSION . '.js', null, MOBBEX_VERSION);
 
@@ -73,19 +79,19 @@ class Init
 
         $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
-        // Product admin page
+        // Enqueue product admin page scripts
         if (($hook == 'post-new.php' || $hook == 'post.php') && $post->post_type == 'product') {
             wp_enqueue_style('mbbx-product-style', $dir_url . 'assets/css/product-admin.css', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-product-js', $dir_url . 'assets/js/product-admin.js', null, MOBBEX_VERSION);
         }
 
-        // Category admin page
+        // Enqueue category admin page scripts
         if (isset($current_screen->id) && $current_screen->id == 'edit-product_cat') {
             wp_enqueue_style('mbbx-category-style', $dir_url . 'assets/css/category-admin.css', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-category-js', $dir_url . 'assets/js/category-admin.js', null, MOBBEX_VERSION);
         }
 
-        // Plugin config page
+        // Enqueue plugin config page scripts
         if ($hook == 'woocommerce_page_wc-settings' && isset($_GET['section']) && $_GET['section'] == 'mobbex') {
             wp_enqueue_style('mbbx-plugin-style', $dir_url . 'assets/css/plugin-config.css', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-plugin-js', $dir_url . 'assets/js/plugin-config.js', null, MOBBEX_VERSION);
@@ -94,12 +100,15 @@ class Init
 
     /**
      * Load styles and scripts for dynamic options.
+     * 
+     * @param string $hook
      */
     public static function load_order_scripts($hook)
     {
         global $post;
 
         if (($hook == 'post-new.php' || $hook == 'post.php') && $post->post_type == 'shop_order') {
+            // Enqueue order scripts
             wp_enqueue_style('mbbx-order-style', plugin_dir_url(__FILE__) . '../../assets/css/order-admin.css');
             wp_enqueue_script('mbbx-order', plugin_dir_url(__FILE__) . '../../assets/js/order-admin.js');
 
@@ -117,6 +126,13 @@ class Init
         }
     }
 
+    /**
+     * Returns an array incorporating the passed links
+     * 
+     * @param array $links
+     * 
+     * @return array $links
+     */
     public function add_action_links($links)
     {
         $plugin_links = [

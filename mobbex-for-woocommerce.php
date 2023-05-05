@@ -150,6 +150,7 @@ class MobbexGateway
     public static function check_upgrades()
     {
         try {
+            // Check db version
             $db_version = get_option('woocommerce-mobbex-version');
 
             if ($db_version < '3.6.0')
@@ -171,6 +172,7 @@ class MobbexGateway
     {
         // Check install directory
         if (basename(__DIR__) == 'woocommerce-master')
+            // Add notice in admin panel
             self::$logger->notice(sprintf(
                 'El directorio de instalación es incorrecto (<code>%s</code>). Si descargó el zip directamente del repositorio, reinstale el plugin utilizando el archivo <code>%s</code> de <a href="%s">%3$s</a>',
                 basename(__DIR__),
@@ -180,17 +182,24 @@ class MobbexGateway
 
         // Check if credentials are configured
         if (self::$config->enabled == 'yes' && (!self::$config->api_key || !self::$config->access_token))
+            // Add notice in admin panel
             self::$logger->notice(sprintf(
                 'Debe especificar el API Key y Access Token en la <a href="%s">configuración</a>.',
                 admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex')
             ));
     }
 
+    /**
+     * Load mobbex text domain which allows the translation of text strings to different languages
+     */
     public static function load_textdomain()
     {
         load_plugin_textdomain('mobbex-for-woocommerce', false, dirname(plugin_basename(__FILE__)) . '/languages/');
     }
 
+    /**
+     * Load update checker that checks for mobbex updates and notifies the user if a new version is available
+     */
     public static function load_update_checker()
     {
         $myUpdateChecker = \Puc_v4_Factory::buildUpdateChecker(
@@ -201,11 +210,17 @@ class MobbexGateway
         $myUpdateChecker->getVcsApi()->enableReleaseAssets();
     }
 
+    /**
+     * Add mobbex gateway path
+     */
     public static function load_gateway()
     {
         require_once plugin_dir_path(__FILE__) . 'gateway.php';
     }
 
+    /**
+     * Pass a filter to the wc payment gateways to add mobbex payment gateway
+     */
     public static function add_gateway()
     {
 
@@ -216,6 +231,9 @@ class MobbexGateway
         });
     }
 
+    /**
+     * Adds assets to site 
+     */
     public static function add_assets($type, $name, $route)
     {
         $method = "wp_enqueue_$type";
@@ -247,6 +265,9 @@ class MobbexGateway
     endif;
  }
 
+ /**
+  * Creates mobbex transaction table with required prefix
+  */
 function create_mobbex_transaction_table()
 {
     global $wpdb;
@@ -287,6 +308,8 @@ function create_mobbex_transaction_table()
     );
 }
 
+// Register the init method to be executed on the plugins_loaded event,
+// and register a function to create a new database table when the plugin is activated.
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
 register_activation_hook(__FILE__, 'create_mobbex_transaction_table');

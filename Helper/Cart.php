@@ -45,13 +45,15 @@ class Cart
         // Try to configure api with order store credentials
         $store = $this->get_store();
 
+        // Set api key and access token
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : null;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : null;
 
-
+        // Set mobbex credentials
         \Mobbex\Api::init($api_key, $access_token);
         $checkout = new \Mobbex\WP\Checkout\Models\Checkout('mobbex_cart_checkout_custom_data');
 
+        // Add cart data to checkout
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
         $this->add_installments($checkout);

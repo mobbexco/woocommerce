@@ -23,6 +23,12 @@ class Helper
         $this->config = new Config();
     }
 
+    
+    /**
+     *  Checks config enabled, api key and acces token
+     * 
+     * @return bool 
+     */
     public function isReady()
     {
         return ($this->config->enabled === 'yes' && !empty($this->config->api_key) && !empty($this->config->access_token));
@@ -165,7 +171,7 @@ class Helper
     }
 
     /**
-     * Check if webhook is parent type using him payment id.
+     * Check if webhook is parent type using its payment id.
      * 
      * @param string $payment_id
      * 
@@ -180,6 +186,7 @@ class Helper
      * Receives an array and returns an array with the data format for the 'insert' method
      * 
      * @param array $array
+     * 
      * @return array $format
      * 
      */
@@ -241,13 +248,13 @@ class Helper
             "version" => MOBBEX_VERSION,
         ];
 
+        // Try to add mobbex order id
         if ($order_id)
-            // Add mobbex order id
             $query['mobbex_order_id'] = $order_id;
     
+        // Try to add xdebug param to query
         if ($endpoint === 'mobbex_webhook') {
             if ($this->config->debug_mode != 'no')
-                // Add xdebug param to query
                 $query['XDEBUG_SESSION_START'] = 'PHPSTORM';
             return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
         } else 

@@ -58,12 +58,15 @@ class Order
         // Try to configure api with order store credentials
         $store = $this->get_store();
 
+        // Set api key and acces token
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : null;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : null;
 
+        // Set mobbex credentials
         \Mobbex\Api::init($api_key, $access_token);
         $checkout = new \Mobbex\WP\Checkout\Models\Checkout();
 
+        // Add order data to checkout
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
         $this->add_installments($checkout);
@@ -74,6 +77,7 @@ class Order
         } catch (\Exception $e) {
             $response = null;
 
+            // Send a error log to Simple Hystory dashboard
             $this->logger->log('error', 'class-order-helper > create_checkout | Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
@@ -170,6 +174,7 @@ class Order
      */
     public function get_store()
     {
+        // Retrieves an option value from stores and order items
         $stores = get_option('mbbx_stores') ?: [];
         $items  = $this->order->get_items() ?: [];
 
@@ -254,7 +259,7 @@ class Order
     }
 
     /**
-     * Formats the childs data
+     * Formats childs data
      * 
      * @param int $order_id
      * @param array $childsData
@@ -263,6 +268,7 @@ class Order
     public function format_childs($order_id, $childsData)
     {
         $childs = [];
+        // Creates an array with each child formated data
         foreach ($childsData as $child)
             $childs[] = $this->helper->format_webhook_data($order_id, $child);
         return $childs;

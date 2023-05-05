@@ -68,24 +68,29 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
      */
     public function process_payment($order_id)
     {
+        // Send a debug log to Simple Hystory dashboard
         $this->logger->log('debug', 'gateway > process_payment | Creating payment', compact('order_id'));
 
         if (!$this->helper->isReady())
             return ['result' => 'error'];
 
+        // Gets order by wc order factory
         $order = wc_get_order($order_id);
 
         // Create checkout from order
         $order_helper  = new \Mobbex\WP\Checkout\Helper\Order($order);
         $checkout_data = $order_helper->create_checkout();
 
+        // Send a debug log to Simple Hystory dashboard
         $this->logger->log('debug', 'gateway > process_payment | Checkout response', $checkout_data);
 
         if (!$checkout_data)
             return ['result' => 'error'];
 
+        // Update order status
         $order->update_status('pending', __('Awaiting Mobbex Webhook', 'mobbex-for-woocommerce'));
 
+        // Set result with order and checkout data 
         $result = [
             'result'     => 'success',
             'data'       => $checkout_data,

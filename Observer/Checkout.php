@@ -24,12 +24,13 @@ class Checkout
      * Check that the Cart does not have products from different stores.
      * 
      * @param bool $valid
-     * @param int $product_id
+     * @param int  $product_id
      * 
      * @return bool $valid
      */
     public function validate_cart_items($valid, $product_id)
     {
+        // Check that the cart is not empty
         $cart_items = !empty(WC()->cart->get_cart()) ? WC()->cart->get_cart() : [];
 
         // Get store from current product
@@ -53,6 +54,7 @@ class Checkout
      * Add Mobbex extra data fields to woocommerce checkout.
      * 
      * @param array $fields
+     * 
      * @return array $fields
      * 
      */
@@ -63,6 +65,7 @@ class Checkout
 
         $cutomer_id = WC()->customer ? WC()->customer->get_id() : null;
 
+        // Set an array with extra fields
         $fields['billing_dni'] = [
             'type'        => 'text',
             'required'    => true,

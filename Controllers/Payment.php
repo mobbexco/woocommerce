@@ -20,9 +20,10 @@ final class Payment
         $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
 
         if ($this->helper->isReady())
+            // Add Mobbex return url hook
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
 
-        //Add Mobbex Webhook hook 
+        // Add Mobbex Webhook hook 
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/webhook', [
                 'methods' => \WP_REST_Server::CREATABLE,
@@ -38,6 +39,7 @@ final class Payment
      */
     public function mobbex_return_url()
     {
+        // Retrieves necessary data from the current URL's query string
         $status = $_GET['status'];
         $id     = $_GET['mobbex_order_id'];
         $token  = $_GET['mobbex_token'];
@@ -52,6 +54,7 @@ final class Payment
         if ($error)
             return $this->_redirect_to_error_endpoint($error);
 
+        // Gets order by wc order factory
         $order = wc_get_order($id);
 
         if ($status > 1 && $status < 400) {
@@ -76,11 +79,15 @@ final class Payment
     private function _redirect_to_error_endpoint($error_msg)
     {
         if ($this->helper->settings['error_redirection'])
+            // Sets error message
             $error_msg= 'Transacción Fallida. Redirigido a ruta configurada.';
 
+        // Sets route
         $route = $this->helper->settings['error_redirection'] ? home_url('/' . $this->helper->settings['error_redirection']) : wc_get_cart_url();
 
+        // Add error notice
         wc_add_notice($error_msg, 'error');
+        // Redirect to route
         wp_redirect($route);
         
         return array('result' => 'error', 'redirect' => $route);
@@ -95,23 +102,27 @@ final class Payment
     public function mobbex_webhook($request)
     {
         try {
+            // Get request data
             $requestData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? apply_filters('mobbex_order_webhook',  json_decode(file_get_contents('php://input'), true)) : apply_filters('mobbex_order_webhook', $request->get_params());
             $postData    = !empty($requestData['data']) ? $requestData['data'] : [];
+            // Get required params from query params
             $id          = $request->get_param('mobbex_order_id');
             $token       = $request->get_param('mobbex_token');
 
+            // Send a debug log to Simple Hystory dashboard
             $this->logger->log('debug', 'payment > mobbex_webhook | Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
 
-            //order webhook filter
+            // Gets order data from webhook and filter it
             $webhookData = \Mobbex\WP\Checkout\Models\Helper::format_webhook_data($id, $postData);
             
-            // Save transaction
+            // Save transaction in mobbex table
             global $wpdb;
             $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \Mobbex\WP\Checkout\Models\Helper::db_column_format($webhookData));
 
             // Try to process webhook
             $result = $this->process_webhook($id, $token, $webhookData);
             
+            // Retrieves information to platform
             return [
                 'result'   => $result,
                 'platform' => [
@@ -124,6 +135,7 @@ final class Payment
                 ],
             ];
         } catch (\Exception $e) {
+            // Send a debug log to Simple Hystory dashboard
             $this->logger->log('error', "payment > mobbex_webhook | REST API > Error", $e->getMessage());
 
             return [
@@ -143,12 +155,16 @@ final class Payment
      */
     public function process_webhook($order_id, $token, $data)
     {
+        // Get Status from webhook data
         $status = isset($data['status_code']) ? $data['status_code'] : null;
+        // Get order from wc order factory 
         $order  = wc_get_order($order_id);
 
+        // Send a debug log to Simple Hystory dashboard
         $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', compact('order_id', 'data'));
 
         if (!$status || !$order_id || !$token || !\Mobbex\Repository::validateToken($token))
+            // Send a debug log to Simple Hystory dashboard
             return $this->logger->log('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
 
         // Catch refunds webhooks
@@ -166,6 +182,7 @@ final class Payment
         $order->update_meta_data('mobbex_webhook', json_decode($data['data'], true));
         $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
 
+        // Get payment method name
         $source = json_decode($data['data'], true)['payment']['source'];
         $payment_method = $source['name'];
 
@@ -175,6 +192,7 @@ final class Payment
         if (!empty($data['entity_uid'])) {
             $entity_uid = $data['entity_uid'];
 
+            // Set coupon url
             $mobbex_order_url = str_replace(['{entity.uid}', '{payment.id}'], [$entity_uid, $data['payment_id']], MOBBEX_COUPON);
 
             $order->update_meta_data('mobbex_coupon_url', $mobbex_order_url);
@@ -182,6 +200,7 @@ final class Payment
         }
 
         if (!empty($source['type']) && $source['type'] == 'card') {
+            // Set payment info and plans
             $mobbex_card_payment_info = $payment_method . ' ( ' . $source['number'] . ' )';
             $mobbex_card_plan = $source['installment']['description'] . '. ' . $source['installment']['count'] . ' Cuota/s' . ' de ' . $source['installment']['amount'];
 
@@ -196,6 +215,7 @@ final class Payment
         $order->add_order_note($main_mobbex_note);
 
         if (isset($data['risk_analysis']) && $data['risk_analysis'] > 0) {
+            // Checks operation risk
             $order->add_order_note('El riesgo de la operación fue evaluado en: ' . $data['risk_analisys']);
             $order->update_meta_data('mobbex_risk_analysis', $data['risk_analisys']);
         }
@@ -204,6 +224,7 @@ final class Payment
             $order->set_payment_method_title($payment_method . ' ' . __('a través de Mobbex'));
         }
 
+        // Save in database
         $order->save();
 
         // Update totals
@@ -219,7 +240,7 @@ final class Payment
     }
 
     /**
-     * Update order status using webhook formatted data.
+     * Update order status using webhook formated data.
      * 
      * @param WC_Order $order
      * @param array $data
@@ -228,6 +249,7 @@ final class Payment
      */
     public function update_order_status($order, $data)
     {
+        // Gets order and order status
         $helper = new \Mobbex\WP\Checkout\Helper\Order($order);
         $status = $helper->get_status_from_code($data['status_code']);
 
@@ -251,13 +273,13 @@ final class Payment
      */
     public function update_order_total($order, $data)
     {
-        //Store original order total & update order with mobbex total
+        // Store original order total & update order with mobbex total
         $order_total = $order->get_total();
         
         if($order_total == $data['total'])
             return;
 
-        //update the order total
+        // Update the order total
         $order->set_total($data['total']);
         $order->save();
         

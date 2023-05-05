@@ -14,14 +14,15 @@ class Config
 
     /**
      * Return an array with all Mobbex settings & his values
+     * 
      * @return array $settings
      */
     public function getSettings()
     {
-        //Get saved values from db
+        // Gets saved values from db
         $saved_values = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', null);
 
-        //Create settings array
+        // Creates settings array
         foreach (include(__DIR__.'/../utils/config-options.php') as $key => $option) {
             if (isset($option['default']))
                 $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $option['default'];
@@ -39,7 +40,7 @@ class Config
     }
 
     /**
-     * Set a property in config class for each mobbex setting
+     * Sets a property in config class for each mobbex setting
      */
     public function setProperties()
     {
@@ -49,7 +50,8 @@ class Config
 
     /**
      * Returns formated Mobbex settings to be used in php sdk
-     * @return array
+     * 
+     * @return array $formatedSettings
      */
     public function formated_settings()
     {
@@ -95,6 +97,7 @@ class Config
 
     /**
      * Returns the entity asigned to a product
+     * 
      * @param string $product_id
      * @return string 
      * 
@@ -104,9 +107,11 @@ class Config
         if(!$this->multivendor)
             return '';
 
+        // Try to get product level entity
         if ($this->get_catalog_settings($product_id, 'mbbx_entity'))
             return $this->get_catalog_settings($product_id, 'mbbx_entity');
 
+        // Try to get product category level entity
         foreach (wc_get_product_term_ids($product_id, 'product_cat') as $term_id) {
             if ($this->get_catalog_settings($term_id, 'mbbx_entity', 'term'))
                 return $this->get_catalog_settings($term_id, 'mbbx_entity', 'term');
@@ -130,7 +135,9 @@ class Config
 
     /**
      * Get active plans for a given products.
+     * 
      * @param array $products
+     * 
      * @return array $array
      */
     public function get_catalog_plans($products, $catalog_type = 'post', $admin = false)
@@ -142,7 +149,6 @@ class Config
                 //Get product active plans
                 ${$value} = array_merge($this->get_catalog_settings($id, $value, $catalog_type), ${$value});
                 //Get product category active plans
-
                 if (!$admin && $catalog_type === 'post') {
                     foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
                         ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
@@ -158,6 +164,8 @@ class Config
      * 
      * @param string $meta_type 'post'|'term'.
      * @param int|string $id
+     * 
+     * @return array store data
      */
     public function get_store_data($meta_type, $id)
     {

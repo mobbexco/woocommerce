@@ -166,6 +166,7 @@ class Order
 
         echo "<table><th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Information') . "</b></h4></th>";
 
+        // Set payment info array for panel
         $paymentInfo = [
             'Transaction ID' => 'payment_id',
             'Risk Analysis'  => 'risk_analysis',
@@ -204,7 +205,7 @@ class Order
     }
 
     /**
-     * Create payment source panel section.
+     * Creates payment info source section.
      * 
      * @param array $parent
      * @param array $childs
@@ -235,7 +236,7 @@ class Order
     }
 
     /**
-     * Create entities panel section.
+     * Creates payment info entities section.
      * 
      * @param array $parent
      * @param array $childs
@@ -256,7 +257,7 @@ class Order
     }
 
     /**
-     * Create Coupon section
+     * Creates payment info coupon section
      * 
      * @param array $parent
      */
@@ -268,7 +269,7 @@ class Order
      }
 
     /**
-     * Create panel
+     * Creates payment info panel
      * 
      * @param array $labelsArray
      * @param array $transaction

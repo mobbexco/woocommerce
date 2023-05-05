@@ -91,11 +91,12 @@ class Checkout
         if (!empty($this->config->reseller_id))
             $reference[] = 'reseller:' . str_replace(' ', '-', trim($this->config->reseller_id));
 
+        // Join reference array with separator string
         $this->reference = implode('_', $reference);
     }
 
     /**
-     * Set customer data.
+     * Sets an array with customer data
      * 
      * @param string $name
      * @param string $email
@@ -109,7 +110,7 @@ class Checkout
     }
 
     /**
-     * Set address data.
+     * Sets an array with order or customer address data
      * 
      * @param Class $object Order or Customer class.
      * 
@@ -139,7 +140,7 @@ class Checkout
     }
 
     /**
-     * Set notification endpoints.
+     * Sets an array with notification endpoints.
      * 
      * @param mixed $return Post-payment redirect URL
      * @param mixed $webhook URL that recieve the Mobbex payment response
@@ -150,7 +151,7 @@ class Checkout
     }
 
     /**
-     * Add an item.
+     * ets an array with item data
      * 
      * @param int|string $total
      * @param int $quantity

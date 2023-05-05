@@ -47,7 +47,7 @@ class Registrar
     }
 
     /**
-     * Add the Woocommerce filters for Mobbex
+     * Request and add the Woocommerce necessary filters for Mobbex
      */
     public function add_filters()
     {
@@ -56,13 +56,14 @@ class Registrar
     }
 
     /**
-     * Add the Woocomerce actions for Mobbex
+     * Request and add the Woocomerce necessary actions for Mobbex
      */
     public function add_actions()
     {
         foreach ($this->get_actions() as $action) 
             add_action($action['name'], $action['callback'], isset($action['priority']) ? $action['priority'] : 10, isset($action['params']) ? $action['params'] : 1);
 
+        // Registers and specifies what actions will be used in the rest api init hook callback
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/widget', [
                 'methods' => \WP_REST_Server::CREATABLE,
@@ -74,6 +75,7 @@ class Registrar
 
     /**
      *  Return a list of filters to be registered.
+     * 
      * @return array $filters
      */
     public function get_filters()
@@ -97,6 +99,7 @@ class Registrar
 
     /**
      *  Return a list of action to be registered.
+     * 
      * @return array $actions
      */
     public function get_actions()
