@@ -240,7 +240,7 @@ function install_table($table, $db)
     $query = str_replace(
         ['DB_PREFIX_', 'ENGINE_TYPE'],
         [$db->prefix, $db->get_var("SHOW ENGINES;")],
-        file_get_contents(__DIR__."/vendor/mobbexco/php-plugins-sdk/src/sql/mobbex_$table.sql")
+        file_get_contents(__DIR__."/vendor/mobbexco/php-plugins-sdk/src/sql/$table.sql")
     );
 
     //Execute query
