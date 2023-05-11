@@ -5,7 +5,7 @@ namespace Mobbex\WP\Checkout\Models;
 /**
  * Model to manage mobbex_cache table.
  */
-class Cache extends \Mobbex\Model\AbstractCache
+class Cache
 {
     /**
      * Get data from mobbex_cache table with key.
