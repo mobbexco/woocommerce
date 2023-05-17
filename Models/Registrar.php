@@ -152,8 +152,8 @@ class Registrar
     public function execute_hook($name, $filter, ...$args)
     {
         if($filter)
-            apply_filters($name, ...$args);
+            return apply_filters($name, ...$args);
         else
-            do_action($name, ...$args);
+            return do_action($name, ...$args);
     }
 }
