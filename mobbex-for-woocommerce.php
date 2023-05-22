@@ -49,13 +49,12 @@ class MobbexGateway
     public function init()
     {
         self::$config    = new \Mobbex\WP\Checkout\Models\Config();
-        
-        //Init de Mobbex php sdk
-        $this->init_sdk();
-        
         self::$helper    = new \Mobbex\WP\Checkout\Models\Helper();
         self::$logger    = new \Mobbex\WP\Checkout\Models\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Models\Registrar();
+
+        //Init de Mobbex php sdk
+        $this->init_sdk();
 
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
@@ -98,7 +97,7 @@ class MobbexGateway
                 'sdk'                    => class_exists('\Composer\InstalledVersions') && \Composer\InstalledVersions::isInstalled('mobbexco/php-plugins-sdk') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
             ],
             self::$config->formated_settings(),
-            [self::$registrar, 'execut_hook'],
+            [self::$registrar, 'execute_hook'],
             [self::$logger, 'log']
         );
 
