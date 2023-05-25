@@ -224,38 +224,48 @@ class Helper
         return $format;
     }
 
+    /**
+     * Create a url passing the endpoint and order_id
+     * 
+     * @param string $endpoint 
+     * @param mixed  $order_id 
+     * 
+     * @return string url
+     */
     public function get_api_endpoint($endpoint, $order_id)
     {
+        // Create necessary query array
         $query = [
-            'mobbex_token' => $this->generate_token(),
+            'mobbex_token' => \Mobbex\Repository::generateToken(),
             'platform' => "woocommerce",
             "version" => MOBBEX_VERSION,
         ];
 
         if ($order_id)
+            // Add mobbex order id
             $query['mobbex_order_id'] = $order_id;
     
         if ($endpoint === 'mobbex_webhook') {
             if ($this->config->debug_mode != 'no')
+                // Add xdebug param to query
                 $query['XDEBUG_SESSION_START'] = 'PHPSTORM';
             return add_query_arg($query, get_rest_url(null, 'mobbex/v1/webhook'));
         } else 
+            // Add woocommerce api to query
             $query['wc-api'] = $endpoint;
         return add_query_arg($query, home_url('/'));
     }
 
-    public function valid_mobbex_token($token)
-    {
-        return $token == $this->generate_token();
-    }
-
-    public function generate_token()
-    {
-        return md5($this->config->api_key . '|' . $this->config->access_token);
-    }
-
+    /**
+     * Get product image passing product id
+     * 
+     * @param mixed $product_id
+     * 
+     * @return string $image || $default
+     */
     public function get_product_image($product_id)
     {
+        // Returns the image of the product that matches the product id
         $product = wc_get_product($product_id);
 
         if (!$product)
