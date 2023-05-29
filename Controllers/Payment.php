@@ -257,20 +257,16 @@ final class Payment
      */
     public function update_order_total($order, $data)
     {
-        //Store original order total & update order with mobbex total
-        $order_total = $order->get_total();
-        
-        if($order_total == $data['total'])
+        if ($order->get_total() == $data['total'])
             return;
 
-        //update the order total
-        $order->set_total($data['total']);
-        $order->save();
-        
-        // First remove previus fees
+        // Remove previus fees and recalculate totals to get the original order total (do not change the order)
         $order->remove_order_items('fee');
+        $order->calculate_totals();
 
-        // Add a fee item to order with the difference
+        $order_total = $order->get_total();
+
+        // Create a fee item with the diff amount
         $item = new \WC_Order_Item_Fee;
         $item->set_props([
             'name'   => $data['total'] > $order_total ? 'Cargo financiero' : 'Descuento',
@@ -278,10 +274,7 @@ final class Payment
             'total'  => $data['total'] - $order_total,
         ]);
 
-        //Add financial items
         $order->add_item($item);
-
-        // Recalculate totals
         $order->calculate_totals();
     }
 
