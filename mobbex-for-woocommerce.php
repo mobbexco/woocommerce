@@ -53,6 +53,12 @@ class MobbexGateway
         self::$logger    = new \Mobbex\WP\Checkout\Models\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Models\Registrar();
 
+        // Checks if Woocommerce is enable
+        if (!defined('WC_VERSION')){
+            self::$logger->notice('WooCommerce version 2.6 or greater needs to be installed and activated.');
+            return;
+        }
+        
         //Init de Mobbex php sdk
         $this->init_sdk();
 
