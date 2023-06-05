@@ -234,12 +234,12 @@ class MobbexGateway
  * @param string $table Table name without db & mobbex prefix .
  * @param object $db global wpdb.
  */
-function install_table($table, $db)
+function install_mobbex_table($table, $db)
 {
     //Get query
     $query = str_replace(
-        ['DB_PREFIX_', 'ENGINE_TYPE'],
-        [$db->prefix, $db->get_var("SHOW ENGINES;")],
+        'DB_PREFIX_',
+        $db->prefix,
         file_get_contents(__DIR__."/vendor/mobbexco/php-plugins-sdk/src/sql/$table.sql")
     );
 
@@ -261,18 +261,19 @@ function install_table($table, $db)
     global $wpdb;
 
     foreach (['transaction', 'cache'] as  $table) {
+        
         $tableExist = $wpdb->get_results('SHOW TABLES LIKE ' . "'$wpdb->prefix" . "mobbex_$table';");
 
-        if ($tableExist && $table === 'transaction') :
-            $columnExist = $wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = '. "'childs';" );
-            if (!$columnExist) :
+        if ($tableExist && $table === 'transaction'){
+
+            if (!$wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = ' . "'childs';"))
                 $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
-            else :
-                return;
-            endif;
-        elseif(!$tableExist) :
-            install_table($table, $wpdb);
-        endif;
+            else
+               return;
+
+        } elseif(!$tableExist) {
+            install_mobbex_table($table, $wpdb);
+        }
     }
  }
 
