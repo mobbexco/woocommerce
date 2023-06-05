@@ -62,7 +62,7 @@ class Order
         $access_token = !empty($store['access_token']) ? $store['access_token'] : null;
 
         \Mobbex\Api::init($api_key, $access_token);
-        $checkout = new \Mobbex\WP\Checkout\Models\Checkout();
+        $checkout = new \Mobbex\WP\Checkout\Model\Checkout();
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -85,7 +85,7 @@ class Order
     /**
      * Add order initial data to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_initial_data($checkout)
     {
@@ -100,7 +100,7 @@ class Order
     /**
      * Add order items to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_items($checkout)
     {
@@ -124,7 +124,7 @@ class Order
     /**
      * Add installments configured to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_installments($checkout)
     {
@@ -140,7 +140,7 @@ class Order
     /**
      * Add order customer data to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_customer($checkout)
     {
