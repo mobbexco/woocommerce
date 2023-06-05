@@ -16,8 +16,8 @@ jobs:
       uses: php-actions/composer@v6
       with:
         php_version: ${{ matrix.php }}
-        version: 1
     - name: Execute PHPStan on ${{ matrix.php }}
       uses: php-actions/phpstan@v3
       with:
         path: ./
+        php_version: ${{ matrix.php }}
