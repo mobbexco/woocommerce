@@ -53,20 +53,20 @@ class MobbexGateway
         self::$logger    = new \Mobbex\WP\Checkout\Models\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Models\Registrar();
 
-        //Init de Mobbex php sdk
-        $this->init_sdk();
-
+        MobbexGateway::check_dependencies();
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
-        MobbexGateway::check_dependencies();
         MobbexGateway::check_upgrades();
-
+        
         if (MobbexGateway::$errors) {
             foreach (MobbexGateway::$errors as $error)
                 self::$logger->notice($error);
 
             return;
         }
+        
+        //Init de Mobbex php sdk
+        $this->init_sdk();
 
         self::check_warnings();
 
@@ -112,7 +112,12 @@ class MobbexGateway
      */
     public static function check_dependencies()
     {
-        if (!class_exists('WooCommerce') || !function_exists('WC') || version_compare(defined('WC_VERSION') ? WC_VERSION : '', '2.6', '<')) {
+        if (!class_exists('WooCommerce') || !function_exists('WC') || !defined('WC_VERSION')) {
+            MobbexGateway::$errors[] = __('WooCommerce needs to be installed and activated.', 'mobbex-for-woocommerce');
+            return;
+        }
+
+        if (version_compare(defined('WC_VERSION') ? WC_VERSION : '', '2.6', '<')){
             MobbexGateway::$errors[] = __('WooCommerce version 2.6 or greater needs to be installed and activated.', 'mobbex-for-woocommerce');
         }
 
