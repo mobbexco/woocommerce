@@ -162,7 +162,7 @@ class Order
 
         // Get transaction data
         $parent  = $mbbxOrderHelp->get_parent_transaction();
-        $childs  = !empty($mbbxOrderHelp->get_child_transactions()) ? $mbbxOrderHelp->get_child_transactions() : $mbbxOrderHelp->format_childs($mbbxOrderHelp->id, json_decode($parent['childs'], true));
+        $childs  = !empty($mbbxOrderHelp->get_child_transactions()) ? $mbbxOrderHelp->get_child_transactions() : $mbbxOrderHelp->format_childs($mbbxOrderHelp->id, $parent['childs'] ? json_decode($parent['childs'], true) : []);
 
         echo "<table><th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Information') . "</b></h4></th>";
 
@@ -175,7 +175,7 @@ class Order
         ];
 
         //Create payment info panel 
-        echo $this->create_panel($paymentInfo, $parent);
+        echo self::create_panel($paymentInfo, $parent);
 
         echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Method') . "</b></h4></th>";
 
@@ -219,7 +219,7 @@ class Order
                 'Amount'      => 'installment_amount'
             ];
             foreach ($childs as $card) :
-                $this->create_panel($multipleCardArray, $card);
+                self::create_panel($multipleCardArray, $card);
                 echo "<tr class='mobbex-color-column'><td></td><td></td></tr>";
             endforeach;
         } else {
@@ -228,7 +228,7 @@ class Order
                 'Payment Source' => 'source_name',
                 'Source Number'  => 'source_number'
             ];
-            $this->create_panel($simpleCardArray, $parent);
+            self::create_panel($simpleCardArray, $parent);
             if (!empty($parent['source_installment']))
                 echo "<tr class='mobbex-color-column'><td>" . __('Source Installment:') . "</td><td>" . $parent['installment_count'] . ' cuota/s de $' . $parent['installment_amount'] . "</td></tr>";
         }
@@ -273,7 +273,7 @@ class Order
      * @param array $labelsArray
      * @param array $transaction
      */
-    public function create_panel($labelsArray, $transaction)
+    public static function create_panel($labelsArray, $transaction)
     {
         $i = 1;
         foreach ($labelsArray as $label => $value) :

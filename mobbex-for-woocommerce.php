@@ -2,14 +2,14 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.12.0
+Version:      3.13.1
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
 Copyright: 2020 mobbex.com
  */
 
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 class MobbexGateway
 {
@@ -49,26 +49,24 @@ class MobbexGateway
     public function init()
     {
         self::$config    = new \Mobbex\WP\Checkout\Model\Config();
-        
-        //Init de Mobbex php sdk
-        $this->init_sdk();
-        
         self::$helper    = new \Mobbex\WP\Checkout\Model\Helper();
         self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Model\Registrar();
 
-
+        MobbexGateway::check_dependencies();
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
-        MobbexGateway::check_dependencies();
         MobbexGateway::check_upgrades();
-
+        
         if (MobbexGateway::$errors) {
             foreach (MobbexGateway::$errors as $error)
                 self::$logger->notice($error);
 
             return;
         }
+        
+        //Init de Mobbex php sdk
+        $this->init_sdk();
 
         self::check_warnings();
 
@@ -96,10 +94,10 @@ class MobbexGateway
             [
                 'Woocommerce'            => WC_VERSION,
                 'Mobbex for Woocommerce' => MOBBEX_VERSION,
-                'sdk'                    => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
+                'sdk'                    => class_exists('\Composer\InstalledVersions') && \Composer\InstalledVersions::isInstalled('mobbexco/php-plugins-sdk') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
             ],
-            self::$config->settings,
-            [self::$registrar, 'execut_hook'],
+            self::$config->formated_settings(),
+            [self::$registrar, 'execute_hook'],
             [self::$logger, 'log']
         );
 
@@ -114,7 +112,12 @@ class MobbexGateway
      */
     public static function check_dependencies()
     {
-        if (!class_exists('WooCommerce') || !function_exists('WC') || version_compare(defined('WC_VERSION') ? WC_VERSION : '', '2.6', '<')) {
+        if (!class_exists('WooCommerce') || !function_exists('WC') || !defined('WC_VERSION')) {
+            MobbexGateway::$errors[] = __('WooCommerce needs to be installed and activated.', 'mobbex-for-woocommerce');
+            return;
+        }
+
+        if (version_compare(defined('WC_VERSION') ? WC_VERSION : '', '2.6', '<')){
             MobbexGateway::$errors[] = __('WooCommerce version 2.6 or greater needs to be installed and activated.', 'mobbex-for-woocommerce');
         }
 
@@ -151,15 +154,15 @@ class MobbexGateway
     public static function check_upgrades()
     {
         try {
-            $db_version = get_option('woocommerce-mobbex-version');
+            // Check current version updated
+            if (get_option('woocommerce-mobbex-version') == MOBBEX_VERSION)
+                return;
 
-            if ($db_version < '3.6.0')
-                alt_mobbex_transaction_table();
-
+            // Apply upgrades
+            upgrade_mobbex_db();
 
             // Update db version
-            if ($db_version != MOBBEX_VERSION)
-                update_option('woocommerce-mobbex-version', MOBBEX_VERSION);
+            update_option('woocommerce-mobbex-version', MOBBEX_VERSION);
         } catch (\Exception $e) {
             self::$errors[] = 'Mobbex DB Upgrade error';
         }
@@ -225,32 +228,22 @@ class MobbexGateway
     }
 }
 
-/** 
- * Adds childs column to mobbex transaction table if exists
- * 
- */
-
- function alt_mobbex_transaction_table()
- {
-    global $wpdb;
-     
-    $tableExist = $wpdb->get_results('SHOW TABLES LIKE ' . "'$wpdb->prefix" . "mobbex_transaction';");
-     
-    if ($tableExist) :
-        $columnExist = $wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = '. "'childs';" );
-        if (!$columnExist) :
-            $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
-        else :
-            return;
-        endif;
-    else :
-        create_mobbex_transaction_table();
-    endif;
- }
-
-function create_mobbex_transaction_table()
+function upgrade_mobbex_db()
 {
     global $wpdb;
+
+    $transactionExists = $wpdb->get_results("SHOW TABLES LIKE '{$wpdb->prefix}mobbex_transaction';");
+
+    if ($transactionExists) {
+        $childsExists = $wpdb->get_results(
+            "SHOW COLUMNS FROM `{$wpdb->prefix}mobbex_transaction` WHERE FIELD = 'childs';"
+        );
+
+        if (!$childsExists)
+            $wpdb->get_results("ALTER TABLE `{$wpdb->prefix}mobbex_transaction` ADD COLUMN childs TEXT NOT NULL;");
+
+        return;
+    }
 
     $wpdb->get_results(
         'CREATE TABLE ' . $wpdb->prefix . 'mobbex_transaction('
@@ -290,7 +283,7 @@ function create_mobbex_transaction_table()
 
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
-register_activation_hook(__FILE__, 'create_mobbex_transaction_table');
+register_activation_hook(__FILE__, 'upgrade_mobbex_db');
 
 // Remove mbbx entity saved data on uninstall
 register_deactivation_hook(__FILE__, function() {

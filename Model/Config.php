@@ -47,6 +47,33 @@ class Config
             $this->$key = $value;
     }
 
+    /**
+     * Returns formated Mobbex settings to be used in php sdk
+     * @return array
+     */
+    public function formated_settings()
+    {
+        $formatedSettings = [];
+
+        foreach ($this->settings as $key => $value) {
+
+            switch ($value) {
+                case 'yes':
+                    $formatedSettings[$key] = true;
+                    break;
+                case 'no':
+                    $formatedSettings[$key] = false;
+                    break;
+                default:
+                    $formatedSettings[$key] = $value;
+                    break;
+            }
+
+        }
+
+        return $formatedSettings;
+    }
+
     /** CATALOG SETTINGS **/
 
     /**
@@ -103,28 +130,49 @@ class Config
 
     /**
      * Get active plans for a given products.
-     * @param array $products
+     * @param array $ids Products ids
      * @return array $array
      */
-    public function get_catalog_plans($products, $catalog_type = 'post', $admin = false)
+    public function get_products_plans($ids)
     {
         $common_plans = $advanced_plans = [];
 
-        foreach ($products as $id) {
-            foreach (['common_plans', 'advanced_plans'] as $value) {
-                //Get product active plans
-                ${$value} = array_merge($this->get_catalog_settings($id, $value, $catalog_type), ${$value});
-                //Get product category active plans
-
-                if (!$admin) {
-                    foreach (wc_get_product_term_ids($product_id, 'product_cat') as $categoryId)
-                        ${$value} = array_unique(array_merge(${$value}, $this->get_catalog_settings($categoryId, $value, 'term')));
-                }
-            }
+        foreach ($ids as $id) {
+            $product_plans = $this->get_catalog_plans($id); 
+            //Merge all catalog plans
+            $common_plans   = array_merge($common_plans, $product_plans['common_plans']);
+            $advanced_plans = array_merge($advanced_plans, $product_plans['advanced_plans']);
         }
 
         return compact('common_plans', 'advanced_plans');
     }
+
+    /**
+     * Get all the Mobbex plans from a given product or term id.
+     * @param string $id Product/Term id.
+     * @param string $catalog_type 
+     */
+    public function get_catalog_plans($id, $catalog_type = 'post', $admin = false)
+    {
+        //Get product plans
+        $common_plans   = $this->get_catalog_settings($id, 'common_plans', $catalog_type) ?: [];
+        $advanced_plans = $this->get_catalog_settings($id, 'advanced_plans', $catalog_type) ?: [];
+
+        //Get plans from categories
+        if(!$admin && $catalog_type === 'post') {
+            foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId){
+                $common_plans   = array_merge($common_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term'));
+                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'advanced_plans', 'term'));
+            }
+        }
+
+        //Avoid duplicated plans
+        $common_plans   = array_unique($common_plans);
+        $advanced_plans = array_unique($advanced_plans);
+
+       return compact('common_plans', 'advanced_plans');
+    }
+
 
     /**
      * Get current store data from product or product category.

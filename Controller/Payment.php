@@ -46,7 +46,7 @@ final class Payment
         if (empty($status) || empty($id) || empty($token))
             $error = "No se pudo validar la transacción. Contacte con el administrador de su sitio";
 
-        if (!$this->helper->valid_mobbex_token($token))
+        if (!\Mobbex\Repository::validateToken($token))
             $error = "Token de seguridad inválido.";
 
         if ($error)
@@ -100,12 +100,17 @@ final class Payment
             $id          = $request->get_param('mobbex_order_id');
             $token       = $request->get_param('mobbex_token');
 
+            $this->logger->log('debug', 'payment > mobbex_webhook | Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
+
             //order webhook filter
             $webhookData = \Mobbex\WP\Checkout\Model\Helper::format_webhook_data($id, $postData);
             
             // Save transaction
             global $wpdb;
             $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \Mobbex\WP\Checkout\Model\Helper::db_column_format($webhookData));
+
+            // Add db saved id to webhook data array
+            $webhookData['id'] = $wpdb->insert_id;
 
             // Try to process webhook
             $result = $this->process_webhook($id, $token, $webhookData);
@@ -121,8 +126,8 @@ final class Payment
                     ]
                 ],
             ];
-        } catch (\Mobbex\Exception $e) {
-            $this->logger->debug("REST API > Error", $e->getMessage());
+        } catch (\Exception $e) {
+            $this->logger->log('error', "payment > mobbex_webhook | REST API > Error", $e->getMessage());
 
             return [
                 "result" => false,
@@ -144,10 +149,13 @@ final class Payment
         $status = isset($data['status_code']) ? $data['status_code'] : null;
         $order  = wc_get_order($order_id);
 
-        $this->logger->debug('Mobbex Webhook: Processing data');
+        $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', compact('order_id', 'data'));
 
-        if (!$status || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
-            return $this->logger->debug('Mobbex Webhook: Invalid mobbex token or empty data');
+        if (!$status || !$order_id || !$token || !\Mobbex\Repository::validateToken($token))
+            return $this->logger->log('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
+
+        if ($this->is_request_duplicated($data))
+            return $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Duplicated Request Detected');
 
         // Catch refunds webhooks
         if ($status == 602 || $status == 605)
@@ -193,7 +201,7 @@ final class Payment
 
         $order->add_order_note($main_mobbex_note);
 
-        if (isset($data['risk_analysis']) && $data['risk_analisys'] > 0) {
+        if (isset($data['risk_analysis']) && $data['risk_analysis'] > 0) {
             $order->add_order_note('El riesgo de la operación fue evaluado en: ' . $data['risk_analisys']);
             $order->update_meta_data('mobbex_risk_analysis', $data['risk_analisys']);
         }
@@ -252,21 +260,22 @@ final class Payment
         if ($order->get_total() == $data['total'])
             return;
 
-        // First remove previus fees
+        // Remove previus fees and recalculate totals to get the original order total (do not change the order)
         $order->remove_order_items('fee');
+        $order->calculate_totals();
 
-        // Add a fee item to order with the difference
+        $order_total = $order->get_total();
+
+        // Create a fee item with the diff amount
         $item = new \WC_Order_Item_Fee;
         $item->set_props([
-            'name'   => $data['total'] > $order->get_total() ? 'Cargo financiero' : 'Descuento',
-            'amount' => $data['total'] - $order->get_total(),
-            'total'  => $data['total'] - $order->get_total(),
+            'name'   => $data['total'] > $order_total ? 'Cargo financiero' : 'Descuento',
+            'amount' => $data['total'] - $order_total,
+            'total'  => $data['total'] - $order_total,
         ]);
-        $order->add_item($item);
 
-        // Recalculate totals
+        $order->add_item($item);
         $order->calculate_totals();
-        $order->set_total($data['total']);
     }
 
     /**
@@ -306,5 +315,64 @@ final class Payment
             $data['installment_amount'],
             $data['source_number']
         ));
+    }
+
+    /**
+     * Check if it is a duplicated request locking process execution.
+     * 
+     * @param array $transaction Transaction data with the insert id in `id` position.
+     * 
+     * @return bool True if is duplicated.
+     */
+    public function is_request_duplicated($transaction)
+    {
+        return $this->sleep_process(
+            $transaction['id'],
+            50000, // 50 ms
+            10000, //10 ms
+            function() use($transaction) {
+                return !empty($this->get_duplicated_transactions($transaction));
+            }
+        );
+    }
+
+    /**
+     * Sleep the execution until the callback condition is met or the time runs out.
+     * 
+     * @param int $max_time Max sleep time in microseconds.
+     * @param int $interval Interval in microseconds to awake and test condition.
+     * @param callable $condition The condition to check each cicle.
+     * 
+     * @return bool Last condition callback result.
+     */
+    public function sleep_process($id, $max_time, $interval, $condition)
+    {
+        $codition_result = $condition();
+
+        while ($max_time > 0 && !$codition_result) {
+            usleep($interval);
+            $max_time -= $interval;
+            $codition_result = $condition();
+        }
+
+        return $codition_result;
+    }
+
+    /**
+     * Retrieve all duplicated transactions from db.
+     * 
+     * @param array $transaction Transaction data.
+     * 
+     * @return array A list of rows.
+     */
+    public function get_duplicated_transactions($transaction)
+    {
+        global $wpdb;
+
+        return $wpdb->get_results($wpdb->prepare(
+            "SELECT `id` FROM `{$wpdb->prefix}mobbex_transaction` WHERE `id` < %d AND `data` = %s LIMIT 1",
+            $transaction['id'],
+            $transaction['data']
+        )) ?: [];
     }
 }

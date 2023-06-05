@@ -34,7 +34,7 @@ class Order
     /**
     * Constructor.
     * 
-    * @param WC_Order|int WooCommerce order instance or its id.
+    * @param \WC_Order|int WooCommerce order instance or its id.
     * @param \Mobbex\WP\Checkout\Model\Helper Base plugin helper.
     * @param \Mobbex\WP\Checkout\Model\Logger Base plugin debugger.
     */
@@ -58,11 +58,11 @@ class Order
         // Try to configure api with order store credentials
         $store = $this->get_store();
 
-        $api_key      = !empty($store['api_key']) ? $store['api_key'] : $this->config->api_key;
-        $access_token = !empty($store['access_token']) ? $store['access_token'] : $this->config->access_token;
+        $api_key      = !empty($store['api_key']) ? $store['api_key'] : null;
+        $access_token = !empty($store['access_token']) ? $store['access_token'] : null;
 
-        $api      = new \Mobbex\WP\Checkout\Model\MobbexApi($api_key, $access_token);
-        $checkout = new \Mobbex\WP\Checkout\Model\MobbexCheckout($api);
+        \Mobbex\Api::init($api_key, $access_token);
+        $checkout = new \Mobbex\WP\Checkout\Models\Checkout();
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -73,7 +73,8 @@ class Order
             $response = $checkout->create();
         } catch (\Exception $e) {
             $response = null;
-            $this->logger->log('Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '', true);
+
+            $this->logger->log('error', 'class-order-helper > create_checkout | Mobbex Checkout Creation Failed: ' . $e->getMessage(), isset($e->data) ? $e->data : '');
         }
 
         do_action('mobbex_checkout_process', $response, $this->id);
@@ -84,7 +85,7 @@ class Order
     /**
      * Add order initial data to checkout.
      * 
-     * @param MobbexCheckout $checkout
+     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
      */
     private function add_initial_data($checkout)
     {
@@ -99,7 +100,7 @@ class Order
     /**
      * Add order items to checkout.
      * 
-     * @param MobbexCheckout $checkout
+     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
      */
     private function add_items($checkout)
     {
@@ -123,34 +124,23 @@ class Order
     /**
      * Add installments configured to checkout.
      * 
-     * @param MobbexCheckout $checkout
+     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
      */
     private function add_installments($checkout)
     {
-        $inactive_plans = $active_plans = [];
-        $products = $this->helper::get_product_ids($this->order);
+        $products_ids = $this->helper::get_product_ids($this->order);
 
         // Get plans from order products
-        foreach ($products as $product_id) {
-            $inactive_plans = array_merge($inactive_plans, $this->helper::get_inactive_plans($product_id));
-            $active_plans   = array_merge($active_plans, $this->helper::get_active_plans($product_id));
-        }
+        extract($this->config->get_products_plans($products_ids));
 
-        // Block inactive (common) plans from installments
-        foreach ($inactive_plans as $plan_ref)
-            $checkout->block_installment($plan_ref);
-
-        // Add active (advanced) plans to installments (only if the plan is active on all products)
-        foreach (array_count_values($active_plans) as $plan_uid => $reps) {
-            if ($reps == count($products))
-                $checkout->add_installment($plan_uid);
-        }
+        //Add installments
+        $checkout->add_installments($products_ids, $common_plans, $advanced_plans);
     }
 
     /**
      * Add order customer data to checkout.
      * 
-     * @param MobbexCheckout $checkout
+     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
      */
     private function add_customer($checkout)
     {
@@ -266,6 +256,7 @@ class Order
      */
     public function format_childs($order_id, $childsData)
     {
+        $childs = [];
         foreach ($childsData as $child)
             $childs[] = $this->helper->format_webhook_data($order_id, $child);
         return $childs;

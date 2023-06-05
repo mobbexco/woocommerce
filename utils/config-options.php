@@ -26,7 +26,7 @@ return [
         'default'     => '',
     ],
 
-    'test_mode' => [
+    'test' => [
         'title'   => __('Enable/Disable Test Mode', 'mobbex-for-woocommerce'),
         'type'    => 'checkbox',
         'label'   => __('Enable Test Mode.', 'mobbex-for-woocommerce'),
@@ -136,7 +136,7 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'visual_theme' => [
+    'theme' => [
         'title'       => __('Visual Theme', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your Checkout Theme from here.', 'mobbex-for-woocommerce'),
         'type'        => 'select',
@@ -148,23 +148,23 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'checkout_title' => [
-        'title'       => __('Checkout Title', 'mobbex-for-woocommerce'),
+    'header_name' => [
+        'title'       => __('Header Name', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your Checkout Title from here.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
         'default'     => '',
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'checkout_logo'  => [
-        'title'       => __('Checkout Logo URL', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your Checkout Logo from here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on Mobbex will be used. Dimensions: 250x250 pixels', 'mobbex-for-woocommerce'),
+    'header_logo'  => [
+        'title'       => __('Header Logo URL', 'mobbex-for-woocommerce'),
+        'description' => __('You can customize your Header Logo from here. The logo URL must be HTTPS and must be only set if required. If not set the Logo set on Mobbex will be used. Dimensions: 250x250 pixels', 'mobbex-for-woocommerce'),
         'type'        => 'text',
         'default'     => '',
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'checkout_background_color' => [
+    'background' => [
         'title'       => __('Checkout Background Color', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your Checkout Background Color from here.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
@@ -172,7 +172,7 @@ return [
         'class'       => 'colorpick mbbx-into-appearance',
     ],
 
-    'checkout_primary_color' => [
+    'color' => [
         'title'       => __('Checkout Primary Color', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your Checkout Primary Color for Buttons and TextFields from here.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
