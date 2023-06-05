@@ -3,6 +3,9 @@
         "mobbexco/php-plugins-sdk": "1.3.0",
         "yahnis-elsts/plugin-update-checker": "v4.10"
     },
+    "require-dev": {
+        "php-stubs/woocommerce-stubs": "*",
+    },
     "autoload": {
         "psr-4": {
             "Mobbex\\WP\\Checkout\\": ""
