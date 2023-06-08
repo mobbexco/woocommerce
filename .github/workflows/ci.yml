@@ -19,5 +19,5 @@ jobs:
         tools: composer
     - name: Install dependencies
       run: composer install --dev
-    - name: Execute PHPStan
-      run: vendor/bin/phpstan analyse --memory-limit 2G -c .github/workflows/phpstan.neon
+    - name: Execute PHP Paralel Lint
+      run: vendor/php-parallel-lint/php-parallel-lint/parallel-lint . --exclude vendor

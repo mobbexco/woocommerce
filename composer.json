@@ -4,6 +4,7 @@
         "yahnis-elsts/plugin-update-checker": "v4.10"
     },
     "require-dev": {
+        "php-parallel-lint/php-parallel-lint": "*",
         "php-stubs/woocommerce-stubs": "*",
         "phpstan/phpstan": "*"
     },
