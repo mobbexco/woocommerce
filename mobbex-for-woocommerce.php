@@ -252,7 +252,7 @@ function install_mobbex_table($table, $db)
     
     //log errors
     if($db->last_error){
-        $logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $logger = new \Mobbex\WP\Checkout\Model\Logger();
         $logger->log('error', "mobbex-for-woocommerce > install_table $db->last_error", ['query' => $query]);
     }
 }
