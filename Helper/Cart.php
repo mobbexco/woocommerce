@@ -10,29 +10,29 @@ class Cart
     /** @var \WC_Cart */
     public $cart;
 
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
 
-    /** @var \Mobbex\WP\Checkout\Models\Logger */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
     /**
     * Constructor.
     * 
     * @param \WC_Cart WooCommerce Cart instance.
-    * @param \Mobbex\WP\Checkout\Models\Helper Base plugin helper.
-    * @param \Mobbex\WP\Checkout\Models\Logger Base plugin debugger.
+    * @param \Mobbex\WP\Checkout\Model\Helper Base plugin helper.
+    * @param \Mobbex\WP\Checkout\Model\Logger Base plugin debugger.
     */
     public function __construct($cart, $helper = null)
     {
         $this->id     = $cart->get_cart_hash();
         $this->cart   = $cart;
-        $this->config = new \Mobbex\WP\Checkout\Models\Config();
-        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Models\Helper();
-        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Model\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
     }
 
     /**
@@ -48,9 +48,8 @@ class Cart
         $api_key      = !empty($store['api_key']) ? $store['api_key'] : null;
         $access_token = !empty($store['access_token']) ? $store['access_token'] : null;
 
-
         \Mobbex\Api::init($api_key, $access_token);
-        $checkout = new \Mobbex\WP\Checkout\Models\Checkout('mobbex_cart_checkout_custom_data');
+        $checkout = new \Mobbex\WP\Checkout\Model\Checkout('mobbex_cart_checkout_custom_data');
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -72,7 +71,7 @@ class Cart
     /**
      * Add cart initial data to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_initial_data($checkout)
     {
@@ -88,7 +87,7 @@ class Cart
     /**
      * Add cart items to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_items($checkout)
     {
@@ -109,7 +108,7 @@ class Cart
     /**
      * Add installments configured to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_installments($checkout)
     {
@@ -130,7 +129,7 @@ class Cart
     /**
      * Add cart customer data to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_customer($checkout)
     {

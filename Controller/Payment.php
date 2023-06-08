@@ -1,23 +1,23 @@
 <?php
 
-namespace Mobbex\WP\Checkout\Controllers;
+namespace Mobbex\WP\Checkout\Controller;
 
 final class Payment
 {
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
     
-    /** @var \Mobbex\WP\Checkout\Models\Logger */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
 
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Models\Config();
-        $this->helper = new \Mobbex\WP\Checkout\Models\Helper();
-        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
 
         if ($this->helper->isReady())
             add_action('woocommerce_api_mobbex_return_url', [$this, 'mobbex_return_url']);
@@ -103,11 +103,11 @@ final class Payment
             $this->logger->log('debug', 'payment > mobbex_webhook | Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
 
             //order webhook filter
-            $webhookData = \Mobbex\WP\Checkout\Models\Helper::format_webhook_data($id, $postData);
+            $webhookData = \Mobbex\WP\Checkout\Model\Helper::format_webhook_data($id, $postData);
             
             // Save transaction
             global $wpdb;
-            $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \Mobbex\WP\Checkout\Models\Helper::db_column_format($webhookData));
+            $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \Mobbex\WP\Checkout\Model\Helper::db_column_format($webhookData));
 
             // Add db saved id to webhook data array
             $webhookData['id'] = $wpdb->insert_id;

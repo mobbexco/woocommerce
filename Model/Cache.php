@@ -1,6 +1,6 @@
 <?php
 
-namespace Mobbex\WP\Checkout\Models;
+namespace Mobbex\WP\Checkout\Model;
 
 /**
  * Model to manage mobbex_cache table.

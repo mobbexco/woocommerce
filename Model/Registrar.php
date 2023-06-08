@@ -1,5 +1,5 @@
 <?php 
-namespace Mobbex\WP\Checkout\Models;
+namespace Mobbex\WP\Checkout\Model;
 
 class Registrar 
 {
@@ -146,7 +146,7 @@ class Registrar
      */
     public function get_plugin_dir()
     {
-        return str_replace('/Models/Registrar.php', '', __FILE__) . '/mobbex-for-woocommerce.php';
+        return str_replace('/Model/Registrar.php', '', __FILE__) . '/mobbex-for-woocommerce.php';
     }
 
     public function execute_hook($name, $filter, ...$args)

@@ -7,21 +7,21 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         'refunds',
     );
 
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
 
-    /** @var \Mobbex\WP\Checkout\Models\Logger */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
     public function __construct()
     {
         $this->id     = MOBBEX_WC_GATEWAY_ID;
-        $this->config = new \Mobbex\WP\Checkout\Models\Config();
-        $this->helper = new \Mobbex\WP\Checkout\Models\Helper();
-        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
 
         // String variables. That's used on checkout view
         $this->icon        = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');

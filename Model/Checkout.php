@@ -1,6 +1,6 @@
 <?php
 
-namespace Mobbex\WP\Checkout\Models;
+namespace Mobbex\WP\Checkout\Model;
 
 class Checkout
 {
@@ -22,7 +22,7 @@ class Checkout
 
     public $endpoints = [];
 
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
     /** Name of hook to execute when body is filtered */
@@ -34,7 +34,7 @@ class Checkout
      */
     public function __construct($filter = 'mobbex_checkout_custom_data')
     {
-        $this->config = new \Mobbex\WP\Checkout\Models\Config;
+        $this->config = new \Mobbex\WP\Checkout\Model\Config;
         $this->filter = $filter;
     }
 

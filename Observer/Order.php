@@ -4,16 +4,16 @@ namespace Mobbex\WP\Checkout\Observer;
 
 class Order
 {
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
 
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Models\Config();
-        $this->helper = new \Mobbex\WP\Checkout\Models\Helper();
+        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
 
         // Register 'Authorized' Order status for 2-step payment mode
         $this->register_authorized_order_status();

@@ -10,13 +10,13 @@ class Order
     /** @var \WC_Order */
     public $order;
 
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
 
-    /** @var \Mobbex\WP\Checkout\Models\Logger */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
     /** @var wpdb */
@@ -35,16 +35,16 @@ class Order
     * Constructor.
     * 
     * @param \WC_Order|int WooCommerce order instance or its id.
-    * @param \Mobbex\WP\Checkout\Models\Helper Base plugin helper.
-    * @param \Mobbex\WP\Checkout\Models\Logger Base plugin debugger.
+    * @param \Mobbex\WP\Checkout\Model\Helper Base plugin helper.
+    * @param \Mobbex\WP\Checkout\Model\Logger Base plugin debugger.
     */
     public function __construct($order, $helper = null)
     {
         $this->id     = is_int($order) ? $order : $order->get_id();
         $this->order  = is_int($order) ? wc_get_order($order) : $order;
-        $this->config = new \Mobbex\WP\Checkout\Models\Config();
-        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Models\Helper();
-        $this->logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->helper = $helper ?: new \Mobbex\WP\Checkout\Model\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
         $this->db     = $GLOBALS['wpdb'];
     }
 
@@ -62,7 +62,7 @@ class Order
         $access_token = !empty($store['access_token']) ? $store['access_token'] : null;
 
         \Mobbex\Api::init($api_key, $access_token);
-        $checkout = new \Mobbex\WP\Checkout\Models\Checkout();
+        $checkout = new \Mobbex\WP\Checkout\Model\Checkout();
 
         $this->add_initial_data($checkout);
         $this->add_items($checkout);
@@ -85,7 +85,7 @@ class Order
     /**
      * Add order initial data to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_initial_data($checkout)
     {
@@ -100,7 +100,7 @@ class Order
     /**
      * Add order items to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_items($checkout)
     {
@@ -124,7 +124,7 @@ class Order
     /**
      * Add installments configured to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_installments($checkout)
     {
@@ -140,7 +140,7 @@ class Order
     /**
      * Add order customer data to checkout.
      * 
-     * @param \Mobbex\WP\Checkout\Models\Checkout $checkout
+     * @param \Mobbex\WP\Checkout\Model\Checkout $checkout
      */
     private function add_customer($checkout)
     {

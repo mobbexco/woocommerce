@@ -13,13 +13,13 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 class MobbexGateway
 {
-    /** @var \Mobbex\WP\Checkout\Models\Config */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public static $config;
 
-    /** @var \Mobbex\WP\Checkout\Models\Helper */
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
     public static $helper;
 
-    /** @var \Mobbex\WP\Checkout\Models\Logger */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public static $logger;
 
     /** @var \Mobbex\WP\Checkout\Observer\Registrar */
@@ -48,10 +48,10 @@ class MobbexGateway
 
     public function init()
     {
-        self::$config    = new \Mobbex\WP\Checkout\Models\Config();
-        self::$helper    = new \Mobbex\WP\Checkout\Models\Helper();
-        self::$logger    = new \Mobbex\WP\Checkout\Models\Logger();
-        self::$registrar = new \Mobbex\WP\Checkout\Models\Registrar();
+        self::$config    = new \Mobbex\WP\Checkout\Model\Config();
+        self::$helper    = new \Mobbex\WP\Checkout\Model\Helper();
+        self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
+        self::$registrar = new \Mobbex\WP\Checkout\Model\Registrar();
 
         MobbexGateway::check_dependencies();
         MobbexGateway::load_textdomain();
@@ -75,7 +75,7 @@ class MobbexGateway
         MobbexGateway::add_gateway();
 
         // Init controllers
-        new \Mobbex\WP\Checkout\Controllers\Payment;
+        new \Mobbex\WP\Checkout\Controller\Payment;
 
         //Register hooks
         self::$registrar->register_hooks();
@@ -103,7 +103,7 @@ class MobbexGateway
 
         //Load Mobbex models in sdk
         \Mobbex\Platform::loadModels(
-            new \Mobbex\WP\Checkout\Models\Cache()
+            new \Mobbex\WP\Checkout\Model\Cache()
         );
 
         // Init api conector
@@ -252,7 +252,7 @@ function install_mobbex_table($table, $db)
     
     //log errors
     if($db->last_error){
-        $logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $logger = new \Mobbex\WP\Checkout\Model\Logger();
         $logger->log('error', "mobbex-for-woocommerce > install_table $db->last_error", ['query' => $query]);
     }
 }
