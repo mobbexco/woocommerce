@@ -131,16 +131,10 @@ class Order
         $products_ids = $this->helper::get_product_ids($this->order);
 
         // Get plans from order products
-        extract($this->config->get_catalog_plans($products_ids));
-        // Block common plans from installments
-        foreach ($common_plans as $plan_ref)
-            $checkout->block_installment($plan_ref);
+        extract($this->config->get_products_plans($products_ids));
 
-        // Add advanced plans to installments (only if the plan is active on all products)
-        foreach (array_count_values($advanced_plans) as $plan_uid => $reps) {
-            if ($reps == count($products))
-                $checkout->add_installment($plan_uid);
-        }
+        //Add installments
+        $checkout->add_installments($products_ids, $common_plans, $advanced_plans);
     }
 
     /**

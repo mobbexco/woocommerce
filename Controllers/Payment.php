@@ -46,7 +46,7 @@ final class Payment
         if (empty($status) || empty($id) || empty($token))
             $error = "No se pudo validar la transacción. Contacte con el administrador de su sitio";
 
-        if (!$this->helper->valid_mobbex_token($token))
+        if (!\Mobbex\Repository::validateToken($token))
             $error = "Token de seguridad inválido.";
 
         if ($error)
@@ -109,6 +109,9 @@ final class Payment
             global $wpdb;
             $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \Mobbex\WP\Checkout\Models\Helper::db_column_format($webhookData));
 
+            // Add db saved id to webhook data array
+            $webhookData['id'] = $wpdb->insert_id;
+
             // Try to process webhook
             $result = $this->process_webhook($id, $token, $webhookData);
             
@@ -148,8 +151,11 @@ final class Payment
 
         $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', compact('order_id', 'data'));
 
-        if (!$status || !$order_id || !$token || !$this->helper->valid_mobbex_token($token))
+        if (!$status || !$order_id || !$token || !\Mobbex\Repository::validateToken($token))
             return $this->logger->log('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
+
+        if ($this->is_request_duplicated($data))
+            return $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Duplicated Request Detected');
 
         // Catch refunds webhooks
         if ($status == 602 || $status == 605)
@@ -251,20 +257,16 @@ final class Payment
      */
     public function update_order_total($order, $data)
     {
-        //Store original order total & update order with mobbex total
-        $order_total = $order->get_total();
-        
-        if($order_total == $data['total'])
+        if ($order->get_total() == $data['total'])
             return;
 
-        //update the order total
-        $order->set_total($data['total']);
-        $order->save();
-        
-        // First remove previus fees
+        // Remove previus fees and recalculate totals to get the original order total (do not change the order)
         $order->remove_order_items('fee');
+        $order->calculate_totals();
 
-        // Add a fee item to order with the difference
+        $order_total = $order->get_total();
+
+        // Create a fee item with the diff amount
         $item = new \WC_Order_Item_Fee;
         $item->set_props([
             'name'   => $data['total'] > $order_total ? 'Cargo financiero' : 'Descuento',
@@ -272,10 +274,7 @@ final class Payment
             'total'  => $data['total'] - $order_total,
         ]);
 
-        //Add financial items
         $order->add_item($item);
-
-        // Recalculate totals
         $order->calculate_totals();
     }
 
@@ -316,5 +315,64 @@ final class Payment
             $data['installment_amount'],
             $data['source_number']
         ));
+    }
+
+    /**
+     * Check if it is a duplicated request locking process execution.
+     * 
+     * @param array $transaction Transaction data with the insert id in `id` position.
+     * 
+     * @return bool True if is duplicated.
+     */
+    public function is_request_duplicated($transaction)
+    {
+        return $this->sleep_process(
+            $transaction['id'],
+            50000, // 50 ms
+            10000, //10 ms
+            function() use($transaction) {
+                return !empty($this->get_duplicated_transactions($transaction));
+            }
+        );
+    }
+
+    /**
+     * Sleep the execution until the callback condition is met or the time runs out.
+     * 
+     * @param int $max_time Max sleep time in microseconds.
+     * @param int $interval Interval in microseconds to awake and test condition.
+     * @param callable $condition The condition to check each cicle.
+     * 
+     * @return bool Last condition callback result.
+     */
+    public function sleep_process($id, $max_time, $interval, $condition)
+    {
+        $codition_result = $condition();
+
+        while ($max_time > 0 && !$codition_result) {
+            usleep($interval);
+            $max_time -= $interval;
+            $codition_result = $condition();
+        }
+
+        return $codition_result;
+    }
+
+    /**
+     * Retrieve all duplicated transactions from db.
+     * 
+     * @param array $transaction Transaction data.
+     * 
+     * @return array A list of rows.
+     */
+    public function get_duplicated_transactions($transaction)
+    {
+        global $wpdb;
+
+        return $wpdb->get_results($wpdb->prepare(
+            "SELECT `id` FROM `{$wpdb->prefix}mobbex_transaction` WHERE `id` < %d AND `data` = %s LIMIT 1",
+            $transaction['id'],
+            $transaction['data']
+        )) ?: [];
     }
 }
