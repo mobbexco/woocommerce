@@ -101,6 +101,11 @@ class MobbexGateway
             [self::$logger, 'log']
         );
 
+        //Load Mobbex models in sdk
+        \Mobbex\Platform::loadModels(
+            new \Mobbex\WP\Checkout\Model\Cache()
+        );
+
         // Init api conector
         \Mobbex\Api::init();
     }
@@ -228,58 +233,54 @@ class MobbexGateway
     }
 }
 
-function upgrade_mobbex_db()
+/**
+ * Install a table from sdk sql scripts.
+ * @param string $table Table name without db & mobbex prefix .
+ * @param object $db global wpdb.
+ */
+function install_mobbex_table($table, $db)
 {
+    //Get query
+    $query = str_replace(
+        'DB_PREFIX_',
+        $db->prefix,
+        file_get_contents(__DIR__."/vendor/mobbexco/php-plugins-sdk/src/sql/$table.sql")
+    );
+
+    //Execute query
+    $db->query($query);
+    
+    //log errors
+    if($db->last_error){
+        $logger = new \Mobbex\WP\Checkout\Models\Logger();
+        $logger->log('error', "mobbex-for-woocommerce > install_table $db->last_error", ['query' => $query]);
+    }
+}
+
+/** 
+ * Upgrade Mobbex db data.
+ */
+ function upgrade_mobbex_db()
+ {
     global $wpdb;
 
-    $transactionExists = $wpdb->get_results("SHOW TABLES LIKE '{$wpdb->prefix}mobbex_transaction';");
+    foreach (['transaction', 'cache'] as  $table) {
+        
+        $tableExist = $wpdb->get_results('SHOW TABLES LIKE ' . "'$wpdb->prefix" . "mobbex_$table';");
 
-    if ($transactionExists) {
-        $childsExists = $wpdb->get_results(
-            "SHOW COLUMNS FROM `{$wpdb->prefix}mobbex_transaction` WHERE FIELD = 'childs';"
-        );
+        if ($tableExist && $table === 'transaction'){
 
-        if (!$childsExists)
-            $wpdb->get_results("ALTER TABLE `{$wpdb->prefix}mobbex_transaction` ADD COLUMN childs TEXT NOT NULL;");
+            if (!$wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = ' . "'childs';"))
+                $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
+            else
+               return;
 
-        return;
+        } elseif(!$tableExist) {
+            install_mobbex_table($table, $wpdb);
+        }
     }
+ }
 
-    $wpdb->get_results(
-        'CREATE TABLE ' . $wpdb->prefix . 'mobbex_transaction('
-            . 'id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,'
-            . 'order_id INT(11) NOT NULL,'
-            . 'parent TEXT NOT NULL,'
-            . 'childs TEXT NOT NULL,'
-            . 'operation_type TEXT NOT NULL,'
-            . 'payment_id TEXT NOT NULL,'
-            . 'description TEXT NOT NULL,'
-            . 'status_code TEXT NOT NULL,'
-            . 'status_message TEXT NOT NULL,'
-            . 'source_name TEXT NOT NULL,'
-            . 'source_type TEXT NOT NULL,'
-            . 'source_reference TEXT NOT NULL,'
-            . 'source_number TEXT NOT NULL,'
-            . 'source_expiration TEXT NOT NULL,'
-            . 'source_installment TEXT NOT NULL,'
-            . 'installment_name TEXT NOT NULL,'
-            . 'installment_amount DECIMAL(18,2) NOT NULL,'
-            . 'installment_count TEXT NOT NULL,'
-            . 'source_url TEXT NOT NULL,'
-            . 'cardholder TEXT NOT NULL,'
-            . 'entity_name TEXT NOT NULL,'
-            . 'entity_uid TEXT NOT NULL,'
-            . 'customer TEXT NOT NULL,'
-            . 'checkout_uid TEXT NOT NULL,'
-            . 'total DECIMAL(18,2) NOT NULL,'
-            . 'currency TEXT NOT NULL,'
-            . 'risk_analysis TEXT NOT NULL,'
-            . 'data TEXT NOT NULL,'
-            . 'created TEXT NOT NULL,'
-            . 'updated TEXT NOT NULL'
-            . ');'
-    );
-}
 
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
