@@ -154,7 +154,7 @@ final class Payment
         if (!$status || !$order_id || !$token || !\Mobbex\Repository::validateToken($token))
             return $this->logger->log('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
 
-        if ($this->is_request_duplicated($data))
+        if ($this->config->process_webhook_retries != 'yes' && $this->is_request_duplicated($data))
             return $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Duplicated Request Detected');
 
         // Catch refunds webhooks

@@ -340,6 +340,14 @@ background-color: #6f00ff;
         'custom_attributes' => [
             'min'       => '1',
         ],
-    ]
+    ],
+
+    'process_webhook_retries' => [
+        'title'   => __('Procesar reintentos de webhooks', 'mobbex-for-woocommerce'),
+        'label'   => __('Permite procesar nuevamente un webhook si este se reenvía manualmente.', 'mobbex-for-woocommerce'),
+        'class'   => 'mbbx-into-advanced',
+        'type'    => 'checkbox',
+        'default' => 'no',
+    ],
 
 ];
