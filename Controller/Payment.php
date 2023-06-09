@@ -75,10 +75,10 @@ final class Payment
      */
     private function _redirect_to_error_endpoint($error_msg)
     {
-        if ($this->helper->settings['error_redirection'])
+        if ($this->config->error_redirection)
             $error_msg= 'Transacción Fallida. Redirigido a ruta configurada.';
 
-        $route = $this->helper->settings['error_redirection'] ? home_url('/' . $this->helper->settings['error_redirection']) : wc_get_cart_url();
+        $route = $this->config->error_redirection ? home_url('/' . $this->config->error_redirection) : wc_get_cart_url();
 
         wc_add_notice($error_msg, 'error');
         wp_redirect($route);

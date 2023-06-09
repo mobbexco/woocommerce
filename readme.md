@@ -2,17 +2,12 @@
 
 This plugin provides integration between WooCommerce and Mobbex Payment Solution. With the provided solution you will be able to get your store integrated with our payment gateway in mather of seconds. Just install it, enable the plugin and provide your credentials. That's all!!! You can get paid now ;).
 
+## Requirements
+- PHP 7.0 -> 8.0.28
+- WordPress 5 -> 6.2.2
+- WooCommerce 3.5.2 -> 7.7.2
+
 ## Installation
-
-#### Wordpress
-
-Version 5.0 or greater
-
-#### WooCommerce
-
-Version 3.5.2 or greater
-
-#### Steps
 
 1) Get the latest version of the plugin
 2) Get into Plugins -> Add New
@@ -46,6 +41,18 @@ Esto se debe a que tu sitio posee una redirección en el archivo .htaccess o a n
 Al igual que el error anterior esto se debe a que el parametro de validación se pierde durante la redirección. Revisá la configuración de tu sitio.
 
 ## Changelog
+
+
+## 3.14.0 :: 2023-06-09
+- Implement cache storing on sources obtaining
+- Automate syntax review on github repo
+- Standarize folder structure
+- Improve autoload require to support installations with symlinks
+- Improve security tokens updating hash methods
+- Fix woocommerce dependency check before instance plugin
+- Fix finance cost/discount add inconsistencies
+- Fix appearance settings obtaining
+- Fix hook execution method and marketplace support
 
 ## 3.13.1 :: 2023-04-13
 - Prevent possible db upgrade errors

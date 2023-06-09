@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.13.1
+Version:      3.14.0
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -273,7 +273,7 @@ function install_mobbex_table($table, $db)
             if (!$wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = ' . "'childs';"))
                 $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
             else
-               return;
+               continue;
 
         } elseif(!$tableExist) {
             install_mobbex_table($table, $wpdb);

@@ -200,7 +200,7 @@ class Product
             'sources' => \Mobbex\Repository::getSources($price, \Mobbex\Repository::getInstallments($products_ids, $common_plans, $advanced_plans)),
             'style'   => [
                 'show_button'   => isset($params['show_button']) ? $params['show_button'] : true,
-                'theme'         => $this->config->visual_theme,
+                'theme'         => $this->config->theme,
                 'custom_styles' => $this->config->financial_widget_styles,
                 'text'          => $this->config->financial_widget_button_text,
                 'logo'          => $this->config->financial_widget_button_logo
