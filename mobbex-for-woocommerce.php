@@ -273,7 +273,7 @@ function install_mobbex_table($table, $db)
             if (!$wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = ' . "'childs';"))
                 $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
             else
-               return;
+               continue;
 
         } elseif(!$tableExist) {
             install_mobbex_table($table, $wpdb);
