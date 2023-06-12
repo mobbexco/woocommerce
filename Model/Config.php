@@ -7,16 +7,31 @@ class Config
     public function __construct()
     {
         //Get settings array
-        $this->settings = $this->getSettings();
+        $this->settings = $this->get_settings();
         //Set property for each setting
         $this->setProperties();
+    }
+
+    /**
+     * Update a Mobbex option
+     * 
+     * @param string $name Name of the option. 
+     * @param mixed $value Value of the option.
+     * 
+     */
+    public function update_option($name, $value)
+    {
+        $saved_values        = $this->get_settings();
+        $saved_values[$name] = $value;
+
+        return update_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', $saved_values);
     }
 
     /**
      * Return an array with all Mobbex settings & his values
      * @return array $settings
      */
-    public function getSettings()
+    public function get_settings()
     {
         //Get saved values from db
         $saved_values = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', null);

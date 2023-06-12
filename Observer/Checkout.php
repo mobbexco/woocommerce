@@ -58,8 +58,12 @@ class Checkout
      */
     public function add_checkout_fields($fields)
     {
-        if(!$this->helper->isReady() && $this->config->own_dni !== 'yes')
+        if(!$this->helper->isReady() && $this->config->custom_dni != '')
             return $fields;
+
+        //Enable own dni option if disabled
+        if ($this->config->own_dni !== 'yes')
+            $this->config->update_option('own_dni', 'yes');
 
         $cutomer_id = WC()->customer ? WC()->customer->get_id() : null;
 
