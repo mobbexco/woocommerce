@@ -21,10 +21,9 @@ class Config
      */
     public function update_option($name, $value)
     {
-        $saved_values        = $this->get_settings();
-        $saved_values[$name] = $value;
+        $this->settings[$name] = $this->$name = $value;
 
-        return update_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', $saved_values);
+        return update_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', $this->settings);
     }
 
     /**
