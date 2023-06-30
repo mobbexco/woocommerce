@@ -87,10 +87,12 @@ class Config
      */
     public function get_catalog_settings($id, $field_name, $catalog_type = 'post')
     {
-        if (strpos($field_name, '_plans'))
-            return get_metadata($catalog_type, $id, $field_name, true) ?: [];
+        $value = get_metadata($catalog_type, $id, $field_name, true);
 
-        return get_metadata($catalog_type, $id, $field_name, true) ?: '';
+        if (is_string($value))
+            $value = maybe_unserialize($value);
+
+        return $value ?: (strpos($field_name, '_plans') ? [] : '');
     }
 
     /**
