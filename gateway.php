@@ -54,7 +54,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // Both fields cannot be filled at the same time or empty at the same time
         if ($this->config->own_dni === 'yes' && $this->config->custom_dni != '')
-            $this->config->update_option('custom_dni', 'no');
+            $this->config->update_option('own_dni', 'no');
         else if ($this->config->own_dni !== 'yes' && empty($this->config->custom_dni))
             $this->config->update_option('own_dni', 'yes');
 
