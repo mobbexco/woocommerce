@@ -3,9 +3,9 @@
 This plugin provides integration between WooCommerce and Mobbex Payment Solution. With the provided solution you will be able to get your store integrated with our payment gateway in mather of seconds. Just install it, enable the plugin and provide your credentials. That's all!!! You can get paid now ;).
 
 ## Requirements
-- PHP 7.0 -> 8.0.28
+- PHP 7.0 -> 8.2.6
 - WordPress 5 -> 6.2.2
-- WooCommerce 3.5.2 -> 7.7.2
+- WooCommerce 3.5.2 -> 7.9.0
 
 ## Installation
 
