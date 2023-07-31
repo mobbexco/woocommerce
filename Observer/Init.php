@@ -188,4 +188,14 @@ class Init
 
         return __DIR__ . '/../templates/payment-options.php';
     }
+
+    /** 
+     * Calls create mobbex tables method when the plugin is activated
+     * 
+     * @return bool creation result. 
+     */
+    public function create_mobbex_tables()
+    {
+        return \MobbexGateway::create_mobbex_tables();
+    }
 }
