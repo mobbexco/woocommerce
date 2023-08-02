@@ -69,7 +69,7 @@ class Checkout
             'clear'       => false,
             'label'       => 'DNI',
             'placeholder' => 'Ingrese su DNI',
-            'default'     => WC()->session->get('mbbx_billing_dni') ?: get_user_meta($cutomer_id, 'billing_dni', true),
+            'default'     => WC()->session && WC()->session->get('mbbx_billing_dni') ?: get_user_meta($cutomer_id, 'billing_dni', true),
         ];
 
         return $fields;
