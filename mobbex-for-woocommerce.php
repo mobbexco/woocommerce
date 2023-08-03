@@ -252,7 +252,8 @@ class MobbexGateway
             // If table creation fails, return false
             if (!$table->result)
                 return false;
-            }
+        }
+        
         return true;
     }
 }

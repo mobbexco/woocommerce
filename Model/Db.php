@@ -26,17 +26,16 @@ class Db extends \Mobbex\Model\Db
      */
     public function query($sql)
     {
-
+        // Get wordpress table prefix
         $this->prefix = $this->db->prefix;
 
         $result = $this->db->query($sql);
 
-        // If isn't a select type query return bool
+        // If isn't a select type query return bool, otherwise returns array
         if (!preg_match('#^\s*\(?\s*(select|show|explain|describe|desc)\s#i', $sql))
             return (bool) $result;
         else
             return $this->db->get_results($sql, ARRAY_A);
 
-        // return !empty($result);
     }
 }
