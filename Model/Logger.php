@@ -17,7 +17,7 @@ class Logger
     }
 
     /**
-     * Log a message to Simple History dashboard.
+     * Save a message in mobbex log table.
      * 
      * Mode debug: Log data if debug mode is active
      * Mode error: Always log data.
@@ -31,16 +31,15 @@ class Logger
     {
         if ($mode === 'debug' && $this->config->debug_mode != 'yes')
             return;
+        
+        // Save log in database
+        (new \Mobbex\WP\Checkout\Model\Db)->insert(
+            'mobbex_log', ['type' => $mode, 'message'=> $message, 'data' => json_encode($data), 'creation_date' => date("Y-m-d h:i:sa")]
+            );
 
         if($mode === 'fatal')
             $mode = 'critical';
 
-        apply_filters(
-            'simple_history_log',
-            "Mobbex: " . $message,
-            $data,
-            $mode
-        );
 
         if ($mode === 'critical')
             die($message);
