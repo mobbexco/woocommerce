@@ -76,6 +76,7 @@ class MobbexGateway
 
         // Init controllers
         new \Mobbex\WP\Checkout\Controller\Payment;
+        new \Mobbex\WP\Checkout\Controller\LogTable;
 
         //Register hooks
         self::$registrar->register_hooks();
@@ -246,7 +247,7 @@ class MobbexGateway
             new \Mobbex\WP\Checkout\Model\Db
         );
         
-        foreach (['transaction', 'cache'] as  $tableName) {
+        foreach (['transaction', 'cache', 'log'] as  $tableName) {
             // Create the table or alter table if it exists
             $table = new \Mobbex\Model\Table($tableName);
             // If table creation fails, return false
