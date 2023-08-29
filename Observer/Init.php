@@ -198,4 +198,66 @@ class Init
     {
         return \MobbexGateway::create_mobbex_tables();
     }
+
+    /**
+     * Adds a Mobbex log table tab to the network admin
+     *
+     */
+    public function add_mobbex_admin_bar_network_menu_item()
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        global $wp_admin_bar;
+        $menu_id = 'mobbexlogger';
+
+        $wp_admin_bar->add_menu(array(
+            'id'    => $menu_id,
+            'parent' => false,
+            'group'  => null,
+            'title' => 'Mobbex Log Table',
+            'href'  => admin_url('admin.php?page=wc-status&tab=mobbex_slug'),
+            'meta' => [
+                'title' => __('mobbexlogger', 'textdomain'),
+            ]
+        ));
+    }
+
+    /**
+     * Add Mobbex slug to woocommerce status panel
+     * 
+     * @return mixed $tabs mobbex tab
+     */
+    public function display_mobbex_log($tabs)
+    {
+        $tabs['mobbex_slug'] = __('Mobbex Log Table', 'woocommerce');
+        return $tabs;
+    }
+
+    /**
+     * Display mobbex logs table in mobbex slug
+     */
+    public function display_mobbex_log_content()
+    {
+        include_once plugin_dir_path(__FILE__) . "../templates/mobbex-logs.php";
+    }
+
+    /**
+     * Registers the route where the controller that invoke a callback function 
+     */
+    public function register_route() {
+        register_rest_route('mobbex/v1', '/download_logs', [
+            'methods' => \WP_REST_Server::CREATABLE,
+            'callback' => [$this, 'init_mobbex_export_data'],
+            'permission_callback' => '__return_true',
+            ]);
+        }
+
+    /**
+     * Calls mobbex export data method as a callback. Manages download data
+     */
+    public function init_mobbex_export_data()
+    {
+        (new \Mobbex\WP\Checkout\Controller\LogTable($_POST))->mobbex_export_data();
+    }
 }
