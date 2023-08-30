@@ -32,6 +32,11 @@ class Cache
     public function store($key, $data)
     {
         global $wpdb;
-        $wpdb->insert($wpdb->prefix.'mobbex_cache', ['cache_key' => $key, 'data' => $data]);
+    
+        // Check that the key is not repeated before inserting the data in the table 
+        $result = $wpdb->get_results("SELECT * FROM " . $wpdb->prefix."mobbex_cache WHERE `cache_key`='$key';");
+
+        if (empty($result))
+            $wpdb->insert($wpdb->prefix.'mobbex_cache', ['cache_key' => $key, 'data' => $data]);
     }
 }
