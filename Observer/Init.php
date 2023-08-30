@@ -239,7 +239,7 @@ class Init
      */
     public function display_mobbex_log_content()
     {
-        include_once plugin_dir_path(__FILE__) . "../templates/mobbex-logs.php";
+        include_once plugin_dir_path(__FILE__) . "../templates/mobbex-log-table.php";
     }
 
     /**
