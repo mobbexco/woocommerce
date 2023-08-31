@@ -32,11 +32,10 @@ class Cache
     public function store($key, $data)
     {
         global $wpdb;
-    
-        // Check that the key is not repeated before inserting the data in the table 
-        $result = $wpdb->get_results("SELECT * FROM " . $wpdb->prefix."mobbex_cache WHERE `cache_key`='$key';");
 
-        if (empty($result))
-            $wpdb->insert($wpdb->prefix.'mobbex_cache', ['cache_key' => $key, 'data' => $data]);
+        // Saves or replaces data depending on the existence of the same key in the table
+        $wpdb->query(
+            "REPLACE INTO " . $wpdb->prefix . "mobbex_cache (`cache_key`, `data`, `date`) VALUES ('" . $key . "', '" . " $data " . "', '" . date('Y-m-d h:i:sa') . "');"
+        );
     }
 }
