@@ -35,7 +35,7 @@ class Cache
 
         // Saves or replaces data depending on the existence of the same key in the table
         $wpdb->query(
-            "REPLACE INTO " . $wpdb->prefix . "mobbex_cache (`cache_key`, `data`, `date`) VALUES ('" . $key . "', '" . " $data " . "', '" . date('Y-m-d h:i:sa') . "');"
+            "REPLACE INTO " . $wpdb->prefix . "mobbex_cache (`cache_key`, `data`) VALUES ('{$key}', '{$data}');"
         );
     }
 }
