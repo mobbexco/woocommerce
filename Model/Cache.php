@@ -32,6 +32,10 @@ class Cache
     public function store($key, $data)
     {
         global $wpdb;
-        $wpdb->insert($wpdb->prefix.'mobbex_cache', ['cache_key' => $key, 'data' => $data]);
+
+        // Saves or replaces data depending on the existence of the same key in the table
+        $wpdb->query(
+            "REPLACE INTO " . $wpdb->prefix . "mobbex_cache (`cache_key`, `data`) VALUES ('{$key}', '{$data}');"
+        );
     }
 }
