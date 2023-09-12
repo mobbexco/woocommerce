@@ -179,10 +179,10 @@ class MobbexGateway
     public static function check_warnings()
     {
         // Check install directory
-        if (basename(__DIR__) == 'woocommerce-master')
+        if (!strpos( __FILE__ , 'woocommerce-mobbex/mobbex-for-woocommerce.php'))
             self::$logger->notice(sprintf(
                 'El directorio de instalación es incorrecto (<code>%s</code>). Si descargó el zip directamente del repositorio, reinstale el plugin utilizando el archivo <code>%s</code> de <a href="%s">%3$s</a>',
-                basename(__DIR__),
+                __FILE__,
                 'wc-mobbex.x.y.z.zip',
                 'https://github.com/mobbexco/woocommerce/releases/latest'
             ));
