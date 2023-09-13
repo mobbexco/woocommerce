@@ -90,11 +90,33 @@ class Order
     private function add_initial_data($checkout)
     {
         $checkout->set_reference($this->id);
-        $checkout->set_total($this->order->get_total());
+        $checkout->set_total($this->calculate_total());
         $checkout->set_endpoints(
             $this->helper->get_api_endpoint('mobbex_return_url', $this->id),
             $this->helper->get_api_endpoint('mobbex_webhook', $this->id)
         );
+    }
+
+
+    /**
+     * Calculate the total for the mobbex checkout.
+     * 
+     * @return string
+     */
+    private function calculate_total()
+    {
+        //If discounts are allowed return cart total.
+        if($this->config->disable_discounts !== 'yes')
+            return $this->order->get_total();
+
+        //Get total without discounts
+        $subtotal = $this->order->get_subtotal();
+
+        //Add taxes, shipping & fees
+        $total = $subtotal + $this->order->get_total_tax() + $this->order->get_total_fees() + $this->order->get_shipping_total();
+
+        //return formated woocommerce total without discounts
+        return $total;
     }
 
     /**
@@ -109,7 +131,7 @@ class Order
 
         foreach ($order_items as $item)
             $checkout->add_item(
-                $item->get_total(),
+                $this->calculate_item_price($item),
                 $item->get_quantity(),
                 $item->get_name(),
                 $this->helper->get_product_image($item->get_product_id()),
@@ -119,6 +141,25 @@ class Order
 
         foreach ($shipping_items as $item)
             $checkout->add_item($item->get_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce') . $item->get_name());
+    }
+
+
+    /**
+     * Calculate the item price for the mobbex checkout.
+     * 
+     * @return string
+     */
+    public function calculate_item_price($item)
+    {
+        //If discounts are allowed return item price.
+        if ($this->config->disable_discounts !== 'yes')
+            return $item->get_total();
+
+        //get product
+        $product = wc_get_product($item->get_product_id());
+
+        //Return product price if discounts are disabled
+        return $product->get_price() * $item->get_quantity();
     }
 
     /**

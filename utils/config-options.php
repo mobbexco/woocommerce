@@ -323,6 +323,14 @@ background-color: #6f00ff;
         'default' => 'no',
     ],
 
+    'disable_discounts' => [
+        'title'   => __('Descuentos Desabilitados', 'mobbex-for-woocommerce'),
+        'label'   => __('Deshabilita los descuentos de woocommerce en el checkout de Mobbex.', 'mobbex-for-woocommerce'),
+        'class'   => 'mbbx-into-advanced',
+        'type'    => 'checkbox',
+        'default' => 'no',
+    ],
+
     'disable_template'=> [
         'title'   => __('Deshabilitar plantilla', 'mobbex-for-woocommerce'),
         'label'   => __('Deshabilitar plantilla para el mostrado de los métodos de pago.', 'mobbex-for-woocommerce'),
