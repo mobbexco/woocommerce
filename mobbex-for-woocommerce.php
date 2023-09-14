@@ -52,6 +52,9 @@ class MobbexGateway
         self::$helper    = new \Mobbex\WP\Checkout\Model\Helper();
         self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Model\Registrar();
+        
+        //Init de Mobbex php sdk
+        $this->init_sdk();
 
         MobbexGateway::check_dependencies();
         MobbexGateway::load_textdomain();
@@ -60,16 +63,13 @@ class MobbexGateway
         
         if (MobbexGateway::$errors) {
             foreach (MobbexGateway::$errors as $error)
-                self::$logger->notice($error);
-
+            self::$logger->notice($error);
+            
             return;
         }
-        
-        //Init de Mobbex php sdk
-        $this->init_sdk();
 
         self::check_warnings();
-
+        
         // Add Mobbex gateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
@@ -103,7 +103,8 @@ class MobbexGateway
 
         //Load Mobbex models in sdk
         \Mobbex\Platform::loadModels(
-            new \Mobbex\WP\Checkout\Model\Cache()
+            new \Mobbex\WP\Checkout\Model\Cache(),
+            new \Mobbex\WP\Checkout\Model\Db
         );
 
         // Init api conector
@@ -164,7 +165,7 @@ class MobbexGateway
                 return;
 
             // Apply upgrades
-            upgrade_mobbex_db();
+            self::create_mobbex_tables();
 
             // Update db version
             update_option('woocommerce-mobbex-version', MOBBEX_VERSION);
@@ -231,60 +232,34 @@ class MobbexGateway
         
         return $method($name, $route, null, MOBBEX_VERSION);
     }
-}
 
-/**
- * Install a table from sdk sql scripts.
- * @param string $table Table name without db & mobbex prefix .
- * @param object $db global wpdb.
- */
-function install_mobbex_table($table, $db)
-{
-    //Get query
-    $query = str_replace(
-        'DB_PREFIX_',
-        $db->prefix,
-        file_get_contents(__DIR__."/vendor/mobbexco/php-plugins-sdk/src/sql/$table.sql")
-    );
-
-    //Execute query
-    $db->query($query);
-    
-    //log errors
-    if($db->last_error){
-        $logger = new \Mobbex\WP\Checkout\Model\Logger();
-        $logger->log('error', "mobbex-for-woocommerce > install_table $db->last_error", ['query' => $query]);
-    }
-}
-
-/** 
- * Upgrade Mobbex db data.
- */
- function upgrade_mobbex_db()
- {
-    global $wpdb;
-
-    foreach (['transaction', 'cache'] as  $table) {
+    /** 
+     * Create Mobbex tables
+     * 
+     * @return bool creation result. 
+     */
+    public static function create_mobbex_tables()
+    {
+        //Load Mobbex models in sdk
+        \Mobbex\Platform::loadModels(
+            new \Mobbex\WP\Checkout\Model\Cache(),
+            new \Mobbex\WP\Checkout\Model\Db
+        );
         
-        $tableExist = $wpdb->get_results('SHOW TABLES LIKE ' . "'$wpdb->prefix" . "mobbex_$table';");
-
-        if ($tableExist && $table === 'transaction'){
-
-            if (!$wpdb->get_results('SHOW COLUMNS FROM ' . $wpdb->prefix . 'mobbex_transaction WHERE FIELD = ' . "'childs';"))
-                $wpdb->get_results("ALTER TABLE " . $wpdb->prefix . 'mobbex_transaction' . " ADD COLUMN childs TEXT NOT NULL;");
-            else
-               continue;
-
-        } elseif(!$tableExist) {
-            install_mobbex_table($table, $wpdb);
+        foreach (['transaction', 'cache'] as  $tableName) {
+            // Create the table or alter table if it exists
+            $table = new \Mobbex\Model\Table($tableName);
+            // If table creation fails, return false
+            if (!$table->result)
+                return false;
         }
+        
+        return true;
     }
- }
-
+}
 
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
-register_activation_hook(__FILE__, 'upgrade_mobbex_db');
 
 // Remove mbbx entity saved data on uninstall
 register_deactivation_hook(__FILE__, function() {

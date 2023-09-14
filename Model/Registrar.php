@@ -106,6 +106,8 @@ class Registrar
             ['name' => 'wp_enqueue_scripts', 'callback' => [$this->init, 'mobbex_assets_enqueue'], 'params' => 2],
             ['name' => 'admin_enqueue_scripts', 'callback' => [$this->init, 'load_admin_scripts'], 'params' => 2],
             ['name' => 'admin_enqueue_scripts', 'callback' => [$this->init, 'load_order_scripts']],
+            ['name' => 'activate_' . plugin_basename('mobbex-for-woocommerce.php'), 'callback' => [$this->init, 'create_mobbex_tables']],
+            
             //Product observer
             ['name' => 'woocommerce_product_data_tabs', 'callback' => [$this->product, 'add_product_tab']],
             ['name' => 'woocommerce_product_data_panels', 'callback' => [$this->product, 'show']],
