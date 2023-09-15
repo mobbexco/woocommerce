@@ -77,11 +77,32 @@ class Cart
     {
         $checkout->webhooksType = 'none';
         $checkout->set_reference($this->id);
-        $checkout->set_total($this->cart->get_total(null));
+        $checkout->set_total($this->calculate_total());
         $checkout->set_endpoints(
             $this->helper->get_api_endpoint('mobbex_return_url', $this->id),
             $this->helper->get_api_endpoint('mobbex_webhook', $this->id)
         );
+    }
+
+    /**
+     * Calculate the total for the mobbex checkout.
+     * 
+     * @return string
+     */
+    private function calculate_total()
+    {
+        //If discounts are allowed return cart total.
+        if ($this->config->disable_discounts !== 'yes')
+            return $this->cart->get_total(null);
+
+        //Get total without discounts
+        $subtotal = $this->cart->get_subtotal();
+
+        //Add taxes, shipping & fees
+        $total = $subtotal + $this->cart->get_cart_contents_tax() + $this->cart->get_fee_total() + $this->cart->get_shipping_total();
+
+        //return formated woocommerce total without discounts
+        return $total;
     }
 
     /**
@@ -95,7 +116,7 @@ class Cart
 
         foreach ($items as $item)
             $checkout->add_item(
-                $item['line_total'],
+                $this->calculate_item_price($item),
                 $item['quantity'],
                 $item['data']->get_name(),
                 $this->helper->get_product_image($item['product_id']),
@@ -103,6 +124,24 @@ class Cart
             );
 
         $checkout->add_item($this->cart->get_shipping_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce'));
+    }
+
+    /**
+     * Calculate the item price for the mobbex checkout.
+     * 
+     * @return string
+     */
+    public function calculate_item_price($item)
+    {
+        //Return item price if disounts are allowed
+        if($this->config->disable_discounts !== 'yes')
+            return $item['line_total'];
+        
+        // Get Product
+        $product = wc_get_product($item['product_id']);
+
+        //Return product price if discounts are disabled
+        return $product->get_price() * $item['quantity'];
     }
 
     /**
