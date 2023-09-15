@@ -9,7 +9,9 @@ Author URI: https://mobbex.com/
 Copyright: 2020 mobbex.com
  */
 
-require_once __DIR__ . '/vendor/autoload.php';
+// Only requires autload if the file exists to avoid fatal errors
+if (file_exists(__DIR__ . '/vendor/autoload.php'))
+    require_once __DIR__ . '/vendor/autoload.php';
 
 class MobbexGateway
 {
@@ -48,11 +50,17 @@ class MobbexGateway
 
     public function init()
     {
+        // If autoload file doesn't exist, leaves an error message in admin panel and cuts code flow
+        if (!file_exists(__DIR__ . '/vendor/autoload.php')){
+            MobbexGateway::check_install_dir();
+            return;
+        }
+
         self::$config    = new \Mobbex\WP\Checkout\Model\Config();
         self::$helper    = new \Mobbex\WP\Checkout\Model\Helper();
         self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Model\Registrar();
-        
+
         //Init de Mobbex php sdk
         $this->init_sdk();
 
@@ -109,6 +117,36 @@ class MobbexGateway
 
         // Init api conector
         \Mobbex\Api::init();
+    }
+
+    /**
+     * Leaves an error message in admin panel that inform of incorrect module installation.
+     * 
+     * @param bool $autoload
+     * 
+     * return bool
+     */
+    public static function check_install_dir()
+    {
+        // Sets a message to inform about the error and correct version URL
+        $message = sprintf(
+            'El directorio de instalación es incorrecto (<code>%s</code>). Si descargó el zip directamente del repositorio, reinstale el plugin utilizando el archivo <code>%s</code> de <a href="%s">%3$s</a>',
+            basename(__DIR__),
+            'wc-mobbex.x.y.z.zip',
+            'https://github.com/mobbexco/woocommerce/releases/latest'
+        );
+        $type = 'error';
+        
+        // Add notice to admin panel
+        add_action('admin_notices', function () use ($message, $type){
+?>
+        <div class="<?= esc_attr("notice notice-$type") ?>">
+            <h2>Mobbex for Woocommerce</h2>
+            <p><?= $message ?></p>
+        </div>
+<?php
+            }
+        );
     }
 
     /**
