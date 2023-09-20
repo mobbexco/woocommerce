@@ -84,6 +84,7 @@ class Registrar
             ['name' => 'wc_get_template', 'callback' => [$this->init, 'load_payment_template'], 'params' => 3],
             ['name' => 'plugin_row_meta', 'callback' => [$this->init, 'plugin_row_meta'], 'params' => 2],
             ['name' => 'woocommerce_available_payment_gateways', 'callback' => [$this->init, 'load_payment_options'], 'params' => 3],
+            ['name' => 'woocommerce_admin_status_tabs', 'callback' => [$this->init, 'display_mobbex_log']],
             //Cart observer
             ['name' => 'woocommerce_add_to_cart_validation', 'callback' => [$this->checkout, 'validate_cart_items'], 'params' => 2],
             //Order observer
@@ -107,6 +108,10 @@ class Registrar
             ['name' => 'admin_enqueue_scripts', 'callback' => [$this->init, 'load_admin_scripts'], 'params' => 2],
             ['name' => 'admin_enqueue_scripts', 'callback' => [$this->init, 'load_order_scripts']],
             ['name' => 'activate_' . plugin_basename('mobbex-for-woocommerce.php'), 'callback' => [$this->init, 'create_mobbex_tables']],
+            ['name' => 'admin_bar_menu', 'callback' => [$this->init, 'add_mobbex_admin_bar_network_menu_item'], 'priority' => 40],
+            ['name' => 'woocommerce_admin_status_content_mobbex_slug', 'callback' => [$this->init, 'display_mobbex_log_content'], 'priority' => 40],
+            ['name' => 'rest_api_init', 'callback' => [$this->init, 'register_route'], 'priority' => 40],
+            ['name' => 'register_route', 'callback' => [$this->init, 'init_mobbex_export_data'], 'priority' => 40],
             
             //Product observer
             ['name' => 'woocommerce_product_data_tabs', 'callback' => [$this->product, 'add_product_tab']],
@@ -116,6 +121,7 @@ class Registrar
             ['name' => 'woocommerce_process_product_meta', 'callback' => [$this->product, 'save']],
             ['name' => 'create_product_cat', 'callback' => [$this->product, 'save']],
             ['name' => 'edited_product_cat', 'callback' => [$this->product, 'save']],
+
             //Order observer
             ['name' => 'woocommerce_valid_order_statuses_for_payment_complete', 'callback' => [$this->order, 'valid_statuses_for_payment_complete']],
             ['name' => 'woocommerce_order_actions', 'callback' => [$this->order, 'add_capture_action']],
@@ -123,6 +129,7 @@ class Registrar
             ['name' => 'woocommerce_order_status_authorized', 'callback' => [$this->order, 'authorize_notification']],
             ['name' => 'woocommerce_order_status_authorized_to_processing', 'callback' => [$this->order, 'capture_notification'], 'priority' => 10, 'params' => 2],
             ['name' => 'add_meta_boxes', 'callback' => [$this->order, 'add_payment_info_panel']],
+
         ];
 
         //Mobbex finance widget actions
