@@ -237,6 +237,9 @@ final class Payment
         $helper = new \Mobbex\WP\Checkout\Helper\Order($order);
         $status = $helper->get_status_from_code($data['status_code']);
 
+        //Set in cache its a mobbex flow for 2 minutes
+        set_transient('is_mobbex_flow', true, 120);
+
         // Try to complete payment if status was approved
         if (in_array($data['status_code'], $helper->status_codes['approved'])) {
             // If is configured a paid status, and is not paid yet complete payment and return

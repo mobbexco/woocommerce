@@ -7,16 +7,20 @@ class Config
     public function __construct()
     {
         //Get settings array
-        $this->settings = $this->getSettings();
+        $this->settings = $this->get_settings();
+
         //Set property for each setting
         $this->setProperties();
-    }
+
+        //add statuses configured as paid to paid statuses list
+        add_filter('woocommerce_order_is_paid_statuses', [$this, 'set_paid_statuses']);
+}
 
     /**
      * Return an array with all Mobbex settings & his values
      * @return array $settings
      */
-    public function getSettings()
+    public function get_settings()
     {
         //Get saved values from db
         $saved_values = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', null);
@@ -222,5 +226,27 @@ class Config
             // Save selection and new store data
             update_option('mbbx_stores', $stores) && update_metadata($meta_type, $id, 'mbbx_store', $new_store);
         }
+    }
+
+    /**
+     * Add configured statuses as paid statuses.
+     * 
+     * @param array $statuses
+     * 
+     * @return array
+     */
+    public function set_paid_statuses($statuses) {
+        //Check if was called by mobbex
+        if(!get_transient('is_mobbex_flow'))
+            return $statuses;
+
+        //Delete cache key
+        delete_transient('is_mobbex_flow');
+
+        //Add the mobbex paid statuses
+        $mobbex_paid_statuses = array_map(function ($status) {return str_replace('wc-', '', $status);}, $this->paid_statuses);
+
+        //return statuses
+        return array_values(array_unique(array_merge($statuses, $mobbex_paid_statuses)));
     }
 }
