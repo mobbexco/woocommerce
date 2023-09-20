@@ -14,7 +14,7 @@ class Config
 
         //add statuses configured as paid to paid statuses list
         add_filter('woocommerce_order_is_paid_statuses', [$this, 'set_paid_statuses']);
-}
+    }
 
     /**
      * Return an array with all Mobbex settings & his values
