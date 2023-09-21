@@ -236,11 +236,11 @@ final class Payment
     {
         $helper = new \Mobbex\WP\Checkout\Helper\Order($order);
         $status = $helper->get_status_from_code($data['status_code']);
-
+        
         // Try to complete payment if status was approved
         if (in_array($data['status_code'], $helper->status_codes['approved'])) {
             // If is configured a paid status, and is not paid yet complete payment and return
-            if (in_array($status, wc_get_is_paid_statuses()))
+            if (in_array($status, $this->get_paid_statuses()))
                 return $order->is_paid() || $order->payment_complete($data['payment_id']);
 
             $order->payment_complete($data['payment_id']);
@@ -374,5 +374,20 @@ final class Payment
             $transaction['id'],
             $transaction['data']
         )) ?: [];
+    }
+
+    /**
+     * Get configured statuses as paid statuses.
+     * 
+     * @return array
+     */
+    public function get_paid_statuses() {
+        //Add the mobbex paid statuses
+        $mobbex_paid_statuses = array_map(function ($status) {
+            return str_replace('wc-', '', $status);
+        }, $this->paid_statuses);
+
+        //return statuses
+        return array_values(array_unique(array_merge(wc_get_is_paid_statuses(), $mobbex_paid_statuses)));
     }
 }

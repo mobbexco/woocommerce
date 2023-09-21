@@ -110,6 +110,14 @@ return [
         'default'     => 'wc-refunded',
         'class'       => 'mbbx-into-orders',
     ],
+    'paid_statuses' => [
+        'title'       => __('Paid Statuses', 'mobbex-for-woocommerce'),
+        'description' => __('Select the statuses that you want to be treated as paid statuses. (Hold Ctrl & click to select more than one).', 'mobbex-for-woocommerce'),
+        'type'        => 'multiselect',
+        'options'     => function_exists('wc_get_order_statuses') ? wc_get_order_statuses() : [],
+        'default'     => [],
+        'class'       => 'mbbx-into-orders',
+    ],
 
     /* Appearance options */
 
