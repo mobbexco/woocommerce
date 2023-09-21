@@ -42,6 +42,14 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.15.0 :: 2023-09-20
+- Add own log crud to replace simple history functionality
+- Add disable discounts option
+- Prevent duplicated keys on cache generation
+- Some fixes for Yith Checkout module
+- Fix duplicated dni field on checkout
+- Integrate sdk table model
+- Fix subscription type product check
 
 ## 3.14.0 :: 2023-06-09
 - Implement cache storing on sources obtaining

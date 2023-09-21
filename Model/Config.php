@@ -125,8 +125,8 @@ class Config
      */
     public function get_product_subscription($product_id)
     {
-        if ($this->get_catalog_settings($product_id, 'mbbx_enable_sus'))
-            return $this->get_catalog_settings($product_id, 'mbbx_sus_uid');
+        if ($this->get_catalog_settings($product_id, 'mbbx_sub_enable'))
+            return $this->get_catalog_settings($product_id, 'mbbx_sub_uid');
     }
 
     /**
