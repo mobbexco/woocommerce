@@ -7,7 +7,8 @@ class Config
     public function __construct()
     {
         //Get settings array
-        $this->settings = $this->getSettings();
+        $this->settings = $this->get_settings();
+
         //Set property for each setting
         $this->setProperties();
     }
@@ -16,7 +17,7 @@ class Config
      * Return an array with all Mobbex settings & his values
      * @return array $settings
      */
-    public function getSettings()
+    public function get_settings()
     {
         //Get saved values from db
         $saved_values = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', null);
