@@ -383,9 +383,11 @@ final class Payment
      */
     public function get_paid_statuses() {
         //Add the mobbex paid statuses
+        $paid_statuses= !empty($this->config->paid_statuses) ? $this->config->paid_statuses : [];
+
         $mobbex_paid_statuses = array_map(function ($status) {
             return str_replace('wc-', '', $status);
-        }, [$this->config->paid_statuses]);
+        }, $paid_statuses);
 
         //return statuses
         return array_values(array_unique(array_merge(wc_get_is_paid_statuses(), $mobbex_paid_statuses)));
