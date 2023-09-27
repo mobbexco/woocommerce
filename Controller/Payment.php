@@ -390,6 +390,6 @@ final class Payment
         }, $paid_statuses);
 
         //return statuses
-        return array_values(array_unique(array_merge(wc_get_is_paid_statuses(), $mobbex_paid_statuses)));
+        return array_unique(array_merge(wc_get_is_paid_statuses(), $mobbex_paid_statuses));
     }
 }
