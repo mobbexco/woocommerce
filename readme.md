@@ -42,6 +42,9 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.15.1 :: 2023-09-28
+- Fix status change on php > 8 installs
+
 ## 3.15.0 :: 2023-09-20
 - Add own log crud to replace simple history functionality
 - Add disable discounts option
