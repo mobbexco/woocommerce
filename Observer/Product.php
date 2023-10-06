@@ -192,7 +192,7 @@ class Product
         wp_enqueue_script('mbbx-product-button-js', $dir_url . "assets/js/finance-widget.js", null, MOBBEX_VERSION);
         wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
-        //Get product plans
+        // Get product plans
         extract($this->config->get_products_plans($products_ids));
 
         $data = [
@@ -206,6 +206,10 @@ class Product
                 'logo'          => $this->config->financial_widget_button_logo
             ]
         ];
+
+        // Convert special characters from source names
+        foreach($data["sources"] as $source)
+            htmlspecialchars($source['source']['name']);
 
         include_once __DIR__ . '/../templates/finance-widget.php';
     }
