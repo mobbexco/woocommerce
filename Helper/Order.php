@@ -112,8 +112,11 @@ class Order
         //Get total without discounts
         $subtotal = $this->order->get_subtotal();
 
+        //Get products discounts
+        $items_discounts = $this->get_items_discounts($this->order->get_items() ?: []);
+
         //Add taxes, shipping & fees
-        $total = $subtotal + $this->order->get_total_tax() + $this->order->get_total_fees() + $this->order->get_shipping_total();
+        $total = $subtotal + $this->order->get_total_tax() + $this->order->get_total_fees() + $this->order->get_shipping_total() + $items_discounts;
 
         //return formated woocommerce total without discounts
         return $total;
@@ -143,7 +146,6 @@ class Order
             $checkout->add_item($item->get_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce') . $item->get_name());
     }
 
-
     /**
      * Calculate the item price for the mobbex checkout.
      * 
@@ -159,7 +161,29 @@ class Order
         $product = wc_get_product($item->get_product_id());
 
         //Return product price if discounts are disabled
-        return $product->get_price() * $item->get_quantity();
+        return $product->get_regular_price() * $item->get_quantity();
+    }
+
+    /**
+     * Return the total disocunted from items.
+     * 
+     * @param array $items
+     * 
+     * @return int
+     */
+    private function get_items_discounts($items) {
+        $total = 0;
+        
+        foreach ($items as $item) {
+            $product = $item->get_product();
+
+            if(!$product->is_on_sale())
+                continue;
+
+            $total = $total + ($product->get_regular_price() - $product->get_sale_price()) * $item->get_quantity();
+        }
+
+        return $total;
     }
 
     /**
