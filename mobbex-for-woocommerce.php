@@ -99,8 +99,8 @@ class MobbexGateway
         \Mobbex\Platform::init(
             'Woocommerce' . WC_VERSION,
             MOBBEX_VERSION,
-            MOBBEX_EMBED_VERSION,
             str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
+            MOBBEX_EMBED_VERSION,
             [
                 'Woocommerce'            => WC_VERSION,
                 'Mobbex for Woocommerce' => MOBBEX_VERSION,
