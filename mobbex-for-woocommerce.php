@@ -100,6 +100,7 @@ class MobbexGateway
             'Woocommerce' . WC_VERSION,
             MOBBEX_VERSION,
             str_replace('www.', '', parse_url(home_url(), PHP_URL_HOST)),
+            MOBBEX_EMBED_VERSION,
             [
                 'Woocommerce'            => WC_VERSION,
                 'Mobbex for Woocommerce' => MOBBEX_VERSION,
