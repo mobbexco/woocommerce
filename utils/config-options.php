@@ -242,7 +242,7 @@ background-color: #6f00ff;
         'class'       => 'mbbx-into-appearance',
     ],
     'method_icon' => [
-        'title'     => __('Enable/Disable', 'mobbex-for-woocommerce'),
+        'title'     => __('Enable/Disable Methods Icons', 'mobbex-for-woocommerce'),
         'type'      => 'checkbox',
         'label'     => __('Show payment methods icons in checkout.', 'mobbex-for-woocommerce'),
         'default'   => 'yes',
