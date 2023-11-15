@@ -3,6 +3,7 @@ jQuery(function ($) {
         
     // Can submit from either checkout or order review forms
     var form = $('form.checkout, form#order_review');
+    var mbbxPaymentData = false;
     
     //Add mobbex render lock
     renderLock();
@@ -86,18 +87,24 @@ jQuery(function ($) {
             paymentMethod: $('[name=payment_method]:checked').attr('group') ?? null,
 
             onResult: (data) => {
-                location.href = response.return_url + '&status=' + data.status.code;
+                location.href = response.return_url + '&fromCallback=onResult&status=' + data.status.code;
             },
+
+            onPayment: (data) => {
+                mbbxPaymentData = data.data;
+            },
+
             onClose: (cancelled) => {
-                if (cancelled === true)
-                    location.reload();
+                location.href = response.return_url + '&fromCallback=onClose&status=' + (mbbxPaymentData ? mbbxPaymentData.status.code : '500');
             },
-            onError: () => {
+
+            onError: (error) => {
                 handleErrorResponse({
                     result: 'errors',
                     reload: false,
                     messages: ['Se produjo un error al procesar la transacción. Intente nuevamente']
                 });
+                location.href = response.return_url + '&fromCallback=onError&status=500';
             },
         };
 
