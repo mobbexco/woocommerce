@@ -16,7 +16,7 @@
     <li class="wc_payment_method payment_method_<?= $gateway->id ?>">
         <input id="payment_method_<?= $gateway->id ?>" type="radio" class="input-radio" name="payment_method" value="<?= $gateway->id ?>" <?php checked($gateway->chosen, true); ?> data-order_button_text="<?= $gateway->order_button_text ?>" />
         <label for="payment_method_<?= $gateway->id ?>">
-            <?= $gateway->get_title(); ?> <?= $gateway->get_icon(); ?>
+            <?= $gateway->get_title(); ?> <?= !empty($gateway->settings["payment_method_image"]) ? "<img src='" . $gateway->settings['payment_method_image'] . "'>" : $gateway->get_icon(); ?>
         </label>
         <?php if ($gateway->has_fields() || $gateway->get_description()) : ?>
             <div class="payment_box payment_method_<?= $gateway->id ?>" <?php if (!$gateway->chosen) : ?>style="display:none;" <?php endif; ?>>
