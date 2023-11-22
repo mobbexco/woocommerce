@@ -104,7 +104,6 @@ jQuery(function ($) {
                     reload: false,
                     messages: ['Se produjo un error al procesar la transacción. Intente nuevamente']
                 });
-                location.href = response.return_url + '&fromCallback=onError&status=500';
             },
         };
 
