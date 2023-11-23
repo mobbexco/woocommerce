@@ -3,7 +3,7 @@
         <li class="wc_payment_method payment_method_mobbex_method_<?= "$method[subgroup]" ?>">
             <input id="payment_method_mobbex_method_<?= "$method[subgroup]" ?>" type="radio" class="input-radio" name="payment_method" value="<?= $gateway->id ?>" <?php checked($gateway->chosen, true); ?> method-type="method" group="<?= "$method[group]:$method[subgroup]" ?>" data-order_button_text="<?= $gateway->order_button_text ?>" />
             <label for="payment_method_mobbex_method_<?= "$method[subgroup]" ?>">
-                <?= (count($gateway->methods) == 1 || $method['subgroup'] == 'card_input') && $gateway->get_title() ? $gateway->get_title() : $method['subgroup_title'] ?> <img src="<?= $method['subgroup_logo'] ?>" <?= $method['subgroup'] == 'card_input' ? "style='background-color:{$gateway->config->background}; border-radius:50%;'" : '' ?>>
+                <?= (count($gateway->methods) == 1 || $method['subgroup'] == 'card_input') && $gateway->get_title() ? $gateway->get_title() : $method['subgroup_title'] ?> <img src="<?= $method['subgroup_logo'] ?>" <?= $method['subgroup'] == 'card_input' ? "style='background-color:{$gateway->config->color}; border-radius:50%;'" : '' ?>>
             </label>
             <?php if ($gateway->has_fields() || $gateway->get_description()) : ?>
                 <div class="payment_box payment_method_<?= $gateway->id."_method_$method[subgroup]" ?>" <?php if (!$gateway->chosen) : ?>style="display:none;" <?php endif; ?>>
