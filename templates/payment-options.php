@@ -14,7 +14,8 @@
             <label for="payment_method_mobbex_method_<?= "$method[subgroup]" ?>">
                 <?= (count($gateway->methods) == 1 || $method['subgroup'] == 'card_input') && $gateway->get_title() ? $gateway->get_title() : $method['subgroup_title'] ?>
                 <?php if ($gateway->config->method_icon === 'yes') : ?>
-                    <img src="<?= !empty($gateway->settings["payment_method_image"]) && count($gateway->methods) == 1 || $method['subgroup'] == 'card_input' ? $gateway->settings["payment_method_image"] : $method['subgroup_logo'] ?>">
+                    <img src="<?= !empty($gateway->settings["payment_method_image"]) && count($gateway->methods) == 1 || $method['subgroup'] == 'card_input' ? $gateway->settings["payment_method_image"] : $method['subgroup_logo'] ?>"
+                         style="<?= $method['subgroup'] == 'card_input' ? "background-color:{$gateway->config->color}; border-radius:50%;" : '' ?>">
                 <?php endif; ?>
             </label>
             <?php if ($gateway->has_fields() || $gateway->get_description()) : ?>
