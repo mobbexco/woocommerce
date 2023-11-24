@@ -219,6 +219,14 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
+    'checkout_banner' => [
+        'title'       => __('Mobbex Banner in Checkout', 'mobbex-for-woocommerce'),
+        'description' => __('You can set a banner to show in Mobbex checkout. (ex. https://res.mobbex.com/ecommerce/mobbex_1.png).', 'mobbex-for-woocommerce'),
+        'type'        => 'text',
+        'default'     => 'https://res.mobbex.com/ecommerce/mobbex_1.png',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
     'financial_widget_styles' => [
         'title'       => __('Financial Widget Button Styles', 'mobbex-for-woocommerce'),
         'description' => __('You can customize your financial widget button styles from here.', 'mobbex-for-woocommerce'),

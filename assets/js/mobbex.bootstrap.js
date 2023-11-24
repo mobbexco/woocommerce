@@ -20,6 +20,12 @@ jQuery(function ($) {
     // Some customers (Inky) have themes where the button is outside the form
     $('#checkout_buttons button').on('click', executePayment);
 
+    // Add mobbex banner interaction
+    if ($('mbbx-banner-input').prop("checked"))
+        $('.mobbex-banner').removeClass("mobbex-hidden");
+    
+    $(document).on('change', '.mbbx-banner-input', () => $('.mobbex-banner').toggleClass("mobbex-hidden"));
+
     /**
      * Try to execute the payment.
      */
