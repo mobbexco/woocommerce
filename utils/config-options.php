@@ -135,6 +135,13 @@ return [
         'desc_tip'    => true,
         'class'       => 'mbbx-into-appearance',
     ],
+    
+    'payment_method_image' => [
+        'title'       => __('Payment method image', 'mobbex-for-woocommerce'),
+        'description' => __('You can customize your checkout logo from here.', 'mobbex-for-woocommerce'),
+        'type'        => 'text',
+        'class'       => 'mbbx-into-appearance',
+    ],
 
     'description' => [
         'title'       => __('Description', 'mobbex-for-woocommerce'),
