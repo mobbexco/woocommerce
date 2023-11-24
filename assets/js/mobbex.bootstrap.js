@@ -3,6 +3,7 @@ jQuery(function ($) {
         
     // Can submit from either checkout or order review forms
     var form = $('form.checkout, form#order_review');
+    var mbbxPaymentData = false;
     
     //Add mobbex render lock
     renderLock();
@@ -18,6 +19,12 @@ jQuery(function ($) {
 
     // Some customers (Inky) have themes where the button is outside the form
     $('#checkout_buttons button').on('click', executePayment);
+
+    // Add mobbex banner interaction
+    if ($('mbbx-banner-input').prop("checked"))
+        $('.mobbex-banner').removeClass("mobbex-hidden");
+    
+    $(document).on('change', '.mbbx-banner-input', () => $('.mobbex-banner').toggleClass("mobbex-hidden"));
 
     /**
      * Try to execute the payment.
@@ -86,13 +93,18 @@ jQuery(function ($) {
             paymentMethod: $('[name=payment_method]:checked').attr('group') ?? null,
 
             onResult: (data) => {
-                location.href = response.return_url + '&status=' + data.status.code;
+                location.href = response.return_url + '&fromCallback=onResult&status=' + data.status.code;
             },
+
+            onPayment: (data) => {
+                mbbxPaymentData = data.data;
+            },
+
             onClose: (cancelled) => {
-                if (cancelled === true)
-                    location.reload();
+                location.href = response.return_url + '&fromCallback=onClose&status=' + (mbbxPaymentData ? mbbxPaymentData.status.code : '500');
             },
-            onError: () => {
+
+            onError: (error) => {
                 handleErrorResponse({
                     result: 'errors',
                     reload: false,
