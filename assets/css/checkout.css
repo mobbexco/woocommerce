@@ -1,4 +1,4 @@
-img[src*='res.mobbex'] {
+img[src*='res.mobbex'], img[src*='res.sugaway'] {
     max-height: 1.618em;
     border-radius: 100%;
 }
