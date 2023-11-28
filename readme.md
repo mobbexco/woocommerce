@@ -42,6 +42,15 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.16.0 :: 2023-11-28
+- Add option to hide payment methods images
+- Add option to modify the primary payment method image
+- Add option to show a banner behind the primary payment method
+- Disable discounts option now includes individual products offers
+- Improve performance on post payment redirect
+- Improve styles on checkout
+- Support emojis and special chars on finnancial widget plans
+
 ## 3.15.1 :: 2023-09-28
 - Fix status change on php > 8 installs
 
