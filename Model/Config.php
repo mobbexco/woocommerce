@@ -24,8 +24,8 @@ class Config
 
         //Create settings array
         foreach (include(__DIR__.'/../utils/config-options.php') as $key => $option) {
-            if (isset($option['default']))
-                $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $option['default'];
+            $default = isset($option['default']) ? $option['default'] : null;
+            $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $default;
         }
 
         // The intent constant overwrite payment mode setting
