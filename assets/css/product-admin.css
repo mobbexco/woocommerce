@@ -2,30 +2,6 @@
     display: none !important;
 }
 
-.mbbx_plans_cont {
-    display: flex;
-    flex-flow: wrap;
-}
-
-.mbbx_plan_list {
-    padding: 0 25px;
-}
-
-.mbbx_plan_list:nth-child(even) {
-    border-left: 1px solid #eee;
-}
-
-.mbbx_plan_source {
-    display: flex;
-    align-items: center;
-    padding-left: 15px;
-}
-
-.mbbx_plan_source img {
-    border-radius: 100%;
-    width: 40px;
-}
-
 #woocommerce-product-data ul.wc-tabs li.mobbex_options.mobbex_tab a:before{
     color: #7000ff;
     content: "\f153";
