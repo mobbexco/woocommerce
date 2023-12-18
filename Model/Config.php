@@ -105,14 +105,10 @@ class Config
      */
     private function maybe_decode($plans)
     {
-        if(is_array($plans))
-            return $plans;
-
-        if (is_serialized($plans))
-            return unserialize($plans);
-        
         if (json_decode($plans, true))
             return json_decode($plans, true);
+
+        return maybe_unserialize($plans);
     }
 
     /**
