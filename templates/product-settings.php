@@ -1,28 +1,8 @@
 <div id="mobbex_product_data" class="panel woocommerce_options_panel hidden">
-    <?php do_action('mbbx_product_options'); ?>
-    <h2><?=  __('Plans Configuration', 'mobbex-for-woocommerce') ?></h2>
-    <p><?=  __('Select the plans you want to appear in the checkout', 'mobbex-for-woocommerce') ?></p>
-    <div class="mbbx_plans_cont">
-        <div class="mbbx_plan_list">
-            <p><?= __('Common plans', 'mobbex-for-woocommerce') ?></p>
-            <?php foreach ($commonFields as $field) : ?>
-                <input type="hidden" name=" <?= $field['id'] ?>" value="no">
-                <?php woocommerce_wp_checkbox($field); ?>
-            <?php endforeach; ?>
-        </div>
-        <div class="mbbx_plan_list">
-            <p><?= __('Plans with advanced rules', 'mobbex-for-woocommerce') ?></p>
-            <?php foreach ($advancedFields as $source_ref => $fields) : ?>
-                <div class='mbbx_plan_source'>
-                    <img src='https://res.mobbex.com/images/sources/<?= $source_ref ?>.png'>
-                    <p><?= $sourceNames[$source_ref] ?></p>
-                </div>
-                <?php foreach ($fields as $field) {
-                    woocommerce_wp_checkbox($field);
-                } ?>
-            <?php endforeach; ?>
-        </div>
-    </div>
+    <?php 
+    do_action('mbbx_product_options'); 
+    include_once __DIR__ . '/plans_filter.php';
+    ?>
     <hr>
     <h2><?= __('Multisite', 'mobbex-for-woocommerce') ?></h2>
     <div>
