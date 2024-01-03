@@ -99,16 +99,16 @@ class Config
     /**
      * This method checks the format of the metadata & transforms it into an array if necessary.
      * 
-     * @param string|array $plans
+     * @param string|array $metadata
      * 
      * @return array|null
      */
-    private function maybe_decode($plans)
+    private function maybe_decode($metadata)
     {
-        if (json_decode($plans, true))
-            return json_decode($plans, true);
+        if (json_decode($metadata, true))
+            return json_decode($metadata, true);
 
-        return maybe_unserialize($plans);
+        return maybe_unserialize($metadata);
     }
 
     /**
