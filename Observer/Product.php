@@ -65,7 +65,7 @@ class Product
                 $advancedFields[$first_key][$second_key]['value'] = $field['value'] ? 'yes' : 'no';
         }
 
-        return compact('commonFields', 'advancedFields', 'sourceNames');
+        return compact('commonFields', 'advancedFields', 'sourceNames', 'sourceGroups');
     }
 
     /**
