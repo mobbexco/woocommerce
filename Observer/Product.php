@@ -107,7 +107,7 @@ class Product
 
         // Save all data as meta data
         foreach ($options as $key => $option)
-            update_metadata($meta_type, $id, $key, $option);
+            update_metadata($meta_type, $id, $key, strpos($key, "_plans") ? json_encode($option) : $option);
 
         if ($options['mbbx_enable_multisite'])
             $this->save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));

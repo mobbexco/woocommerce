@@ -88,10 +88,27 @@ class Config
      */
     public function get_catalog_settings($id, $field_name, $catalog_type = 'post')
     {
-        if (strpos($field_name, '_plans'))
-            return get_metadata($catalog_type, $id, $field_name, true) ?: [];
+        $data = get_metadata($catalog_type, $id, $field_name, true);
 
-        return get_metadata($catalog_type, $id, $field_name, true) ?: '';
+        if (strpos($field_name, '_plans'))
+            return $data ? $this->maybe_decode($data) : [];
+
+        return $data ?: '';
+    }
+
+    /**
+     * This method checks the format of the metadata & transforms it into an array if necessary.
+     * 
+     * @param string|array $metadata
+     * 
+     * @return array|null
+     */
+    private function maybe_decode($metadata)
+    {
+        if (json_decode($metadata, true))
+            return json_decode($metadata, true);
+
+        return maybe_unserialize($metadata);
     }
 
     /**
@@ -173,7 +190,6 @@ class Config
 
        return compact('common_plans', 'advanced_plans');
     }
-
 
     /**
      * Get current store data from product or product category.
