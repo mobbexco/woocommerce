@@ -4,7 +4,7 @@
             <input 
                 id="payment_method_mobbex_method_<?= "$method[subgroup]" ?>" 
                 type="radio" 
-                class="input-radio <?= $gateway->config->checkout_banner !== '' ? 'mbbx-banner-input' : '' ?>" 
+                class="input-radio <?= $gateway->config->checkout_banner !== '' && ($method['subgroup'] == 'card_input' || count($gateway->methods) == 1) ? 'mbbx-banner-input' : '' ?>" 
                 name="payment_method" 
                 value="<?= $gateway->id ?>" 
                 <?php checked($gateway->chosen, true); ?> 
