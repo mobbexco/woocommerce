@@ -45,7 +45,7 @@ final class Payment
         
         if (empty($status) || empty($id) || empty($token)){
             $message = "No se pudo validar la transacción. Contacte con el administrador de su sitio";
-            $error   = has_filter('mbbx_custom_message') ? apply_filters('mbbx_custom_message', $status) : $message ;
+            $error   = apply_filters('mbbx_custom_message', $message, $status);
         }
         if (!\Mobbex\Repository::validateToken($token))
             $error = "Token de seguridad inválido.";
