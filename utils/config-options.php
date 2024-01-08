@@ -223,7 +223,7 @@ return [
         'title'       => __('Mobbex Banner in Checkout', 'mobbex-for-woocommerce'),
         'description' => __('You can set a banner to show in Mobbex checkout. (ex. https://res.mobbex.com/ecommerce/mobbex_1.png).', 'mobbex-for-woocommerce'),
         'type'        => 'text',
-        'default'     => 'https://res.mobbex.com/ecommerce/mobbex_1.png',
+        'default'     => '',
         'class'       => 'mbbx-into-appearance',
     ],
 
