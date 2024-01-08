@@ -42,10 +42,11 @@ final class Payment
         $id     = $_GET['mobbex_order_id'];
         $token  = $_GET['mobbex_token'];
         $error  = false;
-
-        if (empty($status) || empty($id) || empty($token))
-            $error = "No se pudo validar la transacción. Contacte con el administrador de su sitio";
-
+        
+        if (empty($status) || empty($id) || empty($token)){
+            $message = "No se pudo validar la transacción. Contacte con el administrador de su sitio";
+            $error   = apply_filters('mbbx_custom_message', $message, $status);
+        }
         if (!\Mobbex\Repository::validateToken($token))
             $error = "Token de seguridad inválido.";
 
