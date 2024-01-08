@@ -42,6 +42,12 @@ Al igual que el error anterior esto se debe a que el parametro de validación se
 
 ## Changelog
 
+## 3.17.0 :: 2024-01-08
+- Group the sources by their common cards on catalog config admin
+- Show description and name on each plan of catalog config admin
+- Set mobbex banner option empty by default
+- Improved Mobbex plans obtaining
+
 ## 3.16.0 :: 2023-11-28
 - Add option to hide payment methods images
 - Add option to modify the primary payment method image
