@@ -105,7 +105,7 @@ class Config
      */
     private function maybe_decode($metadata)
     {
-        if (json_decode($metadata, true))
+        if (is_string($metadata) && is_array(json_decode($metadata, true)))
             return json_decode($metadata, true);
 
         return maybe_unserialize($metadata);

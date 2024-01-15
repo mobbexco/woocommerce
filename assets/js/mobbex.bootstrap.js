@@ -24,7 +24,12 @@ jQuery(function ($) {
     if ($('mbbx-banner-input').prop("checked"))
         $('.mobbex-banner').removeClass("mobbex-hidden");
     
-    $(document).on('change', '.mbbx-banner-input', () => $('.mobbex-banner').toggleClass("mobbex-hidden"));
+    $(document).on('change', '.input-radio', (e) => {document.querySelector('.mbbx-banner-input')
+        if (e.target == document.querySelector('.mbbx-banner-input'))
+            $('.mobbex-banner').removeClass("mobbex-hidden");
+        else
+            $('.mobbex-banner').addClass("mobbex-hidden");
+    });
 
     /**
      * Try to execute the payment.
