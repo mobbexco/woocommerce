@@ -62,22 +62,23 @@ class Db extends \Mobbex\Model\Db
      * @return array table data
      * 
      */
-    public function select($table_name, $filters = [], $limit = '', $offset = '' )
+    public function select($table_name, $filters = [], $limit = '', $offset = '', $order = '')
     {
         // Check if there is more than one filter to build the query correctly
-        if (count(array_filter($filters, null)) > 1){
-            $filters = array_filter($filters, null);
-            $filters = implode(' AND ', $filters);
-        }
-        else {
-            $filters = implode('', $filters);
-        }
+        $filtered_array = array_filter($filters);
 
+        if (!empty($filtered_array)) {
+            if (count($filtered_array) > 1) {
+                $filters = implode(' AND ', $filtered_array);
+            } else {
+                $filters = reset($filtered_array);
+            }
+        }
         // Sets query restriction clauses
         $limit      = !empty($limit) ? "LIMIT $limit" : '' ;
         $offset     = !empty($offset) ? "OFFSET $offset" : '' ;
-        $conditions = !empty($filters) ? "WHERE $filters" : '' ;
+        $conditions = !empty($filtered_array) ? "WHERE $filters" : '' ;
         
-        return $this->db->get_results("SELECT * FROM  $this->prefix$table_name $conditions $limit $offset;" , ARRAY_A);
+        return $this->db->get_results("SELECT * FROM  $this->prefix$table_name $conditions $order $limit $offset;" , ARRAY_A);
     }
 }
