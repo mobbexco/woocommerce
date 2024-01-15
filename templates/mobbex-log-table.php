@@ -83,7 +83,7 @@ $data = new \Mobbex\WP\Checkout\Model\LogTable($_POST);
         <p style="align-self: flex-start;">
             <button type='submit' onclick="#" class="button" name="log-page" value='<?php echo 0; ?>'> << </button>
             <button type='submit' onclick="#" class="button" name="log-page" value='<?php echo $data->page_data['actualPage'] - 1  <  0 ? $data->page_data['actualPage'] : $data->page_data['actualPage'] - 1; ?>'> < </button>
-            <span class='button'><?php echo "Mostrando " . $data->page_data['actualPage'] + 1 . " de {$data->page_data['total_pages']}"; ?></span>
+            <span class='button'><?php echo "Mostrando " . ($data->page_data['actualPage'] + 1) . " de {$data->page_data['total_pages']}"; ?></span>
             <button type='submit' onclick="#" class="button" name="log-page" value='<?php echo $data->page_data['actualPage'] >= $data->page_data['total_pages'] ? $data->page_data['actualPage'] : $data->page_data['actualPage'] + 1; ?>' > > </button>
             <button type='submit' onclick="#" class="button" name="log-page" value='<?php echo $data->page_data['total_pages'] -1 ; ?>'> >> </button>
         </p>
@@ -147,10 +147,10 @@ $data = new \Mobbex\WP\Checkout\Model\LogTable($_POST);
 
     .modal-content {
         background-color: #fefefe;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
+        margin: 15%;
+        padding: 10px;
+        border: 3px solid #888;
+        width: 75%;
     }
 
     .close {
