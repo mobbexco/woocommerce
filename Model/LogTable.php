@@ -16,7 +16,7 @@ class LogTable
     public $offset;
 
     /** Query Filters */
-    public $filters;
+    public $filters = [];
 
     /** Logs data */
     public $logs;
@@ -29,13 +29,15 @@ class LogTable
         $this->limit       = !empty($post['filter_limit']) ? (int) $post['filter_limit'] : 25;
         $this->offset      = isset($post['log-page']) ? ((int) $post['log-page'] * $this->limit) : 0;
         $this->filters     = [
-            'keywords' => !empty($post['filter_text']) ? "(message LIKE '%{$post['filter_text']}%' OR data LIKE '%{$post['filter_text']}%')" : null,
             'date'     => !empty($post['filter_date']) ? "DATE(creation_date) = '{$post['filter_date']}'" : null,
-            'type'     => isset($post['filter_type']) && $post['filter_type'] != 'all'  ? "type = '{$post['filter_type']}'" : null
+            'type'     => isset($post['filter_type']) && $post['filter_type'] != 'all'  ? "type = '{$post['filter_type']}'" : null,
+            'keywords' => !empty($post['filter_text']) ? "(message LIKE '%{$post['filter_text']}%' OR data LIKE '%{$post['filter_text']}%')" : null,
         ];
-        $this->logs        = (new \Mobbex\WP\Checkout\Model\Db)->select('mobbex_log', $this->filters, $this->limit, $this->offset);
 
-        $this->page_data    = $this->get_page_data();
+        $this->logs      = (new \Mobbex\WP\Checkout\Model\Db)->select(
+            'mobbex_log', $this->filters, $this->limit, $this->offset, 'ORDER BY `creation_date` DESC'
+            );
+        $this->page_data = $this->get_page_data();
     }
     
     /**
