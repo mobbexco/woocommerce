@@ -183,7 +183,7 @@ class Init
      */
     public function load_payment_template($template, $template_name, $args)
     {
-        if (!$this->helper->isReady() || $template_name != 'checkout/payment-method.php' || $args['gateway']->id != 'mobbex' || $this->config->disable_template == 'yes')
+        if (!$this->helper->isReady() || $template_name != 'checkout/payment-method.php' || isset($args['gateway']->id) != 'mobbex' || $this->config->disable_template == 'yes')
             return $template;
 
         return __DIR__ . '/../templates/payment-options.php';
