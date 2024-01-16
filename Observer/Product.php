@@ -151,9 +151,12 @@ class Product
         if (empty($_POST['variantPrice']) || empty($_POST['variantId']))
             exit;
 
+        //Get parent product id to get plans
+        $product_id = wc_get_product($_POST['variantId'])->get_parent_id();
+
         ob_start() && do_shortcode('[mobbex_button ' . http_build_query([
             'price'        => $_POST['variantPrice'],
-            'products_ids' => implode(',', [$_POST['variantId']]),
+            'products_ids' => implode(',', [$product_id]),
             'show_button'  => false,
         ], '', ' ') . ']');
 
