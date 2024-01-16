@@ -25,19 +25,21 @@
     /**
      * Update the financial widget with the selected variant price.
      * 
-     * @param {int} variantPrice 
-     * @param {string} variantId 
+     * @param {int} price 
+     * @param {string} id 
      * @param {string} url 
+     * @param {bool} child 
      */
-    function updateWidget(variantPrice, variantId, url) {
+    function updateWidget(price, id, url, child = true) {
         $('#mbbxProductBtn').prop('disabled', true);
         $.ajax({
             dataType: 'json',
             method: 'POST',
             url: url,
             data: {
-              "variantId": variantId,
-              "variantPrice": variantPrice
+              "id": id,
+              "price": price,
+              "child": child,
             },
             success: (response) => {
                 $('#mbbxProductModal').replaceWith(response);
@@ -77,6 +79,12 @@
             updateWidget(variation.display_price, variation.variation_id, mobbexWidget.widgetUpdateUrl);
         });
 
+        //Updates widget when component change in woocommerce composite products
+        $(document).on('wc-composite-component-loaded', 'form.cart', (event, data) => {
+            let total = data.composite.composite_price_view.model.attributes.totals.price;
+            updateWidget(total, data.composite.composite_id, mobbexWidget.widgetUpdateUrl, false);
+        });
+        
         // Get sources and payment method selector 
         var sources      = document.querySelectorAll('.mobbexSource');
         var methodSelect = document.getElementById('mbbx-method-select');
