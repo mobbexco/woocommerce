@@ -69,15 +69,15 @@ class Db extends \Mobbex\Model\Db
 
         if (!empty($filtered_array)) {
             if (count($filtered_array) > 1) {
-                $filters = implode(' AND ', $filtered_array);
+                $predicate = implode(' AND ', $filtered_array);
             } else {
-                $filters = reset($filtered_array);
+                $predicate = reset($filtered_array);
             }
         }
         // Sets query restriction clauses
         $limit      = !empty($limit) ? "LIMIT $limit" : '' ;
         $offset     = !empty($offset) ? "OFFSET $offset" : '' ;
-        $conditions = !empty($filtered_array) ? "WHERE $filters" : '' ;
+        $conditions = !empty($predicate) ? "WHERE $predicate" : '' ;
         
         return $this->db->get_results("SELECT * FROM  $this->prefix$table_name $conditions $order $limit $offset;" , ARRAY_A);
     }
