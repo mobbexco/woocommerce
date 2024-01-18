@@ -64,20 +64,10 @@ class Db extends \Mobbex\Model\Db
      */
     public function select($table_name, $filters = [], $limit = '', $offset = '', $order = '')
     {
-        // Check if there is more than one filter to build the query correctly
-        $filtered_array = array_filter($filters);
-
-        if (!empty($filtered_array)) {
-            if (count($filtered_array) > 1) {
-                $predicate = implode(' AND ', $filtered_array);
-            } else {
-                $predicate = reset($filtered_array);
-            }
-        }
         // Sets query restriction clauses
-        $limit      = !empty($limit) ? "LIMIT $limit" : '' ;
-        $offset     = !empty($offset) ? "OFFSET $offset" : '' ;
-        $conditions = !empty($predicate) ? "WHERE $predicate" : '' ;
+        $limit      = !empty($limit) ? "LIMIT $limit" : '';
+        $offset     = !empty($offset) ? "OFFSET $offset" : '';
+        $conditions = !empty(array_filter($filters)) ? implode(' AND ', array_filter($filters)) : '';
         
         return $this->db->get_results("SELECT * FROM  $this->prefix$table_name $conditions $order $limit $offset;" , ARRAY_A);
     }
