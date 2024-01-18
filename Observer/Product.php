@@ -148,14 +148,14 @@ class Product
      */
     public function financial_widget_update()
     {
-        if (empty($_POST['variantPrice']) || empty($_POST['variantId']))
+        if (empty($_POST['price']) || empty($_POST['id']))
             exit;
 
         //Get parent product id to get plans
-        $product_id = wc_get_product($_POST['variantId'])->get_parent_id();
+        $product_id = isset($_POST['child']) && $_POST['child'] ? wc_get_product($_POST['id'])->get_parent_id() : $_POST['id'];
 
         ob_start() && do_shortcode('[mobbex_button ' . http_build_query([
-            'price'        => $_POST['variantPrice'],
+            'price'        => $_POST['price'],
             'products_ids' => implode(',', [$product_id]),
             'show_button'  => false,
         ], '', ' ') . ']');
