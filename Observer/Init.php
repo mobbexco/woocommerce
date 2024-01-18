@@ -186,7 +186,8 @@ class Init
         if (
             !$this->helper->isReady()
             || $template_name != 'checkout/payment-method.php'
-            || isset($args['gateway']) && $args['gateway']->id != 'mobbex'
+            || !isset($args['gateway'])
+            || $args['gateway']->id != 'mobbex'
             || $this->config->disable_template == 'yes'
         )
             return $template;
