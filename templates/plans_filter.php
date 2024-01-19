@@ -20,7 +20,7 @@
                         </div>
                         <div class="mbbx-plan-cont">
                             <input type="hidden" name="<?= $field['id'] ?>" value="no">
-                            <input type="checkbox" name="<?= $field['id'] ?>" id="<?= $field['id'] ?>" value="<?= $field['value'] ?>" <?= checked($field['value'], 'yes', false) ?>>
+                            <input type="checkbox" name="<?= $field['id'] ?>" id="<?= $field['id'] ?>" value="yes" <?= checked($field['value'], 'yes', false) ?>>
                             <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
                         </div>
                         <p><?= $field['description'] ?></p>
