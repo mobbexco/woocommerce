@@ -67,7 +67,7 @@ class Db extends \Mobbex\Model\Db
         // Sets query restriction clauses
         $limit      = !empty($limit) ? "LIMIT $limit" : '';
         $offset     = !empty($offset) ? "OFFSET $offset" : '';
-        $conditions = !empty(array_filter($filters)) ? implode(' AND ', array_filter($filters)) : '';
+        $conditions = !empty(array_filter($filters)) ? "WHERE " . implode(' AND ', array_filter($filters)) : '';
         
         return $this->db->get_results("SELECT * FROM  $this->prefix$table_name $conditions $order $limit $offset;" , ARRAY_A);
     }
