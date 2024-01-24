@@ -99,7 +99,7 @@ class Cart
         $subtotal = $this->cart->get_subtotal();
 
         //Get products discounts
-        $items_discounts = $this->get_items_discounts($this->cart->get_cart() ?: []);
+        $items_discounts = $this->get_discount_total($this->cart->get_cart() ?: []);
 
         //Add taxes, shipping & fees
         $total = $subtotal + $this->cart->get_cart_contents_tax() + $this->cart->get_fee_total() + $this->cart->get_shipping_total() + $items_discounts;
@@ -141,10 +141,12 @@ class Cart
             return $item['line_total'];
         
         // Get Product
-        $product = wc_get_product($item['product_id']);
+        $product = wc_get_product(
+            !empty($item['variation_id']) ? $item['variation_id'] : $item['product_id']
+        );
 
         //Return product price if discounts are disabled
-        return $product->get_regular_price() * $item['quantity'];
+        return (float) $product->get_regular_price() * (int) $item['quantity'];
     }
 
     /**
@@ -154,20 +156,17 @@ class Cart
      * 
      * @return int
      */
-    private function get_items_discounts($items)
+    private function get_discount_total($items)
     {
-        $total = 0;
+        return array_sum(array_map(function($item) {
+            $product = wc_get_product(!empty($item['variation_id']) ? $item['variation_id'] : $item['product_id']);
 
-        foreach ($items as $item) {
-            $product = wc_get_product($item['product_id']);
-
-            if (!$product->is_on_sale())
-                continue;
-
-            $total = $total + ($product->get_regular_price() - $product->get_sale_price()) * $item['quantity'];
-        }
-
-        return $total;
+            return !$product->is_on_sale() ? null : (
+                (float) $product->get_regular_price() -
+                (float) $product->get_sale_price() *
+                (int) $item->get_quantity()
+            );
+        }, $items));
     }
 
     /**

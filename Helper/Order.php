@@ -113,7 +113,7 @@ class Order
         $subtotal = $this->order->get_subtotal();
 
         //Get products discounts
-        $items_discounts = $this->get_items_discounts($this->order->get_items() ?: []);
+        $items_discounts = $this->get_discount_total($this->order->get_items() ?: []);
 
         //Add taxes, shipping & fees
         $total = $subtotal + $this->order->get_total_tax() + $this->order->get_total_fees() + $this->order->get_shipping_total() + $items_discounts;
@@ -157,33 +157,30 @@ class Order
         if ($this->config->disable_discounts !== 'yes')
             return $item->get_total();
 
-        //get product
-        $product = wc_get_product($item->get_product_id());
+        // Warning: Use get_product instead of get_product_id to support variations
+        $product = $item->get_product();
 
         //Return product price if discounts are disabled
-        return $product->get_regular_price() * $item->get_quantity();
+        return (float) $product->get_regular_price() * (int) $item->get_quantity();
     }
 
     /**
      * Return the total disocunted from items.
      * 
-     * @param array $items
+     * @param WC_Order_Item[] $items
      * 
-     * @return int
+     * @return float
      */
-    private function get_items_discounts($items) {
-        $total = 0;
-        
-        foreach ($items as $item) {
+    private function get_discount_total($items) {
+        return array_sum(array_map(function($item) {
             $product = $item->get_product();
 
-            if(!$product->is_on_sale())
-                continue;
-
-            $total = $total + ($product->get_regular_price() - $product->get_sale_price()) * $item->get_quantity();
-        }
-
-        return $total;
+            return !$product->is_on_sale() ? null : (
+                (float) $product->get_regular_price() -
+                (float) $product->get_sale_price() *
+                (int) $item->get_quantity()
+            );
+        }, $items));
     }
 
     /**
