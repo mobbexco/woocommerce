@@ -27,7 +27,7 @@ class LogTable
     public function __construct($post)
     {
         $this->limit       = !empty($post['filter_limit']) ? (int) $post['filter_limit'] : 25;
-        $this->offset      = isset($post['log-page']) ? ((int) $post['log-page'] * $this->limit) : 0;
+        $this->offset      = isset($post['log-page']) ? ((int) $post['log-page'] * (int) $this->limit) : 0;
         $this->filters     = [
             'date'     => !empty($post['filter_date']) ? "DATE(creation_date) = '{$post['filter_date']}'" : null,
             'type'     => isset($post['filter_type']) && $post['filter_type'] != 'all'  ? "type = '{$post['filter_type']}'" : null,
