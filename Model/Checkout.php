@@ -164,7 +164,8 @@ class Checkout
         if($subscription) {
             $this->items[] = [
                 'type'      => 'subscription',
-                'reference' => $subscription
+                'reference' => $subscription,
+                'total'     => $total
             ];
         } else {
             $this->items[] = compact('total', 'quantity', 'description', 'image', 'entity');
