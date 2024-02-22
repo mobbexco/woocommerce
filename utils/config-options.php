@@ -380,6 +380,17 @@ background-color: #6f00ff;
         ],
     ],
 
+    'return_timeout' => [
+        'title'             => __('Tiempo de redirección', 'mobbex-for-woocommerce'),
+        'description'       => __('Establecer tiempo de espera en segundos para la redirección/cierre checkout', 'mobbex-for-woocommerce'),
+        'class'             => 'mbbx-into-advanced',
+        'type'              => 'number',
+        'default'           => 5,
+        'custom_attributes' => [
+            'min'       => '1',
+        ],
+    ],
+
     'process_webhook_retries' => [
         'title'   => __('Procesar reintentos de webhooks', 'mobbex-for-woocommerce'),
         'label'   => __('Permite procesar nuevamente un webhook si este se reenvía de forma automática (los reintentos manuales siempre se procesan).', 'mobbex-for-woocommerce'),
