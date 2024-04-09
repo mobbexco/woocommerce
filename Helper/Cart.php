@@ -92,7 +92,7 @@ class Cart
     private function calculate_total()
     {
         //If discounts are allowed return cart total.
-        if ($this->config->disable_discounts !== 'yes')
+        if ($this->config->disable_discounts == 'no')
             return $this->cart->get_total(null);
 
         //Get total without discounts
@@ -137,7 +137,7 @@ class Cart
     public function calculate_item_price($item)
     {
         //Return item price if disounts are allowed
-        if($this->config->disable_discounts !== 'yes')
+        if($this->config->disable_discounts == 'no')
             return $item['line_total'];
         
         // Get Product
