@@ -4,6 +4,7 @@ namespace Mobbex\WP\Checkout\Model;
 
 class Config 
 {
+
     public function __construct()
     {
         //Get settings array
@@ -21,9 +22,14 @@ class Config
     {
         //Get saved values from db
         $saved_values = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', null);
+        $options      = include(__DIR__.'/../utils/config-options.php');
+
+        // Maybe add subscription options
+        if ($saved_values["enable_subscription"] == "yes" && file_exists( MOBBEX_SUBS_DIRECTORY . 'Gateway.php'))
+            $options = \Mobbex\WP\Subscriptions\Model\Helper::add_subscription_options($options);
 
         //Create settings array
-        foreach (include(__DIR__.'/../utils/config-options.php') as $key => $option) {
+        foreach ($options as $key => $option) {
             $default = isset($option['default']) ? $option['default'] : null;
             $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $default;
         }
