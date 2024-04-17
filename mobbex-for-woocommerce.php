@@ -61,8 +61,12 @@ class MobbexGateway
         self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Model\Registrar();
 
-        //Init de Mobbex php sdk
+        // init de Mobbex php sdk
         $this->init_sdk();
+
+        // maybe init Mobbex subs extension
+        if (self::$config->enable_subscription == "yes" && file_exists( MOBBEX_SUBS_DIRECTORY . 'Gateway.php'))
+            $this->init_subscriptions();
 
         MobbexGateway::check_dependencies();
         MobbexGateway::load_textdomain();
@@ -118,6 +122,14 @@ class MobbexGateway
 
         // Init api conector
         \Mobbex\Api::init();
+    }
+
+    /**
+     * Init Mobbex Subscriptions Extension
+     */
+    public function init_subscriptions()
+    {
+        (new \Mobbex\WP\Subscriptions\Gateway)->init();
     }
 
     /**
@@ -285,7 +297,7 @@ class MobbexGateway
             new \Mobbex\WP\Checkout\Model\Db
         );
         
-        foreach (['transaction', 'cache', 'log'] as  $tableName) {
+        foreach (['transaction', 'cache', 'log', 'subscription', 'subscriber', 'execution'] as  $tableName) {
             // Create the table or alter table if it exists
             $table = new \Mobbex\Model\Table($tableName);
             // If table creation fails, return false
