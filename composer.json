@@ -1,7 +1,8 @@
 {
     "require": {
         "mobbexco/php-plugins-sdk": "1.8.0",
-        "yahnis-elsts/plugin-update-checker": "v4.10"
+        "yahnis-elsts/plugin-update-checker": "v4.10",
+        "mobbexco/woocommerce-subscriptions": "dev-converted-the-plugin-into-a-checkout-dependent-ECO-871"
     },
     "require-dev": {
         "php-parallel-lint/php-parallel-lint": "*",
