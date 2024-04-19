@@ -237,7 +237,7 @@ class Product
     public function get_product_subscription_signup_fee($id)
     {
         $subscription = $this->config->get_product_subscription($id);
-        return $subscription ? $subscription['setupFee'] : '';
+        return isset($subscription['setupFee']) ? $subscription['setupFee'] : '';
     }
 
     /**
