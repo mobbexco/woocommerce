@@ -371,6 +371,6 @@ class Order
                 $subscription_total = $item['total'];
                
         if ($subscription_total) 
-            $checkout->set_signup_fee($checkout->total + $subscription_total);
+            $checkout->set_signup_fee($checkout->total - $subscription_total);
     }
 }
