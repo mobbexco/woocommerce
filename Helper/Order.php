@@ -367,10 +367,9 @@ class Order
     public function maybe_add_signup_fee($checkout)
     { 
         foreach ($checkout->items as $item)
-            if($item['type'] == 'subscription')
-                $subscription_total = $item['total'];
-               
-        if ($subscription_total) 
-            $checkout->set_signup_fee($checkout->total - $subscription_total);
+            if($item['type'] == 'subscription') 
+                $checkout->set_signup_fee($this->order->get_total_fees());
+            else
+                return;
     }
 }
