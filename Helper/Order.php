@@ -68,8 +68,7 @@ class Order
         $this->add_items($checkout);
         $this->add_installments($checkout);
         $this->add_customer($checkout);
-
-        $checkout->total = $this->maybe_clear_subscription_total($checkout);
+        $this->maybe_add_signup_fee($checkout);
 
         try {
             $response = $checkout->create();
@@ -359,19 +358,19 @@ class Order
     }
 
     /**
-     * Maybe clears total for cases where product subscriptions has sign-up fee. Otherwise, returns checkout total
-     * mainly to avoid the sign-up fee being added twice
+     * Maybe add product subscriptions sign-up fee 
      * 
      * @param object $checkout used to get items and total
      * 
      * @return int|string total cleared
      */
-    public function maybe_clear_subscription_total($checkout)
+    public function maybe_add_signup_fee($checkout)
     { 
         foreach ($checkout->items as $item)
             if($item['type'] == 'subscription')
                 $subscription_total = $item['total'];
-
-        return $subscription_total ? $subscription_total : $checkout->total;
+               
+        if ($subscription_total) 
+            $checkout->set_signup_fee($checkout->total + $subscription_total);
     }
 }
