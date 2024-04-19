@@ -42,6 +42,7 @@ class Product
         //subscriptions
         $is_subscription  = (bool) $this->config->get_catalog_settings($id, 'mbbx_sub_enable', $meta_type);
         $subscription_uid = $this->config->get_catalog_settings($id, 'mbbx_sub_uid', $meta_type);
+        $subscription_fee = $this->get_product_subscription_signup_fee($id);
 
         // Render template
         $template = $meta_type == 'post' ? 'product-settings.php' : 'category-settings.php';
@@ -82,6 +83,7 @@ class Product
             'mbbx_entity'           => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
             'mbbx_sub_enable'       => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
             'mbbx_sub_uid'          => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
+            'mbbx_sub_sign_up_fee'  => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
             'mbbx_enable_multisite' => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
             'common_plans'          => [],
             'advanced_plans'        => [],
@@ -105,7 +107,7 @@ class Product
             }
         }
 
-        // Save all data as meta data
+        // Save all $options data as meta data
         foreach ($options as $key => $option)
             update_metadata($meta_type, $id, $key, strpos($key, "_plans") ? json_encode($option) : $option);
 
@@ -211,5 +213,69 @@ class Product
         ];
 
         include_once __DIR__ . '/../templates/finance-widget.php';
+    }
+
+    /**
+     * Check if product is a subscription
+     * 
+     * @param object $product
+     * 
+     * @return bool
+     */
+    public function is_subscription($product_id)
+    {
+        return (bool) $this->config->get_catalog_settings($product_id, 'mbbx_sub_enable');
+    }
+
+    /*
+     * Get product subscription sign-up fee from API
+     * 
+     * @param int|string $id
+     * 
+     * @return int|string product subscription sign-up fee
+     */
+    public function get_product_subscription_signup_fee($id)
+    {
+        $subscription = $this->config->get_product_subscription($id);
+        return $subscription ? $subscription['setupFee'] : '';
+    }
+
+    /**
+     * Add mobbex subscription fee to cart and checkout if it exists in the product
+     * 
+     * @param WC_Cart $cart
+     */
+    public function maybe_add_mobbex_subscription_fee($cart)
+    {
+        foreach ( $cart->get_cart() as $item )
+            $product_id = $item['product_id'];
+        
+        $subscription = $this->config->get_product_subscription($product_id);
+
+        $subscription ? $cart->add_fee( __('Sign-up Fee', 'woocommerce') , $subscription['setupFee'], false ) : '';
+    }
+
+    /**
+     * Display sign up fee on product price
+     * 
+     * @param string $price_html
+     * @param WC_Product $product
+     * 
+     * @return string $sign_up_fee
+     */
+    public function display_sign_up_fee_on_price($price_html, $product)
+    {
+        // Sometimes the hook gets an array type product 
+        if (!is_object($product))
+            return;
+
+        // Avoid non subscription products
+        if(!$this->is_subscription($product->get_id()))
+            return $price_html;
+
+        // Set sign up price
+        $sign_up_price = $this->get_product_subscription_signup_fee($product->get_id());
+
+        return $sign_up_price ? $price_html .= __(" /month and a $$sign_up_price sign-up fee") : $price_html;
     }
 }
