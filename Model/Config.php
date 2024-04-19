@@ -140,10 +140,37 @@ class Config
      * 
      * @return string|null
      */
-    public function get_product_subscription($product_id)
+    public function get_product_subscription_uid($product_id)
     {
         if ($this->get_catalog_settings($product_id, 'mbbx_sub_enable'))
             return $this->get_catalog_settings($product_id, 'mbbx_sub_uid');
+    }
+
+    /**
+     * Return the subscription from database or API.
+     * 
+     * @param int|string $product_id
+     * 
+     * @return array mobbex subscription
+     */
+    public function get_product_subscription($product_id)
+    {
+        $cache = new \Mobbex\WP\Checkout\Model\Cache;
+
+        // Checks if subscription exists in cache table
+        $subscription = $cache->get('subscription_id:'. $product_id, 'INTERVAL 1 DAY');
+
+        // If subscription doesn`t exists, try to get it from API
+        if (!$subscription){
+            $subscription = \Mobbex\Api::request([
+                'method' => 'GET',
+                'uri'    => "subscriptions/" . $this->get_product_subscription_uid($product_id)
+            ]) ?: [];
+            
+            $cache->store('subscription_id:'. $product_id, json_encode($subscription));
+        }
+
+        return $subscription;
     }
 
     /**
