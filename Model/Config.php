@@ -2,6 +2,7 @@
 
 namespace Mobbex\WP\Checkout\Model;
 
+#[\AllowDynamicProperties]
 class Config 
 {
     public function __construct()
