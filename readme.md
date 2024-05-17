@@ -6,7 +6,7 @@ This plugin provides integration between WooCommerce and Mobbex Payment Solution
 - PHP 7.0 -> 8.2.6
 - WordPress 5 -> 6.5.3
 - WooCommerce 3.5.2 -> 7.9.0
-- MySql 5.6 -> 8
+- MySQL 5.6 -> 8
 
 ## Installation
 
