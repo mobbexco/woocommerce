@@ -12,14 +12,14 @@ return [
         'default' => 'yes',
     ],
 
-    'api_key' => [
+    'api-key' => [
         'title'       => __('API Key', 'mobbex-for-woocommerce'),
         'description' => __('Your Mobbex API key.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
         'default'     => '',
     ],
 
-    'access_token' => [
+    'access-token' => [
         'title'       => __('Access Token', 'mobbex-for-woocommerce'),
         'description' => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
