@@ -106,7 +106,7 @@ class Order
     private function calculate_total()
     {
         //If discounts are allowed return cart total.
-        if($this->config->disable_discounts == 'no')
+        if($this->config->disable_discounts !== 'yes')
             return $this->order->get_total();
 
         //Get total without discounts
@@ -154,7 +154,7 @@ class Order
     public function calculate_item_price($item)
     {
         //If discounts are allowed return item price.
-        if ($this->config->disable_discounts == 'no')
+        if ($this->config->disable_discounts !== 'yes')
             return $item->get_subtotal();
 
         // Warning: Use get_product instead of get_product_id to support variations
