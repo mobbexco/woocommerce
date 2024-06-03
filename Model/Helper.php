@@ -289,22 +289,25 @@ class Helper
         $order = wc_get_order(get_query_var('order-pay'));
         $cart  = WC()->cart;
 
-        $helper = $order ? new \Mobbex\WP\Checkout\Helper\Order($order) : new \Mobbex\WP\Checkout\Helper\Cart($cart);
+        $helper = $order ? new \Mobbex\WP\Checkout\Helper\Order($order) : ($cart ? new \Mobbex\WP\Checkout\Helper\Cart($cart) : null);
 
         // If is pending order page create checkout from order and return
         if ($order)
             return $helper->create_checkout();
 
         // Try to get previous cart checkout data
-        $cart_checkout = WC()->session->get('mobbex_cart_checkout');
-        $cart_hash     = $cart->get_cart_hash();
+        if ($helper){
+            $cart_checkout = WC()->session->get('mobbex_cart_checkout');
+            $cart_hash     = $cart->get_cart_hash();
 
-        $response = isset($cart_checkout[$cart_hash]) ? $cart_checkout[$cart_hash] : $helper->create_checkout();
+            $response = isset($cart_checkout[$cart_hash]) ? $cart_checkout[$cart_hash] : $helper->create_checkout();
 
-        if ($response)
-            WC()->session->set('mobbex_cart_checkout', [$cart_hash => $response]);
+            if ($response)
+                WC()->session->set('mobbex_cart_checkout', [$cart_hash => $response]);
 
-        return $response;
+            return $response;
+        }
+        return null;
     }
 
 }

@@ -16,6 +16,12 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
+    /* Available cards */
+    public $cards;
+
+    /* Available methods*/
+    public $methods;
+
     public function __construct()
     {
         $this->id     = MOBBEX_WC_GATEWAY_ID;

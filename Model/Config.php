@@ -4,6 +4,55 @@ namespace Mobbex\WP\Checkout\Model;
 
 class Config 
 {
+    public $settings = [];
+
+    // Settings from config-options.php
+    public $enabled;
+    public $api_key;
+    public $access_token;
+    public $test;
+    public $button;
+    public $wallet;
+    public $financial_info_active;
+    public $own_dni;
+    public $custom_dni;
+    public $orders_tab;
+    public $order_status_approved;
+    public $order_status_on_hold;
+    public $order_status_failed;
+    public $order_status_refunded;
+    public $paid_statuses;
+    public $appearance_tab;
+    public $title;
+    public $payment_method_image;
+    public $description;
+    public $theme;
+    public $header_name;
+    public $header_logo;
+    public $background;
+    public $color;
+    public $financial_widget_on_cart;
+    public $financial_widget_button_text;
+    public $financial_widget_button_logo;
+    public $checkout_banner;
+    public $financial_widget_styles;
+    public $advanced_configuration_tab;
+    public $multicard;
+    public $multivendor;
+    public $payment_mode;
+    public $two_step_processing_mail;
+    public $reseller_id;
+    public $error_redirection;
+    public $site_id;
+    public $debug_mode;
+    public $unified_mode;
+    public $disable_discounts;
+    public $disable_template;
+    public $timeout;
+    public $return_timeout;
+    public $process_webhook_retries;
+    public $method_icon;
+
     public function __construct()
     {
         //Get settings array
