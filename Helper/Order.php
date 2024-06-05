@@ -155,7 +155,7 @@ class Order
     {
         //If discounts are allowed return item price.
         if ($this->config->disable_discounts !== 'yes')
-            return $item->get_subtotal();
+            return $item->get_total();
 
         // Warning: Use get_product instead of get_product_id to support variations
         $product = $item->get_product();
