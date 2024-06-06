@@ -83,7 +83,6 @@ class Product
             'mbbx_entity'           => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
             'mbbx_sub_enable'       => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
             'mbbx_sub_uid'          => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
-            'mbbx_sub_sign_up_fee'  => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
             'mbbx_enable_multisite' => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
             'common_plans'          => [],
             'advanced_plans'        => [],
@@ -249,11 +248,11 @@ class Product
     {
         foreach ( $cart->get_cart() as $item )
             $product_id = $item['product_id'];
-        
+
         $subscription = $this->config->get_product_subscription($product_id);
 
-        isset($subscription['setupFee']) ? $cart->add_fee( __('Sign-up Fee', 'woocommerce') , $subscription['setupFee'], false ) : '';
-    }
+            isset($subscription['setupFee']) ? $cart->add_fee( __('Sign-up Fee', 'woocommerce') , $subscription['setupFee'], false ) : '';
+            }
 
     /**
      * Display sign up fee on product price
