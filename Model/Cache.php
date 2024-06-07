@@ -11,16 +11,16 @@ class Cache
      * Get data from mobbex_cache table with key.
      * 
      * @param string $key Identifier to obtain the data.
-     * @param string $interval Interval to check if data is expired
+     * @param int $interval Interval to check if data is expired - set in seconds
      * 
      * @return bool|array Return the searched data or false in case there isnt.
      */
-    public function get($key, $interval = 'INTERVAL 5 MINUTE')
+    public function get($key, $interval = 300)
     {
         global $wpdb;
 
         //Delete expired cache
-        $wpdb->query("DELETE FROM ".$wpdb->prefix."mobbex_cache WHERE `date` < DATE_SUB(NOW(), " . $interval .");");
+        $wpdb->query("DELETE FROM ".$wpdb->prefix."mobbex_cache WHERE `date` < DATE_SUB(NOW(), INTERVAL " . $interval . " SECOND);");
         //Try to get results
         $result = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."mobbex_cache WHERE `cache_key`='$key';");
 
