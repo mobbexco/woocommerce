@@ -22,8 +22,6 @@ class Checkout
 
     public $endpoints = [];
 
-    public $signup_fee = 0;
-
     /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
@@ -49,7 +47,7 @@ class Checkout
     {
         $checkout = new \Mobbex\Modules\Checkout(
             $this->relation,
-            $this->total - $this->signup_fee,
+            $this->total,
             $this->endpoints['return'],
             $this->endpoints['webhook'],
             $this->items,
@@ -161,13 +159,14 @@ class Checkout
      * @param string|null $image
      * @param string|null $entity
      */
-    public function add_item($total, $quantity = 1, $description = null, $image = null, $entity = null, $subscription = null)
+    public function add_item($total, $quantity = 1, $description = null, $image = null, $entity = null, $subscription = null, $setup_fee = 0)
     {
         if($subscription) {
             $this->items[] = [
                 'type'      => 'subscription',
                 'reference' => $subscription,
-                'total'     => $total
+                'total'     => $total,
+                'setup_fee' => $setup_fee
             ];
         } else {
             $this->items[] = compact('total', 'quantity', 'description', 'image', 'entity');
@@ -183,17 +182,5 @@ class Checkout
     public function add_installments($products, $common_plans, $advanced_plans)
     {
         $this->installments = \Mobbex\Repository::getInstallments($products, $common_plans, $advanced_plans);
-    }
-
-    /**
-     * Add sign up fee
-     * 
-     * @param string|int $signup_fee
-     * 
-     * @return string|int $signup_fee
-     */
-    public function set_signup_fee($signup_fee)
-    {
-        $this->signup_fee = $signup_fee;
     }
 }

@@ -140,7 +140,8 @@ class Order
                 $item->get_name(),
                 $this->helper->get_product_image($item->get_product_id()),
                 $this->config->get_product_entity($item->get_product_id()),
-                $this->config->get_product_subscription_uid($item->get_product_id())
+                $this->config->get_product_subscription_uid($item->get_product_id()),
+                $this->config->get_product_subscription_signup_fee($item->get_product_id())
             );
 
         foreach ($shipping_items as $item)
@@ -366,10 +367,12 @@ class Order
      */
     public function maybe_add_signup_fee($checkout)
     { 
+        $signup_fee_totals = 0;
+
         foreach ($checkout->items as $item)
-            if($item['type'] == 'subscription') 
-                $checkout->set_signup_fee($this->order->get_total_fees());
-            else
-                return;
+            if($item['type'] == 'subscription')
+                $signup_fee_totals += $item['setup_fee'];
+
+        $checkout->total = $checkout->total - $signup_fee_totals;
     }
 }
