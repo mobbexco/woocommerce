@@ -26,8 +26,15 @@
                                         <?= $installment['name'] ?>
                                         <?php if ($installment['totals']['installment']['count'] != 1) : ?>
                                             <small>
-                                                <?= $installment['totals']['installment']['count'] ?> cuotas de <?= wc_price($installment['totals']['installment']['amount']) ?>
+                                                <b><?= $installment['totals']['installment']['count'] ?> cuotas de <?= wc_price($installment['totals']['installment']['amount']) ?></b><br/>
+                                                <?php if(isset($installment['tags'])) : ?>
+                                                    <?php foreach($installment['tags'] as $tag) :?>
+                                                        <?= "{$tag['label']}: {$tag['value']} " ;?>
+                                                        <?= "{$tag['label']}: "?><b><?="{$tag['value']}% " ;?></b>
+                                                    <?php endforeach; ?>
+                                                <?php endif ?>
                                             </small>
+                                            
                                         <?php endif; ?>
                                     </td>
                                     <td style="text-align: right; "><?= isset($installment['totals']['total']) ? wc_price($installment['totals']['total']) : '' ?></td>
