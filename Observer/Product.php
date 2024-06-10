@@ -42,7 +42,6 @@ class Product
         //subscriptions
         $is_subscription  = (bool) $this->config->get_catalog_settings($id, 'mbbx_sub_enable', $meta_type);
         $subscription_uid = $this->config->get_catalog_settings($id, 'mbbx_sub_uid', $meta_type);
-        $subscription_fee = $this->config->get_product_subscription_signup_fee($id);
 
         // Render template
         $template = $meta_type == 'post' ? 'product-settings.php' : 'category-settings.php';
@@ -239,8 +238,8 @@ class Product
         foreach ( $cart->get_cart() as $item ){
             $subscription = \Mobbex\Repository::getProductSubscription(
                 $this->config->get_product_subscription_uid($item['product_id']), 
-                true)
-                ;
+                true
+                );
             isset($subscription['setupFee']) ? $cart->add_fee(__("{$subscription['name']} Sign-up Fee", 'woocommerce'), $subscription['setupFee'], false) : '';
         }
     }

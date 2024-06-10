@@ -159,14 +159,13 @@ class Checkout
      * @param string|null $image
      * @param string|null $entity
      */
-    public function add_item($total, $quantity = 1, $description = null, $image = null, $entity = null, $subscription = null, $setup_fee = 0)
+    public function add_item($total, $quantity = 1, $description = null, $image = null, $entity = null, $subscription = null)
     {
         if($subscription) {
             $this->items[] = [
                 'type'      => 'subscription',
                 'reference' => $subscription,
-                'total'     => $total,
-                'setup_fee' => $setup_fee
+                'total'     => $total
             ];
         } else {
             $this->items[] = compact('total', 'quantity', 'description', 'image', 'entity');
