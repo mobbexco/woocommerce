@@ -1,0 +1,23 @@
+{
+    "name": "mobbex-for-woocommerce",
+    "title": "Mobbex for Woocommmerce",
+    "version": "3.17.1",
+    "author": "Mobbex",
+    "keywords": [],
+    "engines": {
+        "node": "^20.12.0",
+        "npm": "^10.5.0"
+    },
+    "devDependencies": {
+        "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
+        "@woocommerce/base-contexts": "",
+        "@wordpress/scripts": "^27.8.0",
+        "cross-env": "7.0.3"
+    },
+    "scripts": {
+        "start": "wp-scripts start",
+        "build": "wp-scripts build",
+        "packages-update": "wp-scripts packages-update",
+        "check-engines": "wp-scripts check-engines"
+    }
+}

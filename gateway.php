@@ -93,10 +93,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $order->update_status('pending', __('Awaiting Mobbex Webhook', 'mobbex-for-woocommerce'));
 
         $result = [
-            'result'     => 'success',
-            'data'       => $checkout_data,
-            'return_url' => $this->helper->get_api_endpoint('mobbex_return_url', $order_id),
-            'redirect'   => $this->config->button == 'yes' ? false : $checkout_data['url'],
+            'result'      => 'success',
+            'data'        => $checkout_data,
+            'checkout_id' => $checkout_data['id'],
+            'return_url'  => $this->helper->get_api_endpoint('mobbex_return_url', $order_id),
+            'redirect'    => $this->config->button == 'yes' ? false : $checkout_data['url'],
         ];
 
         // Make sure to use json in pay for order page
