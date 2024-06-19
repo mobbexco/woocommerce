@@ -82,6 +82,9 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
+        // Load suppport to Checkout Blocks
+        MobbexGateway::load_woocommerce_blocks_support();
+
         // Init controllers
         new \Mobbex\WP\Checkout\Controller\Payment;
         new \Mobbex\WP\Checkout\Controller\LogTable;
@@ -262,6 +265,23 @@ class MobbexGateway
 
             $methods[] = MOBBEX_WC_GATEWAY;
             return $methods;
+        });
+    }
+
+    /**
+     * Registers WooCommerce Blocks integration.
+     */
+    public static function load_woocommerce_blocks_support()
+    {
+        add_action('woocommerce_blocks_loaded', function(){
+            if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                add_action(
+                    'woocommerce_blocks_payment_method_type_registration',
+                    function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+                        $payment_method_registry->register(new \Mobbex\WP\Checkout\Model\BlockPaymentMethod());
+                    }
+                );
+            }
         });
     }
 
