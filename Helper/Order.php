@@ -68,6 +68,7 @@ class Order
         $this->add_items($checkout);
         $this->add_installments($checkout);
         $this->add_customer($checkout);
+        $this->maybe_add_signup_fee($checkout);
 
         try {
             $response = $checkout->create();
@@ -139,7 +140,7 @@ class Order
                 $item->get_name(),
                 $this->helper->get_product_image($item->get_product_id()),
                 $this->config->get_product_entity($item->get_product_id()),
-                $this->config->get_product_subscription($item->get_product_id())
+                $this->config->get_product_subscription_uid($item->get_product_id())
             );
 
         foreach ($shipping_items as $item)
@@ -354,5 +355,25 @@ class Order
     public function has_childs($parent)
     {
         return isset($parent['operation_type']) && $parent['operation_type'] == 'payment.multiple-sources';
+    }
+
+    /**
+     * Maybe add product subscriptions sign-up fee 
+     * 
+     * @param object $checkout used to get items and total
+     * 
+     * @return int|string total cleared
+     */
+    public function maybe_add_signup_fee($checkout)
+    { 
+        $signup_fee_totals = 0;
+        
+        foreach ($checkout->items as $item)
+            if($item['type'] == 'subscription'){
+                $subscription       = \Mobbex\Repository::getProductSubscription($item['reference'], true);
+                $signup_fee_totals += $subscription['setupFee'];
+            }
+
+        $checkout->total = $checkout->total - $signup_fee_totals;
     }
 }
