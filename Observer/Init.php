@@ -99,16 +99,18 @@ class Init
     {
         global $post;
 
-        if (($hook == 'post-new.php' || $hook == 'post.php') && $post->post_type == 'shop_order') {
+        $id = $post ? $post->ID : $_REQUEST['id'];
+
+        if (($hook == 'post-new.php' || $hook == 'post.php') && ($id == 'shop_order' || \Automattic\WooCommerce\Utilities\OrderUtil::is_order($id, wc_get_order_types()))) {
             wp_enqueue_style('mbbx-order-style', plugin_dir_url(__FILE__) . '../../assets/css/order-admin.css');
             wp_enqueue_script('mbbx-order', plugin_dir_url(__FILE__) . '../../assets/js/order-admin.js');
 
-            $order       = wc_get_order($post->ID);
-            $order_total = get_post_meta($post->ID, 'mbbxs_sub_total', true) ?: $order->get_total();
+            $order       = wc_get_order($id);
+            $order_total = get_post_meta($id, 'mbbxs_sub_total', true) ?: $order->get_total();
 
             // Add retry endpoint URL to script
             $mobbex_data = [
-                'order_id'    => $post->ID,
+                'order_id'    => $id,
                 'order_total' => $order_total,
                 'capture_url' => home_url('/wc-api/mbbx_capture_payment')
             ];
