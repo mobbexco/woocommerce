@@ -99,9 +99,12 @@ class Init
     {
         global $post;
 
+        if(!isset($post->ID) && !isset($_REQUEST['id']))
+            return;
+
         $id = $post ? $post->ID : $_REQUEST['id'];
 
-        if (($hook == 'post-new.php' || $hook == 'post.php') && ($id == 'shop_order' || \Automattic\WooCommerce\Utilities\OrderUtil::is_order($id, wc_get_order_types()))) {
+        if (($hook == 'post-new.php' || $hook == 'post.php') && ($post->post_type == 'shop_order' || \Automattic\WooCommerce\Utilities\OrderUtil::is_order($id, wc_get_order_types()))) {
             wp_enqueue_style('mbbx-order-style', plugin_dir_url(__FILE__) . '../../assets/css/order-admin.css');
             wp_enqueue_script('mbbx-order', plugin_dir_url(__FILE__) . '../../assets/js/order-admin.js');
 

@@ -146,6 +146,9 @@ class Order
     {
         global $post;
 
+        if (!isset($post->ID) && !isset($_REQUEST['id']))
+            return;
+
         $id = $post ? $post->ID : $_REQUEST['id'];
 
         //For compatibility with HPOS
@@ -164,6 +167,9 @@ class Order
     public function show_payment_info_panel()
     {
         global $post;
+
+        if (!isset($post->ID) && !isset($_REQUEST['id']))
+            return;
 
         $id = $post ? $post->ID : $_REQUEST['id'];
 
