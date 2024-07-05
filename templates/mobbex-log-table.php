@@ -90,7 +90,7 @@
         <!-- Logs export -->
         <p style="align-self: flex-end;">
             <label for="radio-1"><?= __('Página actual', 'mobbex-for-woocommerce'); ?></label>
-            <input type="radio" id="radio-1" name="download" value="page" />
+            <input type="radio" id="radio-1" name="download" value="page" checked/>
             <label for="radio-2"><?= __('Busqueda actual', 'mobbex-for-woocommerce'); ?></label>
             <input type="radio" id="radio-2" name="download" value="query" />
             <label for="filter-extension"><?= __('Descargar en formato: ', 'mobbex-for-woocommerce'); ?></label>
