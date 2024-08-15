@@ -225,8 +225,22 @@ class Product
         return (bool) $this->config->get_catalog_settings($product_id, 'mbbx_sub_enable');
     }
 
+    /*
+     * Get product subscription sign-up fee from API or cache
+     * 
+     * @param int|string $id
+     * 
+     * @return int|string product subscription sign-up fee
+     */
+    public function get_product_subscription_signup_fee($id)
+    {
+        $subscription = $this->config->get_product_subscription($id);
+        return isset($subscription['setupFee']) ? $subscription['setupFee'] : '';
+    }
+
     /**
-     * Add mobbex subscription fee to cart and checkout if it exists in the product
+     * Add mobbex subscription fee to cart and checkout if it exists in the product 
+     * Supports coupon type percentage discount only
      * 
      * @param WC_Cart $cart
      */
@@ -240,7 +254,20 @@ class Product
                 $this->config->get_product_subscription_uid($item['product_id']), 
                 true
                 );
-            isset($subscription['setupFee']) ? $cart->add_fee(__("{$subscription['name']} Sign-up Fee", 'woocommerce'), $subscription['setupFee'], false) : '';
+            
+            if (!$subscription['setupFee'])
+                continue;
+
+            if ($cart->applied_coupons) {
+                $discount    = $this->get_coupons_discounts($cart->applied_coupons, $subscription['setupFee'], $item['product_id']);
+                $subscription['setupFee'] -= $discount;
+            }
+
+            $cart->add_fee(
+                __($discount ? "Sign-up Fee (Coupon applied)" : 'Sign-up Fee', 'woocommerce'),
+                $subscription['setupFee'],
+                false
+            );
         }
     }
 
@@ -263,4 +290,33 @@ class Product
 
         return $sign_up_price ? $price_html .= __(" /month and a $$sign_up_price sign-up fee") : $price_html;
     }
+
+    /**
+    * Apply coupon to price
+    *
+    * @param float $price
+    * @param int $product_id
+    *
+    * @return float price with discount
+    */
+   public function get_coupons_discounts($applied_coupons, $price, $product_id)
+   {
+       foreach ($applied_coupons as $coupon_code){
+           $discount = 0;       
+           $coupon = new \WC_Coupon($coupon_code);
+
+           switch ($coupon->get_discount_type()) {
+               case 'fixed_cart':
+                   $discount += $coupon->get_amount();
+                   break;
+               case 'percent':
+                   $discount += $price * ($coupon->get_amount() / 100);
+                   break;
+               case 'fixed_product' && in_array($product_id, $coupon->get_product_ids()):
+                   $discount += $coupon->get_amount();
+                   break;
+           };
+       }
+       return $discount;
+   }
 }
