@@ -264,7 +264,7 @@ class Product
             }
 
             $cart->add_fee(
-                __($discount ? "Sign-up Fee (Coupon applied)" : 'Sign-up Fee', 'woocommerce'),
+                __($discount ? "Costo de instalación (Coupón aplicado)" : 'Costo de instalación', 'mobbex-for-woocommerce'),
                 $subscription['setupFee'],
                 false
             );
@@ -288,7 +288,7 @@ class Product
         // Set sign up price
         $sign_up_price = $this->config->get_product_subscription_signup_fee($product->get_id());
 
-        return $sign_up_price ? $price_html .= __(" /month and a $$sign_up_price sign-up fee") : $price_html;
+        return $sign_up_price ? $price_html .= __(" /mes y $$sign_up_price costo de instalación", "mobbex-for-woocommerce") : $price_html;
     }
 
     /**
