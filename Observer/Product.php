@@ -255,7 +255,7 @@ class Product
                 true
                 );
             
-            if (!$subscription['setupFee'])
+            if (!isset($subscription['setupFee']))
                 continue;
 
             if ($cart->applied_coupons) {
