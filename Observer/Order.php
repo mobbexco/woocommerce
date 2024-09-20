@@ -300,7 +300,7 @@ class Order
     /**
      * Return the status to use as approved status
      */
-    public function set_approved_status($order_status, $order_id) {
+    public function set_approved_statuses($order_status, $order_id) {
         if(wc_get_order($order_id)->get_payment_method() == 'mobbex')
             return $this->config->order_status_approved; 
 
