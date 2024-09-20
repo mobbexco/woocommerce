@@ -296,4 +296,11 @@ class Order
             $i++;
         endforeach;
     }
+
+    /**
+     * Return the status to use as approved status
+     */
+    public function set_approved_status($order_status, $order_id) {
+        return $this->config->order_status_approved;
+    }
 }

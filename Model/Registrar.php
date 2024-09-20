@@ -89,6 +89,7 @@ class Registrar
             ['name' => 'woocommerce_add_to_cart_validation', 'callback' => [$this->checkout, 'validate_cart_items'], 'params' => 2],
             //Order observer
             ['name' => 'wc_order_statuses', 'callback' => [$this->order, 'add_authorized_order_status']],
+            ['name' => 'woocommerce_payment_complete_order_status', 'callback' => [$this->order, 'set_approved_statuses'], 'params' => 2],
             //Checkout observer
             ['name' => 'woocommerce_billing_fields', 'callback' => [$this->checkout, 'add_checkout_fields']],
             //Product Observer
