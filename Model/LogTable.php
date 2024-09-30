@@ -5,7 +5,7 @@ namespace Mobbex\WP\Checkout\Model;
 /**
  * LogTable Class model
  * 
- * This class
+ * This class manages mobbex logs table data
  */
 class LogTable
 {
@@ -24,8 +24,12 @@ class LogTable
     /** Paging data */
     public $page_data;
 
+    /** Mobbex\WP\Checkout\Model\Db */
+    public $db;
+
     public function __construct($post)
     {
+        $this->db          = new \Mobbex\WP\Checkout\Model\Db;
         $this->limit       = !empty($post['filter_limit']) ? (int) $post['filter_limit'] : 25;
         $this->offset      = isset($post['log-page']) ? ((int) $post['log-page'] * (int) $this->limit) : 0;
         $this->filters     = [
@@ -34,7 +38,7 @@ class LogTable
             'keywords' => !empty($post['filter_text']) ? "(message LIKE '%{$post['filter_text']}%' OR data LIKE '%{$post['filter_text']}%')" : null,
         ];
 
-        $this->logs      = (new \Mobbex\WP\Checkout\Model\Db)->select(
+        $this->logs      = $this->db->select(
             'mobbex_log', $this->filters, $this->limit, $this->offset, 'ORDER BY `creation_date` DESC'
             );
         $this->page_data = $this->get_page_data();
@@ -48,16 +52,16 @@ class LogTable
     public function get_page_data()
     {   
         // Paging calculations
-        $total_logs   = count((new \Mobbex\WP\Checkout\Model\Db)->select('mobbex_log', $this->filters)); 
+        $total_logs   = count($this->db->select('mobbex_log', $this->filters)); 
         $total_pages  = ceil($total_logs / $this->limit);
         $actual_page  = $this->offset / $this->limit; 
         
         // Shows logs with filters applied
         if (isset($post['filter-submit']))
-            $this->logs = (new \Mobbex\WP\Checkout\Model\Db)->select('mobbex_log', $this->filters, $this->limit, $this->offset);
+            $this->logs = $this->db->select('mobbex_log', $this->filters, $this->limit, $this->offset);
 
         // Sets pagination data
-        return $data = [
+        return [
             'logs'        => $this->logs,
             'actualPage'  => $actual_page, 
             'total_pages' => $total_pages
@@ -76,10 +80,10 @@ class LogTable
 
         // Gets the filter and queries the database with appropriate ones
         if ($_POST['download'] == 'page')
-            $this->logs = (new \Mobbex\WP\Checkout\Model\Db)->select('mobbex_log', $this->filters, $this->limit, $this->offset);
+            $this->logs = $this->db->select('mobbex_log', $this->filters, $this->limit, $this->offset);
 
         if ($_POST['download'] == 'query')
-            $this->logs = (new \Mobbex\WP\Checkout\Model\Db)->select('mobbex_log', $this->filters);
+            $this->logs = $this->db->select('mobbex_log', $this->filters);
 
         return $this->logs;
     }

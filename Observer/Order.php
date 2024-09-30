@@ -146,9 +146,19 @@ class Order
     {
         global $post;
 
+        if (!isset($post->ID) && !isset($_REQUEST['id']))
+            return;
+
+        $id = $post ? $post->ID : $_REQUEST['id'];
+
+        //For compatibility with HPOS
+        $screen = class_exists('\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController') && wc_get_container()->get(\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled()
+            ? wc_get_page_screen_id('shop-order')
+            : 'shop_order';
+
         //Only displayed if a payment was made with Mobbex.
-        if ($post->post_type == 'shop_order' && wc_get_order($post->ID)->get_payment_method() == 'mobbex')
-            add_meta_box('mbbx_order_panel', __('Mobbex Payment Information', 'mobbex-for-woocommerce'), [$this, 'show_payment_info_panel'], 'shop_order', 'side', 'core');
+        if (($post->post_type == 'shop_order' || \Automattic\WooCommerce\Utilities\OrderUtil::is_order($id, wc_get_order_types())) && wc_get_order($id)->get_payment_method() == 'mobbex')
+            add_meta_box('mbbx_order_panel', __('Mobbex Payment Information', 'mobbex-for-woocommerce'), [$this, 'show_payment_info_panel'], $screen, 'side', 'core');
     }
 
     /**
@@ -158,7 +168,12 @@ class Order
     {
         global $post;
 
-        $mbbxOrderHelp = new \Mobbex\WP\Checkout\Helper\Order(wc_get_order($post->ID));
+        if (!isset($post->ID) && !isset($_REQUEST['id']))
+            return;
+
+        $id = $post ? $post->ID : $_REQUEST['id'];
+
+        $mbbxOrderHelp = new \Mobbex\WP\Checkout\Helper\Order(wc_get_order($id));
 
         // Get transaction data
         $parent  = $mbbxOrderHelp->get_parent_transaction();

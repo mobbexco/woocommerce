@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.18.0
+Version:      3.19.1
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -56,6 +56,13 @@ class MobbexGateway
             return;
         }
 
+        //Declare HPOS compatibility
+        add_action('before_woocommerce_init', function () {
+            if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+            }
+        });
+
         self::$config    = new \Mobbex\WP\Checkout\Model\Config();
         self::$helper    = new \Mobbex\WP\Checkout\Model\Helper();
         self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
@@ -85,6 +92,9 @@ class MobbexGateway
         // Add Mobbex gateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
+
+        // Load suppport to Checkout Blocks
+        MobbexGateway::load_woocommerce_blocks_support();
 
         // Init controllers
         new \Mobbex\WP\Checkout\Controller\Payment;
@@ -211,8 +221,9 @@ class MobbexGateway
     public static function check_upgrades()
     {
         try {
-            // Check current version updated
-            if (get_option('woocommerce-mobbex-version') == MOBBEX_VERSION)
+            $request_uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
+            // Checks current version updated and if it's not installing route
+            if (get_option('woocommerce-mobbex-version') == MOBBEX_VERSION && !str_contains($request_uri, 'plugin-install'))
                 return;
 
             // Apply upgrades
@@ -274,6 +285,23 @@ class MobbexGateway
 
             $methods[] = MOBBEX_WC_GATEWAY;
             return $methods;
+        });
+    }
+
+    /**
+     * Registers WooCommerce Blocks integration.
+     */
+    public static function load_woocommerce_blocks_support()
+    {
+        add_action('woocommerce_blocks_loaded', function(){
+            if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                add_action(
+                    'woocommerce_blocks_payment_method_type_registration',
+                    function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+                        $payment_method_registry->register(new \Mobbex\WP\Checkout\Model\BlockPaymentMethod());
+                    }
+                );
+            }
         });
     }
 

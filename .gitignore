@@ -9,7 +9,6 @@ build.js
 mobbex.*.zip
 wc-mobbex*.zip
 
-package.json
 package-lock.json
 composer.lock
 node_modules
