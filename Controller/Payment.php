@@ -157,6 +157,10 @@ final class Payment
 
         if ($this->config->process_webhook_retries != 'yes' && $this->is_request_duplicated($data))
             return $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Duplicated Request Detected');
+        
+        // Avoid 3xx status codes
+        if ($status > 299 && $status < 400)
+            return $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook Received OK: ', $data);
 
         // Catch refunds webhooks
         if ($status == 602 || $status == 605)
