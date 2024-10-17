@@ -150,13 +150,15 @@ class Order
     /**
      * Calculate the item price for the mobbex checkout.
      * 
-     * @return string
+     * @param object $item
+     * 
+     * @return float item total
      */
     public function calculate_item_price($item)
     {
         //If discounts are allowed return item price.
         if ($this->config->disable_discounts !== 'yes')
-            return $item->get_total();
+            return (float) $item->get_total();
 
         // Warning: Use get_product instead of get_product_id to support variations
         $product = $item->get_product();
