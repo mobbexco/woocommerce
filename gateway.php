@@ -29,11 +29,9 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
         $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
 
-        // Subscriptions extension
-        if ($this->config->enable_subscription == 'yes' && file_exists( MOBBEX_SUBS_DIRECTORY . 'Gateway.php')){
-            (new \Mobbex\WP\Subscriptions\Gateway)->init();
-            $this->supports = \Mobbex\WP\Subscriptions\Model\Helper::add_subscription_support($this->supports);
-        }
+        if ($this->config->enable_subscription == 'yes')
+            // Add subscriptions extension supports
+            $this->supports = apply_filters('mobbex_subs_support', $this->supports);
 
         // String variables. That's used on checkout view
         $this->icon        = apply_filters('mobbex_icon', plugin_dir_url(__FILE__) . 'icon.png');
@@ -59,8 +57,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public function init_form_fields()
     {
         $form_fields = include 'utils/config-options.php';
-        $this->form_fields = $this->config->enable_subscription == 'yes' && file_exists( MOBBEX_SUBS_DIRECTORY . 'Gateway.php')
-            ? array_merge($form_fields, include(plugin_dir_path(__FILE__) . 'vendor/mobbexco/woocommerce-subscriptions/src/admin/config-options.php')) 
+        $this->form_fields = $this->config->enable_subscription == 'yes'
+            ? apply_filters('mobbex_subs_options', $form_fields)
             : $form_fields;
     }
 

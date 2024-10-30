@@ -52,6 +52,10 @@ class Config
     public $return_timeout;
     public $process_webhook_retries;
     public $method_icon;
+    public $enable_subscription;
+    public $subscription_tab;
+    public $integration;
+    public $send_subscriber_email;
 
     public function __construct()
     {
@@ -73,10 +77,10 @@ class Config
         $options      = include(__DIR__.'/../utils/config-options.php');
 
         // Maybe add subscription options
-        if ($saved_values["enable_subscription"] == "yes" && file_exists( MOBBEX_SUBS_DIRECTORY . 'Gateway.php'))
-            $options = \Mobbex\WP\Subscriptions\Model\Helper::add_subscription_options($options);
+        if (isset($saved_values["enable_subscription"]) == "yes")
+            $options = apply_filters('mobbex_subs_options', $options);
 
-        //Create settings array
+        // Create settings array
         foreach ($options as $key => $option) {
             $default = isset($option['default']) ? $option['default'] : null;
             $settings[str_replace('-', '_', $key)] = isset($saved_values[$key]) ? $saved_values[$key] : $default;
@@ -198,24 +202,6 @@ class Config
     {
         if ($this->get_catalog_settings($product_id, 'mbbx_sub_enable'))
             return $this->get_catalog_settings($product_id, 'mbbx_sub_uid');
-    }
-
-    /*
-     * Get product subscription sign-up fee from cache or API
-     * 
-     * @param int|string $id
-     * 
-     * @return int|string product subscription sign-up fee
-     */
-    public function get_product_subscription_signup_fee($id)
-    { 
-        try {
-            // Try to get subscription data from cache; otherwise it get it from API
-            $subscription = \Mobbex\Repository::getProductSubscription($this->get_product_subscription_uid($id), true);
-            return isset($subscription['setupFee']) ? $subscription['setupFee'] : '';
-        } catch (\Exception $e) {
-            (new \Mobbex\WP\Checkout\Model\Logger)->log('error', 'Config > get_product_subscription_signup_fee | Failed obtaining setup fee: ' . $e->getMessage(), $subscription);
-        }
     }
 
     /**
