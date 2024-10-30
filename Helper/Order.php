@@ -68,7 +68,6 @@ class Order
         $this->add_items($checkout);
         $this->add_installments($checkout);
         $this->add_customer($checkout);
-        $this->maybe_add_signup_fee($checkout);
 
         try {
             $response = $checkout->create();
@@ -135,7 +134,7 @@ class Order
 
         foreach ($order_items as $item)
             $checkout->add_item(
-                $this->calculate_item_price($item),
+                (float) $this->calculate_item_price($item),
                 $item->get_quantity(),
                 $item->get_name(),
                 $this->helper->get_product_image($item->get_product_id()),
@@ -150,13 +149,15 @@ class Order
     /**
      * Calculate the item price for the mobbex checkout.
      * 
-     * @return string
+     * @param object $item
+     * 
+     * @return float item total
      */
     public function calculate_item_price($item)
     {
         //If discounts are allowed return item price.
         if ($this->config->disable_discounts !== 'yes')
-            return $item->get_total();
+            return (float) $item->get_total();
 
         // Warning: Use get_product instead of get_product_id to support variations
         $product = $item->get_product();
@@ -355,25 +356,5 @@ class Order
     public function has_childs($parent)
     {
         return isset($parent['operation_type']) && $parent['operation_type'] == 'payment.multiple-sources';
-    }
-
-    /**
-     * Maybe add product subscriptions sign-up fee 
-     * 
-     * @param object $checkout used to get items and total
-     * 
-     * @return int|string total cleared
-     */
-    public function maybe_add_signup_fee($checkout)
-    { 
-        $signup_fee_totals = 0;
-        
-        foreach ($checkout->items as $item)
-            if($item['type'] == 'subscription'){
-                $subscription       = \Mobbex\Repository::getProductSubscription($item['reference'], true);
-                $signup_fee_totals += $subscription['setupFee'];
-            }
-
-        $checkout->total = $checkout->total - $signup_fee_totals;
     }
 }
