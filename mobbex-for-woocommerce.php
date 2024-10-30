@@ -71,10 +71,6 @@ class MobbexGateway
         // init de Mobbex php sdk
         $this->init_sdk();
 
-        // maybe init Mobbex subs extension
-        if (self::$config->enable_subscription == "yes" && file_exists( MOBBEX_SUBS_DIRECTORY . 'Gateway.php'))
-            $this->init_subscriptions();
-
         MobbexGateway::check_dependencies();
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
@@ -133,13 +129,15 @@ class MobbexGateway
         // Init api conector
         \Mobbex\Api::init();
     }
-
-    /**
-     * Init Mobbex Subscriptions Extension
-     */
-    public function init_subscriptions()
+    
+    public function init_mobbex_subscription()
     {
-        (new \Mobbex\WP\Subscriptions\Gateway)->init();
+        if (!self::$config->enable_subscription)
+            return;
+
+        require_once __DIR__ . '/vendor/mobbexco/woocommerce-subscriptions/mobbex-subscriptions.php';
+        $mobbexSubscriptions = new MobbexSubscriptions;
+        $mobbexSubscriptions->init();
     }
 
     /**
@@ -280,7 +278,6 @@ class MobbexGateway
 
     public static function add_gateway()
     {
-
         add_filter('woocommerce_payment_gateways', function ($methods) {
 
             $methods[] = MOBBEX_WC_GATEWAY;
@@ -325,7 +322,7 @@ class MobbexGateway
             new \Mobbex\WP\Checkout\Model\Db
         );
         
-        foreach (['transaction', 'cache', 'log', 'subscription', 'subscriber', 'execution'] as  $tableName) {
+        foreach (['log', 'transaction', 'cache' , 'subscription', 'subscriber', 'execution'] as  $tableName) {
             // Create the table or alter table if it exists
             $table = new \Mobbex\Model\Table($tableName);
             // If table creation fails, return false
@@ -334,11 +331,12 @@ class MobbexGateway
         }
         
         return true;
-    }
+    } 
 }
 
 $mobbexGateway = new MobbexGateway;
 add_action('plugins_loaded', [&$mobbexGateway, 'init']);
+add_action('plugins_loaded', [&$mobbexGateway, 'init_mobbex_subscription']);
 
 // Remove mbbx entity saved data on uninstall
 register_deactivation_hook(__FILE__, function() {
