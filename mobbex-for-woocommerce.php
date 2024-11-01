@@ -135,7 +135,7 @@ class MobbexGateway
         if (!self::$config->enable_subscription)
             return;
 
-        require_once __DIR__ . '/vendor/mobbexco/woocommerce-subscriptions/mobbex-subscriptions.php';
+        require_once MOBBEX_SUBS_DIR . '/mobbex-subscriptions.php';
         $mobbexSubscriptions = new MobbexSubscriptions;
         $mobbexSubscriptions->init();
     }
