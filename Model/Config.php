@@ -76,9 +76,12 @@ class Config
         $saved_values = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', null);
         $options      = include(__DIR__.'/../utils/config-options.php');
 
+        if (!file_exists(MOBBEX_SUBS_DIR . '/mobbex-subscriptions.php'))
+            unset($options['enable_subscription'], $saved_values['enable_subscription']);
+
         // Maybe add subscription options
         if (isset($saved_values["enable_subscription"]) == "yes")
-            $options = apply_filters('mobbex_subs_options', $options);
+            $options = array_merge($options, include(MOBBEX_SUBS_DIR . '/utils/config-options.php'));
 
         // Create settings array
         foreach ($options as $key => $option) {
