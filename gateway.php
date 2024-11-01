@@ -58,7 +58,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     {
         $form_fields = include 'utils/config-options.php';
         $this->form_fields = $this->config->enable_subscription == 'yes'
-            ? array_merge($form_fields, include( MOBBEX_SUBS_DIR . 'admin/config-options.php'))
+            ? array_merge($form_fields, include( MOBBEX_SUBS_DIR . '/utils/config-options.php'))
             : $form_fields;
     }
 
