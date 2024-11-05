@@ -29,7 +29,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
         $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
 
-        if ($this->config->enable_subscription == 'wcs')
+        if ($this->config->integration == 'wcs')
             // Add subscriptions extension supports
             $this->supports = apply_filters('mobbex_subs_support', $this->supports);
 
