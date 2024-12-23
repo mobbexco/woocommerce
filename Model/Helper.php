@@ -28,6 +28,16 @@ class Helper
         return ($this->config->enabled === 'yes' && !empty($this->config->api_key) && !empty($this->config->access_token));
     }
 
+    /**
+     * Checks if Mobbex Subscription Extension is ready
+     * 
+     * @return bool
+     */
+    public function is_extension_ready()
+    {
+        return $this->config->enable_subscription == 'yes';
+    }
+
 
     /**
      * Get all product IDs from Order.
@@ -248,9 +258,10 @@ class Helper
         if ($endpoint === 'mobbex_webhook' || $endpoint == 'mobbex_subs_webhook') {
             if ($this->config->debug_mode != 'no')
                 $query['XDEBUG_SESSION_START'] = 'PHPSTORM';
+
             return add_query_arg(
                 $query,
-                $endpoint === 'mobbex_webhook' ? 
+                $endpoint === 'mobbex_webhook' ?
                 get_rest_url(null, 'mobbex/v1/webhook') :
                 home_url('/')
             );
