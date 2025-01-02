@@ -262,7 +262,10 @@ final class Payment
             return;
 
         // Remove previus fees and recalculate totals to get the original order total (do not change the order)
-        $order->remove_order_items('fee');
+        foreach ($order->get_items('fee') as $item_id => $fee_item) {
+            if (in_array($fee_item->get_name(), ['Cargo financiero', 'Descuento financiero']))
+                $order->remove_item($item_id);
+        }
         $order->calculate_totals();
 
         $order_total = $order->get_total();
@@ -270,7 +273,7 @@ final class Payment
         // Create a fee item with the diff amount
         $item = new \WC_Order_Item_Fee;
         $item->set_props([
-            'name'   => $data['total'] > $order_total ? 'Cargo financiero' : 'Descuento',
+            'name'   => $data['total'] > $order_total ? 'Cargo financiero' : 'Descuento financiero',
             'amount' => $data['total'] - $order_total,
             'total'  => $data['total'] - $order_total,
         ]);
