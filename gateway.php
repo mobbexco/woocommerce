@@ -6,6 +6,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         'products',
         'refunds',
     );
+    public $id;
 
     /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
@@ -30,7 +31,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
 
         if ($this->config->integration == 'wcs')
-            // Add subscriptions extension supports
+            // Add wcs supports
             $this->supports = apply_filters('mobbex_subs_support', $this->supports);
 
         // String variables. That's used on checkout view
@@ -48,6 +49,8 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
         // Always Required
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+        // Add wcs scheduled subscription payment support
+        add_action('woocommerce_scheduled_subscription_payment_' . $this->id , [$this, 'execute_scheduled_subscription_payment'], 10, 2);
     }
 
     /**
@@ -145,5 +148,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         } catch (\Exception $e) {
             return new \WP_Error($e->getCode(), $e->getMessage(), isset($e->data) ? $e->data : '');
         }
+    }
+
+    public function execute_scheduled_subscription_payment($renewal_total, $renewal_order)
+    {
+        $this->logger->log('debug', 'gateway > execute_scheduled_subscription_payment | Creating payment', compact('renewal_total', 'renewal_order'));
+        do_action('mobbex_subs_scheduled_payment', $renewal_total, $renewal_order);
     }
 }
