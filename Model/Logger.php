@@ -63,9 +63,9 @@ class Logger
         });
     }
 
-    public function maybe_log_error($message, $data)
+    public function maybe_log_error($message, $data = [])
     {
         global $wpdb;
-        !empty($wpdb->last_error) && $this->log('debug', "{$message} . {$wpdb->last_error}", $data);
+        !empty($wpdb->last_error) && $this->log('debug', "$message {$wpdb->last_error}", $data);
     }
 }
