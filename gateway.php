@@ -150,9 +150,16 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         }
     }
 
+    /**
+     * Execute scheduled subscription payment via Mobbex Subscriptions
+     * 
+     * @param float $renewal_total
+     * @param WC_Order $renewal_order
+     * 
+     */
     public function execute_scheduled_subscription_payment($renewal_total, $renewal_order)
     {
         $this->logger->log('debug', 'gateway > execute_scheduled_subscription_payment | Creating payment', compact('renewal_total', 'renewal_order'));
-        do_action('mobbex_subs_scheduled_payment', $renewal_total, $renewal_order);
+        return apply_filters('mobbex_subs_scheduled_payment', $renewal_total, $renewal_order);
     }
 }
