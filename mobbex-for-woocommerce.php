@@ -326,7 +326,7 @@ class MobbexGateway
 }
 
 $mobbexGateway = new MobbexGateway;
-add_action('plugins_loaded', [&$mobbexGateway, 'init']);
+add_action('init', [&$mobbexGateway, 'init']);
 
 // Remove mbbx entity saved data on uninstall
 register_deactivation_hook(__FILE__, function() {
