@@ -149,9 +149,13 @@ class Order
         if (!isset($post->ID) && !isset($_REQUEST['id']))
             return;
 
-        $id = $post ? $post->ID : $_REQUEST['id'];
+        $id    = $post ? $post->ID : $_REQUEST['id'];
+        $order = wc_get_order($id);
 
-        $mbbx_order_helper = new \Mobbex\WP\Checkout\Helper\Order(wc_get_order($id));
+        if (!$order)
+            return;
+
+        $mbbx_order_helper = new \Mobbex\WP\Checkout\Helper\Order($order);
 
         // Get transaction data
         $parent  = $mbbx_order_helper->get_parent_transaction();
