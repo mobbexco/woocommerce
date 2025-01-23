@@ -246,7 +246,6 @@ class Helper
     {
         // Create necessary query array
         $query = [
-            'wc-api'       => $endpoint,
             'platform'     => "woocommerce",
             'version'      => MOBBEX_VERSION,
             'mobbex_token' => \Mobbex\Repository::generateToken(),
@@ -265,7 +264,8 @@ class Helper
                 get_rest_url(null, 'mobbex/v1/webhook') :
                 home_url('/')
             );
-        }
+        } else
+            $quey['wc-api'] = $endpoint;
         
         // Add woocommerce api to query
         return add_query_arg($query, home_url('/'));
