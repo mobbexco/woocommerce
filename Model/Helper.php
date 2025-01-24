@@ -254,18 +254,18 @@ class Helper
         if ($order_id)
             $query['mobbex_order_id'] = $order_id;
     
-        if ($endpoint === 'mobbex_webhook' || $endpoint == 'mobbex_subs_webhook') {
+        if ($endpoint === 'mobbex_webhook' || $endpoint === 'mobbex_subs_webhook') {
             if ($this->config->debug_mode != 'no')
                 $query['XDEBUG_SESSION_START'] = 'PHPSTORM';
 
             return add_query_arg(
                 $query,
                 $endpoint === 'mobbex_webhook' ?
-                get_rest_url(null, 'mobbex/v1/webhook') :
-                home_url('/')
+                    get_rest_url(null, 'mobbex/v1/webhook') :
+                    home_url('/')
             );
         } else
-            $quey['wc-api'] = $endpoint;
+            $query['wc-api'] = $endpoint;
         
         // Add woocommerce api to query
         return add_query_arg($query, home_url('/'));
