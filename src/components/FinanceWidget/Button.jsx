@@ -9,7 +9,7 @@ export function Button({ sources, logo, text, theme, disable }) {
 
   const container = document.getElementById("mbbxFinanceWidget");
   container.addEventListener("click", (e) => {
-    handleOpen();
+    if (e.target.id === "mbbxProductModal") handleOpen();
   });
 
   return (

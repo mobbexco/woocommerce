@@ -89,7 +89,7 @@ import { FinanceWidget } from "@mobbex/ecommerce-ui";
     do {
       await new Promise((resolve) => setTimeout(resolve, 100));
       counter++;
-    } while (!document.querySelector("#mbbxFinanceWidget") || counter > 50);
+    } while (!document.querySelector("#mbbxFinanceWidget") || counter < 50);
 
     //Create the root or return if container doesn't exists
     const container = document.querySelector("#mbbxFinanceWidget");
