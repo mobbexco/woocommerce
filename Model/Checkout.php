@@ -22,6 +22,8 @@ class Checkout
 
     public $endpoints = [];
 
+    public $payment_methods = false;
+
     /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
@@ -36,6 +38,7 @@ class Checkout
     {
         $this->config = new \Mobbex\WP\Checkout\Model\Config;
         $this->filter = $filter;
+        $this->payment_methods = $this->config->payment_methods == 'yes';
     }
 
     /**
@@ -54,6 +57,7 @@ class Checkout
             $this->installments,
             $this->customer,
             $this->addresses,
+            $this->payment_methods,
             $this->webhooksType,
             $this->filter
         );
