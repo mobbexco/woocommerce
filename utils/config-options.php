@@ -345,9 +345,9 @@ background-color: #6f00ff;
         'default' => 'no',
     ],
 
-    'unified_mode' => [
-        'title'   => __('Modo unificado', 'mobbex-for-woocommerce'),
-        'label'   => __('Deshabilita la subdivisión de los métodos de pago en la página de finalización de la compra. Las opciones se verán en el checkout.', 'mobbex-for-woocommerce'),
+    'payment_methods' => [
+        'title'   => __('Medios de pago en sitio', 'mobbex-for-woocommerce'),
+        'label'   => __('Habilita la subdivisión de los métodos de pago en la página de finalización de la compra. Las opciones se verán en el checkout.', 'mobbex-for-woocommerce'),
         'class'   => 'mbbx-into-advanced',
         'type'    => 'checkbox',
         'default' => 'no',
