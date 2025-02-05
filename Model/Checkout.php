@@ -50,6 +50,7 @@ class Checkout
             $this->total,
             $this->endpoints['return'],
             $this->endpoints['webhook'],
+            get_woocommerce_currency(),
             $this->items,
             $this->installments,
             $this->customer,
