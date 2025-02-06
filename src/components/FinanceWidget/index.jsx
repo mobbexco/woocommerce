@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Button } from "./Button";
 import { FinanceWidget } from "@mobbex/ecommerce-ui";
 
 (function (window, $) {
@@ -66,19 +65,11 @@ import { FinanceWidget } from "@mobbex/ecommerce-ui";
       );
     }, []);
 
-    return mobbexWidget.type === "embed" ? (
+    return (
       <FinanceWidget
         sources={sources}
         theme={mobbexWidget.theme}
         ready={ready}
-      />
-    ) : (
-      <Button
-        disable={!ready}
-        sources={sources}
-        text={mobbexWidget.text}
-        logo={mobbexWidget.logo}
-        theme={mobbexWidget.theme}
       />
     );
   }

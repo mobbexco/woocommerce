@@ -16,16 +16,6 @@
     }
 
     /**
-     * Disable an element
-     * 
-     * @param {Element} element 
-     * @param {Boolean} disable 
-     */
-    function disableElement(element, disable) {
-        element.disabled = disable;
-    }
-
-    /**
      * Init mobbex config tabs.
      * @param {Array.<string>} tabNames 
      */
@@ -72,25 +62,6 @@
         // If own dni option is active, hide custom dni option
         if (ownDni.checked) hideElements(customDni);
         ownDni.onchange = function () { hideElements(customDni); }
-
-        //Get widget fields
-        const widget_type = document.getElementById('woocommerce_mobbex_financial_widget_type');
-        const widget_button_text = document.getElementById('woocommerce_mobbex_financial_widget_button_text');
-        const widget_button_logo = document.getElementById('woocommerce_mobbex_financial_widget_button_logo');
-        const widget_button_styles = document.getElementById('woocommerce_mobbex_financial_widget_styles');
-        
-        //Disable fields if widget type is embed
-        let disable = (widget_type.value == 'embed');
-        disableElement(widget_button_text, disable);
-        disableElement(widget_button_logo, disable);
-        disableElement(widget_button_styles, disable);
-
-        widget_type.onchange = function () {
-            let disable = (widget_type.value == 'embed');
-            disableElement(widget_button_text, disable);
-            disableElement(widget_button_logo, disable);
-            disableElement(widget_button_styles, disable);
-        }
     }
 
     window.addEventListener('load', function () {
