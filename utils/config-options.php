@@ -264,6 +264,13 @@ background-color: #6f00ff;
         'class'       => 'mbbx-into-appearance',
     ],
 
+    'show_no_interest_labels' => [
+        'title'       => __('Mostrar etiqueta "sin intereses" en el checkout', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'yes',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
     /* Advanced options */
 
     'advanced_configuration_tab' => [
