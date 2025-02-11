@@ -398,6 +398,14 @@ background-color: #6f00ff;
         ],
     ],
 
+    'final_currency' => [
+        'title'             => __('Convertir Moneda', 'mobbex-for-woocommerce'),
+        'description'       => __('Permite elegir la moneda en la que se procesara el pago. (ARS, USD)', 'mobbex-for-woocommerce'),
+        'class'             => 'mbbx-into-advanced',
+        'type'              => 'text',
+        'default'           => '',
+    ],
+
     'process_webhook_retries' => [
         'title'   => __('Procesar reintentos de webhooks', 'mobbex-for-woocommerce'),
         'label'   => __('Permite procesar nuevamente un webhook si este se reenvía de forma automática (los reintentos manuales siempre se procesan).', 'mobbex-for-woocommerce'),
