@@ -31,24 +31,6 @@ class Init
         if (empty($dir_url) || substr($dir_url, -1) != '/')
             return $this->logger->log('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
 
-        // Finance Widget
-        if ((is_product() && $this->config->financial_info_active) ||
-            (is_cart() && $this->config->financial_widget_on_cart && $this->config->financial_info_active) ||
-            (has_shortcode($post->post_content, 'mobbex_button') && $this->config->financial_info_active)
-        ) {
-            wp_enqueue_style('mbbx-finance-widget-styles', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
-            wp_enqueue_script('mbbx-finance-widget', $dir_url . "assets/components/FinanceWidget.js", ['react', "react-dom"], MOBBEX_VERSION);
-            wp_localize_script('mbbx-finance-widget', 'mobbexWidget', [
-                'updateUrl'   => get_rest_url(null, 'mobbex/v1/widget/update'),
-                'sourcesUrl'  => get_rest_url(null, 'mobbex/v1/widget/sources'),
-                'show_button' => isset($params['show_button']) ? $params['show_button'] : true,
-                'theme'       => $this->config->theme,
-                'type'        => $this->config->financial_widget_type,
-                'styles'      => $this->config->financial_widget_styles,
-                'text'        => $this->config->financial_widget_button_text,
-                'logo'        => $this->config->financial_widget_button_logo
-            ]);
-        }
 
         // Checkout page
         if (is_checkout()) {

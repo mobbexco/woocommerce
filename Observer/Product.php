@@ -148,15 +148,19 @@ class Product
      */
     public function financial_widget_update()
     {
-        if (empty($_POST['price']) || empty($_POST['id']))
+        if (empty($_GET['price']) || empty($_GET['id']))
             exit;
+            
+        $price   = floatval($_GET['price']);
+        $id      = sanitize_text_field($_GET['id']);
+        $child   = isset($_GET['child']) ? filter_var($_GET['child'], FILTER_VALIDATE_BOOLEAN) : false;
+        
+        // Get parent product id based on "child" flag
+        $product_id = $child ? wc_get_product($id)->get_parent_id() : $id;
 
-        //Get parent product id to get plans
-        $product_id = isset($_POST['child']) && $_POST['child'] ? wc_get_product($_POST['id'])->get_parent_id() : $_POST['id'];
-
-        //Get sources
+        // Get sources
         extract($this->config->get_products_plans([$product_id]));
-        $sources = \Mobbex\Repository::getSources($_POST['price'], \Mobbex\Repository::getInstallments($product_ids, $common_plans, $advanced_plans));
+        $sources = \Mobbex\Repository::getSources($price, \Mobbex\Repository::getInstallments([$product_id], $common_plans, $advanced_plans));
 
         return json_encode($sources);
     }
@@ -189,7 +193,18 @@ class Product
 
         $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
-        $styles = $this->config->financial_widget_styles;
+        //Get product plans
+        extract($this->config->get_products_plans($products_ids));
+
+        //Enqueue scripts
+        wp_enqueue_script('mbbx-finance-widget', $dir_url . "assets/components/FinanceWidget.js", ['react', "react-dom"], MOBBEX_VERSION);
+        wp_localize_script('mbbx-finance-widget', 'mobbexWidget', [
+            'sources'     => \Mobbex\Repository::getSources($price, \Mobbex\Repository::getInstallments($products_ids, $common_plans, $advanced_plans)),
+            'updateUrl'   => get_rest_url(null, 'mobbex/v1/widget/update'),
+            'show_button' => isset($params['show_button']) ? $params['show_button'] : true,
+            'theme'       => $this->config->theme,
+        ]);
+
 
         include_once __DIR__ . '/../templates/finance-widget.php';
     }
@@ -243,17 +258,5 @@ class Product
         $sign_up_price = $this->config->get_product_subscription_signup_fee($product->get_id());
 
         return $sign_up_price ? $price_html .= __(" /month and a $$sign_up_price sign-up fee") : $price_html;
-    }
-
-    public function get_product_sources()
-    {
-        if (empty($_POST['price']) || empty($_POST['ids']))
-            exit;
-
-        //Get sources
-        extract($this->config->get_products_plans($_POST['ids']));
-        $sources = \Mobbex\Repository::getSources($_POST['price'], \Mobbex\Repository::getInstallments($product_ids, $common_plans, $advanced_plans));
-        
-        return json_encode($sources);
     }
 }

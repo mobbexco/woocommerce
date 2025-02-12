@@ -12,13 +12,8 @@ import { FinanceWidget } from "@mobbex/ecommerce-ui";
       setReady(false);
       $.ajax({
         dataType: "json",
-        method: "POST",
-        url: mobbexWidget.updateUrl,
-        data: {
-          id: id,
-          price: price,
-          child: child,
-        },
+        method: "GET",
+        url: `${mobbexWidget.updateUrl}&id=${id}&price=${price}&child=${child}`,
         success: (response) => {
           setReady(true);
           setSources(JSON.parse(response));
@@ -30,23 +25,8 @@ import { FinanceWidget } from "@mobbex/ecommerce-ui";
     };
 
     useEffect(() => {
-      // Get sources and payment method selector
-      $.ajax({
-        dataType: "json",
-        method: "POST",
-        url: mobbexWidget.sourcesUrl,
-        data: {
-          ids: mobbexWidget.product_ids,
-          price: mobbexWidget.price,
-        },
-        success: (response) => {
-          setSources(JSON.parse(response));
-          setReady(true);
-        },
-        error: (error) => {
-          console.log(error);
-        },
-      });
+      setSources(mobbexWidget.sources);
+      setReady(true);
 
       //Trigger widget update when selected variation change
       $(document).on("found_variation", "form.cart", function (e, variation) {
