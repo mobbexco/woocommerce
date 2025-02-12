@@ -1,4 +1,4 @@
-(function(window) {
+(function (window) {
     /**
      * Hide an element or a list of them.
      * @param {Element|NodeList} options 
@@ -56,7 +56,7 @@
      */
     function addDynamicToDniFields() {
         // Get dni fields
-        var ownDni    = document.getElementById('woocommerce_mobbex_own_dni');
+        var ownDni = document.getElementById('woocommerce_mobbex_own_dni');
         var customDni = document.getElementById('woocommerce_mobbex_custom_dni');
 
         // If own dni option is active, hide custom dni option
@@ -68,4 +68,4 @@
         initConfigTabs(['appearance', 'advanced', 'orders']);
         addDynamicToDniFields();
     });
-}) (window)
+})(window)

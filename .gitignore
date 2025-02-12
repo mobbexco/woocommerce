@@ -13,3 +13,4 @@ package-lock.json
 composer.lock
 node_modules
 /vendor/
+/assets/components/
