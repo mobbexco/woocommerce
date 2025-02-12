@@ -169,13 +169,15 @@ class Init
         if (is_cart() || is_order_received_page() || !is_checkout() || !$this->helper->isReady() || empty($options['mobbex']))
             return $options;
 
-        // Get checkout from context loaded object
-        $response = $this->helper->get_context_checkout();
+        if ($this->config->payment_methods == 'yes' || $this->config->wallet == 'yes'){
+            // Get checkout from context loaded object
+            $response = $this->helper->get_context_checkout();
 
-        // Add cards and payment methods to gateway
-        $options['mobbex']->cards   = isset($response['wallet']) ? $response['wallet'] : [];
-        $options['mobbex']->methods = isset($response['paymentMethods']) ? $response['paymentMethods'] : [];
-
+            // Add cards and payment methods to gateway
+            $options['mobbex']->cards   = isset($response['wallet']) ? $response['wallet'] : [];
+            $options['mobbex']->methods = isset($response['paymentMethods']) ? $response['paymentMethods'] : [];
+        }
+        
         return $options;
     }
 

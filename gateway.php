@@ -17,10 +17,10 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     public $logger;
 
     /* Available cards */
-    public $cards;
+    public $cards = [];
 
     /* Available methods*/
-    public $methods;
+    public $methods = [];
 
     public function __construct()
     {
