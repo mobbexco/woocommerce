@@ -64,8 +64,8 @@ class Registrar
             add_action($action['name'], $action['callback'], isset($action['priority']) ? $action['priority'] : 10, isset($action['params']) ? $action['params'] : 1);
 
         add_action('rest_api_init', function () {
-            register_rest_route('mobbex/v1', '/widget', [
-                'methods' => \WP_REST_Server::CREATABLE,
+            register_rest_route('mobbex/v1', '/widget/update', [
+                'methods' => 'GET',
                 'callback' => [$this->product, 'financial_widget_update'],
                 'permission_callback' => '__return_true',
             ]);
@@ -89,6 +89,7 @@ class Registrar
             ['name' => 'woocommerce_add_to_cart_validation', 'callback' => [$this->checkout, 'validate_cart_items'], 'params' => 2],
             //Order observer
             ['name' => 'wc_order_statuses', 'callback' => [$this->order, 'add_authorized_order_status']],
+            ['name' => 'woocommerce_payment_complete_order_status', 'callback' => [$this->order, 'set_approved_statuses'], 'params' => 2],
             //Checkout observer
             ['name' => 'woocommerce_billing_fields', 'callback' => [$this->checkout, 'add_checkout_fields']],
         ];

@@ -203,30 +203,6 @@ return [
         'default'     => '#6f00ff',
     ],
 
-    'financial_widget_on_cart' => [
-        'title'       => __('Widget de financiación en carrito', 'mobbex-for-woocommerce'),
-        'description' => __('Mostrar el botón de financiación en la página del carrito.', 'mobbex-for-woocommerce'),
-        'type'        => 'checkbox',
-        'default'     => 'no',
-        'class'       => 'mbbx-into-appearance',
-    ],
-
-    'financial_widget_button_text' => [
-        'title'       => __('Financial Widget Button text', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your financial widget button text from here.', 'mobbex-for-woocommerce'),
-        'type'        => 'text',
-        'default'     => 'Ver financiación',
-        'class'       => 'mbbx-into-appearance',
-    ],
-
-    'financial_widget_button_logo' => [
-        'title'       => __('Financial Widget Button logo', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your financial widget button logo from here.', 'mobbex-for-woocommerce'),
-        'type'        => 'text',
-        'default'     => 'https://res.mobbex.com/images/sources/mobbex.png',
-        'class'       => 'mbbx-into-appearance',
-    ],
-
     'checkout_banner' => [
         'title'       => __('Mobbex Banner in Checkout', 'mobbex-for-woocommerce'),
         'description' => __('You can set a banner to show in Mobbex checkout. (ex. https://res.mobbex.com/ecommerce/mobbex_1.png).', 'mobbex-for-woocommerce'),
@@ -235,40 +211,18 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'financial_widget_styles' => [
-        'title'       => __('Financial Widget Button Styles', 'mobbex-for-woocommerce'),
-        'description' => __('You can customize your financial widget button styles from here.', 'mobbex-for-woocommerce'),
-        'type'        => 'textarea',
-        'default'     => '
-/* Modifica los valores para cambiar el estilo deseado. */
-#mbbxProductBtn {
-width: fit-content;
-min-height: 40px;
-border-radius: 6px;
-padding: 8px 18px; /* up/down, left/right*/
-font-size: 16px;
-color: #6f00ff; 
-background-color: #ffffff;
-border: 1.5px solid #6f00ff; /* Grosor de linea, estilo de linea, color. */
-/*box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, .2);*/
-}
-
-/* Hover Options */
-#mbbxProductBtn:hover {
-color: #ffffff;
-background-color: #6f00ff;
-}
-
-/* Los colores pueden ser hexadecimales o rgb */
-/* Para que los estilos funcionen deben respetar la sintaxys de CSS.*/
-        ',
+    'financial_widget_on_cart' => [
+        'title'       => __('Widget de financiación en carrito', 'mobbex-for-woocommerce'),
+        'description' => __('Mostrar el botón de financiación en la página del carrito.', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'no',
         'class'       => 'mbbx-into-appearance',
     ],
-    'method_icon' => [
-        'title'     => __('Enable/Disable Methods Icons', 'mobbex-for-woocommerce'),
-        'type'      => 'checkbox',
-        'label'     => __('Show payment methods icons in checkout.', 'mobbex-for-woocommerce'),
-        'default'   => 'yes',
+
+    'show_no_interest_labels' => [
+        'title'       => __('Mostrar etiqueta "sin intereses" en el checkout', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'yes',
         'class'       => 'mbbx-into-appearance',
     ],
 
@@ -353,9 +307,9 @@ background-color: #6f00ff;
         'default' => 'no',
     ],
 
-    'unified_mode' => [
-        'title'   => __('Modo unificado', 'mobbex-for-woocommerce'),
-        'label'   => __('Deshabilita la subdivisión de los métodos de pago en la página de finalización de la compra. Las opciones se verán en el checkout.', 'mobbex-for-woocommerce'),
+    'payment_methods' => [
+        'title'   => __('Medios de pago en sitio', 'mobbex-for-woocommerce'),
+        'label'   => __('Habilita la subdivisión de los métodos de pago en la página de finalización de la compra. Las opciones se verán en el checkout.', 'mobbex-for-woocommerce'),
         'class'   => 'mbbx-into-advanced',
         'type'    => 'checkbox',
         'default' => 'no',
@@ -397,6 +351,14 @@ background-color: #6f00ff;
         'custom_attributes' => [
             'min'       => '1',
         ],
+    ],
+
+    'final_currency' => [
+        'title'             => __('Convertir Moneda', 'mobbex-for-woocommerce'),
+        'description'       => __('Permite elegir la moneda en la que se procesara el pago. (ARS, USD)', 'mobbex-for-woocommerce'),
+        'class'             => 'mbbx-into-advanced',
+        'type'              => 'text',
+        'default'           => '',
     ],
 
     'process_webhook_retries' => [

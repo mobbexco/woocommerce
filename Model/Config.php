@@ -45,7 +45,7 @@ class Config
     public $error_redirection;
     public $site_id;
     public $debug_mode;
-    public $unified_mode;
+    public $payment_methods;
     public $disable_discounts;
     public $disable_template;
     public $timeout;
@@ -56,6 +56,7 @@ class Config
     public $subscription_tab;
     public $integration;
     public $send_subscriber_email;
+    public $show_no_interest_labels;
 
     public function __construct()
     {

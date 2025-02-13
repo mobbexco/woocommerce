@@ -1,4 +1,4 @@
-<?php if ($gateway->config->unified_mode != 'yes' && !empty($gateway->methods)) : ?>
+<?php if ($gateway->config->payment_methods == 'yes' && !empty($gateway->methods)) : ?>
     <?php foreach ($gateway->methods as $method) : ?>
         <li class="wc_payment_method payment_method_mobbex_method_<?= "$method[subgroup]" ?>">
             <input 

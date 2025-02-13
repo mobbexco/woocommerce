@@ -31,16 +31,6 @@ class Init
         if (empty($dir_url) || substr($dir_url, -1) != '/')
             return $this->logger->log('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
 
-        // Product page
-        if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
-            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
-            wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
-
-            wp_localize_script('mbbx-product-button-js', 'mobbexWidget', [
-                'widgetUpdateUrl' => get_rest_url(null, 'mobbex/v1/widget')
-            ]);
-            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
-        }
 
         // Checkout page
         if (is_checkout()) {
@@ -100,7 +90,7 @@ class Init
     {
         global $post;
 
-        if(!isset($post->ID) && !isset($_REQUEST['id']))
+        if (!isset($post->ID) && !isset($_REQUEST['id']))
             return;
 
         $id = $post ? $post->ID : $_REQUEST['id'];
@@ -170,13 +160,15 @@ class Init
         if (is_cart() || is_order_received_page() || !is_checkout() || !$this->helper->isReady() || empty($options['mobbex']))
             return $options;
 
-        // Get checkout from context loaded object
-        $response = $this->helper->get_context_checkout();
+        if ($this->config->payment_methods == 'yes' || $this->config->wallet == 'yes'){
+            // Get checkout from context loaded object
+            $response = $this->helper->get_context_checkout();
 
-        // Add cards and payment methods to gateway
-        $options['mobbex']->cards   = isset($response['wallet']) ? $response['wallet'] : [];
-        $options['mobbex']->methods = isset($response['paymentMethods']) ? $response['paymentMethods'] : [];
-
+            // Add cards and payment methods to gateway
+            $options['mobbex']->cards   = isset($response['wallet']) ? $response['wallet'] : [];
+            $options['mobbex']->methods = isset($response['paymentMethods']) ? $response['paymentMethods'] : [];
+        }
+        
         return $options;
     }
 
@@ -257,13 +249,14 @@ class Init
     /**
      * Registers the route where the controller that invoke a callback function 
      */
-    public function register_route() {
+    public function register_route()
+    {
         register_rest_route('mobbex/v1', '/download_logs', [
             'methods' => \WP_REST_Server::CREATABLE,
             'callback' => [$this, 'init_mobbex_export_data'],
             'permission_callback' => '__return_true',
-            ]);
-        }
+        ]);
+    }
 
     /**
      * Calls mobbex export data method as a callback. Manages download data

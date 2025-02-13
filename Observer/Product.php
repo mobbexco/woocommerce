@@ -2,14 +2,14 @@
 
 namespace Mobbex\WP\Checkout\Observer;
 
-class Product 
+class Product
 {
     /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
     /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
-    
+
     public function __construct()
     {
         $this->config = new \Mobbex\WP\Checkout\Model\Config();
@@ -148,19 +148,21 @@ class Product
      */
     public function financial_widget_update()
     {
-        if (empty($_POST['price']) || empty($_POST['id']))
+        if (empty($_GET['price']) || empty($_GET['id']))
             exit;
+            
+        $price   = floatval($_GET['price']);
+        $id      = sanitize_text_field($_GET['id']);
+        $child   = isset($_GET['child']) ? filter_var($_GET['child'], FILTER_VALIDATE_BOOLEAN) : false;
+        
+        // Get parent product id based on "child" flag
+        $product_id = $child ? wc_get_product($id)->get_parent_id() : $id;
 
-        //Get parent product id to get plans
-        $product_id = isset($_POST['child']) && $_POST['child'] ? wc_get_product($_POST['id'])->get_parent_id() : $_POST['id'];
+        // Get sources
+        extract($this->config->get_products_plans([$product_id]));
+        $sources = \Mobbex\Repository::getSources($price, \Mobbex\Repository::getInstallments([$product_id], $common_plans, $advanced_plans));
 
-        ob_start() && do_shortcode('[mobbex_button ' . http_build_query([
-            'price'        => $_POST['price'],
-            'products_ids' => implode(',', [$product_id]),
-            'show_button'  => false,
-        ], '', ' ') . ']');
-
-        return ob_get_clean();
+        return json_encode($sources);
     }
 
     /**
@@ -180,7 +182,7 @@ class Product
             $price        = $params['price'];
             $products_ids = isset($params['products_ids']) ? explode(',', $params['products_ids']) : [];
         } else if (is_cart()) {
-            $price        = WC()->cart->get_total(null);
+            $price        = WC()->cart->get_total(null);   
             $products_ids = array_column(WC()->cart->get_cart() ?: [], 'product_id');
         } else if ($post && $post->post_type == 'product') {
             $price        = wc_get_product($post->ID)->get_price();
@@ -191,24 +193,18 @@ class Product
 
         $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
-        // Try to enqueue scripts
-        wp_enqueue_script('mbbx-product-button-js', $dir_url . "assets/js/finance-widget.js", null, MOBBEX_VERSION);
-        wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
-
         //Get product plans
         extract($this->config->get_products_plans($products_ids));
 
-        $data = [
-            'price'   => $price,
-            'sources' => \Mobbex\Repository::getSources($price, \Mobbex\Repository::getInstallments($products_ids, $common_plans, $advanced_plans)),
-            'style'   => [
-                'show_button'   => isset($params['show_button']) ? $params['show_button'] : true,
-                'theme'         => $this->config->theme,
-                'custom_styles' => $this->config->financial_widget_styles,
-                'text'          => $this->config->financial_widget_button_text,
-                'logo'          => $this->config->financial_widget_button_logo
-            ]
-        ];
+        //Enqueue scripts
+        wp_enqueue_script('mbbx-finance-widget', $dir_url . "assets/components/FinanceWidget.js", ['react', "react-dom"], MOBBEX_VERSION);
+        wp_localize_script('mbbx-finance-widget', 'mobbexWidget', [
+            'sources'     => \Mobbex\Repository::getSources($price, \Mobbex\Repository::getInstallments($products_ids, $common_plans, $advanced_plans)),
+            'updateUrl'   => get_rest_url(null, 'mobbex/v1/widget/update'),
+            'show_button' => isset($params['show_button']) ? $params['show_button'] : true,
+            'theme'       => $this->config->theme,
+        ]);
+
 
         include_once __DIR__ . '/../templates/finance-widget.php';
     }
