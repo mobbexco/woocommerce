@@ -69,6 +69,14 @@ return [
         'default'     => '',
     ],
 
+    'enable_subscription' => [
+        'title'       => __('Mobbex Subscriptions', 'mobbex-for-woocommerce'),
+        'label'       => __('Enable checking out with Mobbex Subscriptions.', 'mobbex-for-woocommerce'),
+        'description' => __('Enable/Disable Subscription Features.', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'no',
+    ],
+
     /* Orders options */
     'orders_tab' => [
         'title' => __('Orders Configuration', 'mobbex-for-woocommerce'),
@@ -359,6 +367,5 @@ return [
         'class'   => 'mbbx-into-advanced',
         'type'    => 'checkbox',
         'default' => 'no',
-    ],
-
+    ]
 ];
