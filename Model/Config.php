@@ -57,6 +57,7 @@ class Config
     public $integration;
     public $send_subscriber_email;
     public $show_no_interest_labels;
+    public $final_currency;
 
     public function __construct()
     {
