@@ -1,6 +1,6 @@
 {
     "require": {
-        "mobbexco/php-plugins-sdk": "1.10.0",
+        "mobbexco/php-plugins-sdk": "1.13.0",
         "yahnis-elsts/plugin-update-checker": "v4.10"
     },
     "require-dev": {
