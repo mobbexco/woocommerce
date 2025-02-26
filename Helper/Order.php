@@ -368,14 +368,16 @@ class Order
      */
     public function maybe_add_signup_fee($checkout)
     { 
-        $signup_fee_totals = 0;
-        
         foreach ($checkout->items as $item)
-            if($item['type'] == 'subscription'){
-                $subscription       = \Mobbex\Repository::getProductSubscription($item['reference'], true);
-                $signup_fee_totals += $subscription['setupFee'];
-            }
+            if($item['type'] == 'subscription') {
+                try {
+                    $subscription = \Mobbex\Repository::getProductSubscription($item['reference'], true);
 
-        $checkout->total = $checkout->total - $signup_fee_totals;
+                    if (isset($subscription['setupFee']) && $subscription['setupFee'] > 0)
+                        $checkout->total -= $subscription['setupFee'];
+                } catch (\Exception $e) {
+                    $this->logger->log('error', 'class-order-helper > maybe_add_signup_fee | Error getting subscription fee', $e->getMessage());
+                }
+            }
     }
 }
