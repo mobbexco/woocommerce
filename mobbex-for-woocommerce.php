@@ -56,13 +56,6 @@ class MobbexGateway
             return;
         }
 
-        //Declare HPOS compatibility
-        add_action('before_woocommerce_init', function () {
-            if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
-                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
-            }
-        });
-
         self::$config    = new \Mobbex\WP\Checkout\Model\Config();
         self::$helper    = new \Mobbex\WP\Checkout\Model\Helper();
         self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
@@ -293,6 +286,12 @@ class MobbexGateway
         });
     }
 
+    public static function declare_hpos_compatibility()
+    {
+        if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class))
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+
     public static function add_assets($type, $name, $route)
     {
         $method = "wp_enqueue_$type";
@@ -326,6 +325,8 @@ class MobbexGateway
 }
 
 $mobbexGateway = new MobbexGateway;
+
+add_action('before_woocommerce_init', [&$mobbexGateway, 'declare_hpos_compatibility']);
 add_action('init', [&$mobbexGateway, 'init']);
 
 // Remove mbbx entity saved data on uninstall
