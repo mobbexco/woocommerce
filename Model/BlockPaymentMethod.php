@@ -9,13 +9,6 @@ namespace Mobbex\WP\Checkout\Model;
  */
 final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType
 {
-
-    /**
-     * Mobbex gateway instance.
-     * @var \WC_Gateway_Mobbex
-     */
-    private $gateway;
-
     /**
      * Payment method name.
      * @var string
@@ -33,10 +26,7 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function initialize()
     {
-        $this->config   = new Config();
-        $this->settings = $this->config->settings;
-        $gateways       = \WC()->payment_gateways->payment_gateways();
-        $this->gateway  = $gateways['mobbex'];
+        $this->config = new Config();
     }
 
     /**
@@ -46,7 +36,7 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function is_active()
     {
-        return $this->gateway->is_available();
+        return $this->config->enabled;
     }
 
     /**
@@ -81,10 +71,12 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function get_payment_method_data()
     {
+        $gateway = new WC_Gateway_Mobbex();
+
         return [
             'title'                => $this->config->title,
             'description'          => $this->config->description,
-            'supports'             => array_filter($this->gateway->supports, [$this->gateway, 'supports']),
+            'supports'             => array_filter($gateway->supports, [$gateway, 'supports']),
             'checkout_banner'      => $this->config->checkout_banner,
             'payment_method_image' => $this->config->payment_method_image,
         ];

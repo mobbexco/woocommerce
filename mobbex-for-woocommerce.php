@@ -89,9 +89,6 @@ class MobbexGateway
         MobbexGateway::load_gateway();
         MobbexGateway::add_gateway();
 
-        // Load suppport to Checkout Blocks
-        MobbexGateway::load_woocommerce_blocks_support();
-
         // Init controllers
         new \Mobbex\WP\Checkout\Controller\Payment;
         new \Mobbex\WP\Checkout\Controller\LogTable;
@@ -279,18 +276,9 @@ class MobbexGateway
     /**
      * Registers WooCommerce Blocks integration.
      */
-    public static function load_woocommerce_blocks_support()
+    public static function load_woocommerce_blocks_support($payment_method_registry)
     {
-        add_action('woocommerce_blocks_loaded', function(){
-            if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
-                add_action(
-                    'woocommerce_blocks_payment_method_type_registration',
-                    function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
-                        $payment_method_registry->register(new \Mobbex\WP\Checkout\Model\BlockPaymentMethod());
-                    }
-                );
-            }
-        });
+        $payment_method_registry->register(new \Mobbex\WP\Checkout\Model\BlockPaymentMethod);
     }
 
     public static function add_assets($type, $name, $route)
@@ -327,6 +315,7 @@ class MobbexGateway
 
 $mobbexGateway = new MobbexGateway;
 add_action('init', [&$mobbexGateway, 'init']);
+add_action('woocommerce_blocks_payment_method_type_registration', [&$mobbexGateway, 'load_woocommerce_blocks_support']);
 
 // Remove mbbx entity saved data on uninstall
 register_deactivation_hook(__FILE__, function() {
