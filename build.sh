@@ -1,6 +1,15 @@
 #!/bin/sh
 
-VER="3.19.1"
+VER="3.20.0"
+
+# Remove installed packages
+rm -rf vendor composer.lock
+
+# Now, exit on errors
+set -e
+
+# Install dependencies
+composer install --no-dev
 
 # Copy files to temp dir
 if type robocopy > /dev/null; then
@@ -17,4 +26,4 @@ elif type zip > /dev/null; then
 fi
 
 # Remove temp dir
-rm -r ./woocommerce-mobbex
+rm -r ./woocommerce-mobbex vendor composer.lock

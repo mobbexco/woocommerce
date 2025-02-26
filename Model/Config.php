@@ -53,6 +53,7 @@ class Config
     public $process_webhook_retries;
     public $method_icon;
     public $show_no_interest_labels;
+    public $final_currency;
 
     public function __construct()
     {

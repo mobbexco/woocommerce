@@ -400,7 +400,7 @@ background-color: #6f00ff;
 
     'final_currency' => [
         'title'             => __('Convertir Moneda', 'mobbex-for-woocommerce'),
-        'description'       => __('Permite elegir la moneda en la que se procesara el pago. (ARS, USD)', 'mobbex-for-woocommerce'),
+        'description'       => __('Permite convertir la moneda en la que se procesa el pago. (ARS, USD)', 'mobbex-for-woocommerce'),
         'class'             => 'mbbx-into-advanced',
         'type'              => 'text',
         'default'           => '',
