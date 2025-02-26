@@ -31,6 +31,16 @@ class Init
         if (empty($dir_url) || substr($dir_url, -1) != '/')
             return $this->logger->log('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
 
+        // Product page
+        if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
+            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
+            wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
+
+            wp_localize_script('mbbx-product-button-js', 'mobbexWidget', [
+                'widgetUpdateUrl' => get_rest_url(null, 'mobbex/v1/widget')
+            ]);
+            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
+        }
 
         // Checkout page
         if (is_checkout()) {
@@ -89,7 +99,7 @@ class Init
     {
         global $post;
 
-        if (!isset($post->ID) && !isset($_REQUEST['id']))
+        if(!isset($post->ID) && !isset($_REQUEST['id']))
             return;
 
         $id = $post ? $post->ID : $_REQUEST['id'];
@@ -248,14 +258,13 @@ class Init
     /**
      * Registers the route where the controller that invoke a callback function 
      */
-    public function register_route()
-    {
+    public function register_route() {
         register_rest_route('mobbex/v1', '/download_logs', [
             'methods' => \WP_REST_Server::CREATABLE,
             'callback' => [$this, 'init_mobbex_export_data'],
             'permission_callback' => '__return_true',
-        ]);
-    }
+            ]);
+        }
 
     /**
      * Calls mobbex export data method as a callback. Manages download data

@@ -2,14 +2,11 @@
 
 VER="3.19.1"
 
-#Compile scripts
-npm run build
-
 # Copy files to temp dir
 if type robocopy > /dev/null; then
-    robocopy . woocommerce-mobbex -MIR -XD .git .vscode woocommerce-mobbex node_modules -XF .gitignore build.sh readme.md *.zip
+    robocopy . woocommerce-mobbex -MIR -XD .git .vscode woocommerce-mobbex -XF .gitignore build.sh readme.md *.zip
 elif type rsync > /dev/null; then
-    rsync -r --exclude={'.git','.vscode','woocommerce-mobbex','node_modules','.gitignore','build.sh','readme.md','*.zip'} . ./woocommerce-mobbex
+    rsync -r --exclude={'.git','.vscode','woocommerce-mobbex','.gitignore','build.sh','readme.md','*.zip'} . ./woocommerce-mobbex
 fi
 
 # Compress
