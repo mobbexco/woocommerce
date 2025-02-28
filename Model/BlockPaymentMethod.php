@@ -71,7 +71,7 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function get_payment_method_data()
     {
-        $gateway = new WC_Gateway_Mobbex();
+        $gateway = new \WC_Gateway_Mobbex();
 
         return [
             'title'                => $this->config->title,
