@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      3.20.1
+Version:      3.20.2
 WC tested up to: 4.6.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -314,9 +314,9 @@ class MobbexGateway
 
 $mobbexGateway = new MobbexGateway;
 
-add_action('before_woocommerce_init', [&$mobbexGateway, 'declare_hpos_compatibility']);
-add_action('init', [&$mobbexGateway, 'init']);
-add_action('woocommerce_blocks_payment_method_type_registration', [&$mobbexGateway, 'load_woocommerce_blocks_support']);
+add_action('init', [$mobbexGateway, 'init']);
+add_action('before_woocommerce_init', [$mobbexGateway, 'declare_hpos_compatibility']);
+add_action('woocommerce_blocks_payment_method_type_registration', [$mobbexGateway, 'load_woocommerce_blocks_support']);
 
 // Remove mbbx entity saved data on uninstall
 register_deactivation_hook(__FILE__, function() {
