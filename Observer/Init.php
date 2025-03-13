@@ -48,7 +48,8 @@ class Init
             !defined('DONOTCACHEPAGE') && define('DONOTCACHEPAGE', true);
             !defined('DONOTMINIFY') && define('DONOTMINIFY', true);
 
-            wp_enqueue_script('mobbex-embed', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_VERSION);
+            // wp_enqueue_script('mobbex-embed', 'https://res.mobbex.com/js/embed/mobbex.embed@' . MOBBEX_EMBED_VERSION . '.js', null, MOBBEX_VERSION);
+            wp_enqueue_script('mobbex-embed', 'https://api.mobbex.com/p/embed/' . MOBBEX_EMBED_VERSION . '/lib.js', null, MOBBEX_VERSION);
             wp_enqueue_script('mobbex-sdk', 'https://res.mobbex.com/js/sdk/mobbex@' . MOBBEX_SDK_VERSION . '.js', null, MOBBEX_VERSION);
 
             // Enqueue payment asset files
