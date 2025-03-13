@@ -246,7 +246,6 @@ class Helper
     {
         // Create necessary query array
         $query = [
-            'wc-api'       => $endpoint,
             'platform'     => "woocommerce",
             'version'      => MOBBEX_VERSION,
             'mobbex_token' => \Mobbex\Repository::generateToken(),
@@ -260,14 +259,13 @@ class Helper
                 $query['XDEBUG_SESSION_START'] = 'PHPSTORM';
 
             return add_query_arg(
-                $query,
-                $endpoint === 'mobbex_webhook' ?
-                    get_rest_url(null, 'mobbex/v1/webhook') :
-                    home_url('/')
-            );
+                $query, get_rest_url(null,
+                    $endpoint === 'mobbex_webhook' ? 'mobbex/v1/webhook' : 'mobbex_subscriptions/v1/webhook')
+                );
         }
         
         // Add woocommerce api to query
+        $query['wc-api'] = $endpoint;
         return add_query_arg($query, home_url('/'));
     }
 
