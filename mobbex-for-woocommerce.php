@@ -77,10 +77,6 @@ class MobbexGateway
         }
 
         self::check_warnings();
-        
-        // Add Mobbex gateway
-        MobbexGateway::load_gateway();
-        MobbexGateway::add_gateway();
 
         // Init controllers
         new \Mobbex\WP\Checkout\Controller\Payment;
@@ -251,19 +247,19 @@ class MobbexGateway
         $myUpdateChecker->getVcsApi()->enableReleaseAssets();
     }
 
-    public static function load_gateway()
+    public static function woocommerce_init()
     {
+        // First add gateway
         require_once plugin_dir_path(__FILE__) . 'gateway.php';
-    }
-
-    public static function add_gateway()
-    {
 
         add_filter('woocommerce_payment_gateways', function ($methods) {
-
             $methods[] = MOBBEX_WC_GATEWAY;
             return $methods;
         });
+
+        // Declare compatibility with custom order tables
+        if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class))
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
     }
 
     /**
@@ -272,12 +268,6 @@ class MobbexGateway
     public static function load_woocommerce_blocks_support($payment_method_registry)
     {
         $payment_method_registry->register(new \Mobbex\WP\Checkout\Model\BlockPaymentMethod);
-    }
-
-    public static function declare_hpos_compatibility()
-    {
-        if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class))
-            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
     }
 
     public static function add_assets($type, $name, $route)
@@ -315,7 +305,7 @@ class MobbexGateway
 $mobbexGateway = new MobbexGateway;
 
 add_action('init', [$mobbexGateway, 'init']);
-add_action('before_woocommerce_init', [$mobbexGateway, 'declare_hpos_compatibility']);
+add_action('before_woocommerce_init', [$mobbexGateway, 'woocommerce_init']);
 add_action('woocommerce_blocks_payment_method_type_registration', [$mobbexGateway, 'load_woocommerce_blocks_support']);
 
 // Remove mbbx entity saved data on uninstall

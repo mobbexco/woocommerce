@@ -112,7 +112,6 @@ class Registrar
             ['name' => 'admin_enqueue_scripts', 'callback' => [$this->init, 'load_admin_scripts'], 'params' => 2],
             ['name' => 'admin_enqueue_scripts', 'callback' => [$this->init, 'load_order_scripts']],
             ['name' => 'activate_' . plugin_basename('mobbex-for-woocommerce.php'), 'callback' => [$this->init, 'create_mobbex_tables']],
-            ['name' => 'admin_bar_menu', 'callback' => [$this->init, 'add_mobbex_admin_bar_network_menu_item'], 'priority' => 40],
             ['name' => 'woocommerce_admin_status_content_mobbex_slug', 'callback' => [$this->init, 'display_mobbex_log_content'], 'priority' => 40],
             ['name' => 'rest_api_init', 'callback' => [$this->init, 'register_route'], 'priority' => 40],
             ['name' => 'register_route', 'callback' => [$this->init, 'init_mobbex_export_data'], 'priority' => 40],
