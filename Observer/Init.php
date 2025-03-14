@@ -216,30 +216,6 @@ class Init
     }
 
     /**
-     * Adds a Mobbex log table tab to the network admin
-     *
-     */
-    public function add_mobbex_admin_bar_network_menu_item()
-    {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
-        global $wp_admin_bar;
-        $menu_id = 'mobbexlogger';
-
-        $wp_admin_bar->add_menu(array(
-            'id'    => $menu_id,
-            'parent' => false,
-            'group'  => null,
-            'title' => 'Mobbex Log Table',
-            'href'  => admin_url('admin.php?page=wc-status&tab=mobbex_slug'),
-            'meta' => [
-                'title' => __('mobbexlogger', 'textdomain'),
-            ]
-        ));
-    }
-
-    /**
      * Add Mobbex slug to woocommerce status panel
      * 
      * @return mixed $tabs mobbex tab
