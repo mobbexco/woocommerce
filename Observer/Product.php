@@ -192,7 +192,7 @@ class Product
         $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
         // Try to enqueue scripts
-        wp_enqueue_script('mbbx-product-button-js', $dir_url . "assets/js/finance-widget.js", null, MOBBEX_VERSION);
+        wp_enqueue_script('mbbx-finance-widget', $dir_url . "assets/js/finance-widget.min.js", null, MOBBEX_VERSION, ['in_footer' => true]);
         wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
         //Get product plans
