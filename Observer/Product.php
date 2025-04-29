@@ -2,14 +2,14 @@
 
 namespace Mobbex\WP\Checkout\Observer;
 
-class Product 
+class Product
 {
     /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
     /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
-    
+
     public function __construct()
     {
         $this->config = new \Mobbex\WP\Checkout\Model\Config();
@@ -95,8 +95,7 @@ class Product
 
         // Get plans selected
         foreach ($_POST as $key => $value) {
-            if (strpos($key, 'common_plan_') !== false && $value === 'no'
-            ) {
+            if (strpos($key, 'common_plan_') !== false && $value === 'no') {
                 // Add UID to common plans
                 $options['common_plans'][] = explode('common_plan_', $key)[1];
             } else if (strpos($key, 'advanced_plan_') !== false && $value === 'yes') {
@@ -192,10 +191,10 @@ class Product
         $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
         // Try to enqueue scripts
-        wp_enqueue_script('mbbx-finance-widget', $dir_url . "assets/js/finance-widget.min.js", null, MOBBEX_VERSION, ['in_footer' => true]);
+        wp_enqueue_script('mbbx-finance-widget', $dir_url . "assets/js/finance-widget.min.js", ['react', 'react-dom'], MOBBEX_VERSION, ['in_footer' => true]);
         wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
-        //Get product plans
+        // Get product plans
         extract($this->config->get_products_plans($products_ids));
 
         $data = [
@@ -204,9 +203,6 @@ class Product
             'style'   => [
                 'show_button'   => isset($params['show_button']) ? $params['show_button'] : true,
                 'theme'         => $this->config->theme,
-                'custom_styles' => $this->config->financial_widget_styles,
-                'text'          => $this->config->financial_widget_button_text,
-                'logo'          => $this->config->financial_widget_button_logo
             ]
         ];
 
@@ -235,11 +231,11 @@ class Product
         if ($cart->is_empty())
             return;
 
-        foreach ( $cart->get_cart() as $item ){
+        foreach ($cart->get_cart() as $item){
             $subscription = \Mobbex\Repository::getProductSubscription(
-                $this->config->get_product_subscription_uid($item['product_id']), 
+                $this->config->get_product_subscription_uid($item['product_id']),
                 true
-                );
+            );
             isset($subscription['setupFee']) ? $cart->add_fee(__("{$subscription['name']} Sign-up Fee", 'woocommerce'), $subscription['setupFee'], false) : '';
         }
     }
@@ -255,7 +251,7 @@ class Product
     public function display_sign_up_fee_on_price($price_html, $product)
     {
         // Sometimes the hook gets an array type product and avoid non subscription products
-        if (!is_object($product) || !$this->is_subscription($product->get_id()) )
+        if (!is_object($product) || !$this->is_subscription($product->get_id()))
             return $price_html;
 
         // Set sign up price
