@@ -15,8 +15,8 @@ class Product
         $this->config = new \Mobbex\WP\Checkout\Model\Config();
         $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
 
-        // Create financial widget shortcode
-        add_shortcode('mobbex_button', [$this, 'shortcode_mobbex_button']);
+        // Create finance widget shortcode
+        add_shortcode('mobbex_finance_widget', [$this, 'shortcode_mobbex_finance_widget']);
     }
 
     /** ADMIN SECTION **/
@@ -135,17 +135,17 @@ class Product
     /**
      * Display finance widget open button in product page.
      */
-    public function display_finnacial_button()
+    public function display_finance_widget()
     {
-        do_shortcode('[mobbex_button]');
+        do_shortcode('[mobbex_finance_widget]');
     }
 
     /**
-     * Creates a updated financial widget with selected variant price & returns it in a string
+     * Creates a updated finance widget with selected variant price & returns it in a string
      * 
      * @return string $widget
      */
-    public function financial_widget_update()
+    public function finance_widget_update()
     {
         if (empty($_POST['price']) || empty($_POST['id']))
             exit;
@@ -153,7 +153,7 @@ class Product
         //Get parent product id to get plans
         $product_id = isset($_POST['child']) && $_POST['child'] ? wc_get_product($_POST['id'])->get_parent_id() : $_POST['id'];
 
-        ob_start() && do_shortcode('[mobbex_button ' . http_build_query([
+        ob_start() && do_shortcode('[mobbex_finance_widget ' . http_build_query([
             'price'        => $_POST['price'],
             'products_ids' => implode(',', [$product_id]),
             'show_button'  => false,
@@ -163,14 +163,13 @@ class Product
     }
 
     /**
-     * Add new button to show a modal with financial information
+     * Show a modal with financial information
      * only if the checkbox of financial information is checked
-     * Shortcode function, return button html
-     * and a hidden table with plans
-     * in woocommerce echo do_shortcode('[mobbex_button]'); in content-single-product.php
-     * or [mobbex_button] in wordpress pages
+     * Shortcode function, return finance widget component (finance-widget.min.js)
+     * in woocommerce echo do_shortcode('[mobbex_finance_widget]'); in content-single-product.php
+     * or [mobbex_finance_widget] in wordpress pages
      */
-    public function shortcode_mobbex_button($params)
+    public function shortcode_mobbex_finance_widget($params)
     {
         global $post;
 

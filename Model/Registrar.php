@@ -65,9 +65,9 @@ class Registrar
 
         add_action('rest_api_init', function () {
             register_rest_route('mobbex/v1', '/widget', [
-                'methods' => \WP_REST_Server::CREATABLE,
-                'callback' => [$this->product, 'financial_widget_update'],
                 'permission_callback' => '__return_true',
+                'methods'             => \WP_REST_Server::CREATABLE,
+                'callback'            => [$this->product, 'finance_widget_update'],
             ]);
         });
     }
@@ -137,10 +137,10 @@ class Registrar
 
         //Mobbex finance widget actions
         if ($this->config->financial_info_active === 'yes')
-            $actions[] = ['name' => 'woocommerce_after_add_to_cart_form', 'callback' => [$this->product, 'display_finnacial_button']];
+            $actions[] = ['name' => 'woocommerce_after_add_to_cart_form', 'callback' => [$this->product, 'display_finance_widget']];
 
         if ($this->config->financial_widget_on_cart === 'yes')
-            $actions[] = ['name' => 'woocommerce_after_cart_totals', 'callback' => [$this->product, 'display_finnacial_button'], 'priority' => 1];
+            $actions[] = ['name' => 'woocommerce_after_cart_totals', 'callback' => [$this->product, 'display_finance_widget'], 'priority' => 1];
 
         //Checkout observer
         if ($this->helper->isReady()){
