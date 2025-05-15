@@ -32,14 +32,13 @@ class Init
             return $this->logger->log('Mobbex Enqueue Error: Invalid directory URL', $dir_url, is_checkout() || is_product());
 
         // Product page
-        if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_button'))) {
-            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
+        if (is_product() || (isset($post->post_content) && has_shortcode($post->post_content, 'mobbex_finance_widget'))) {
+            wp_enqueue_script('mbbx-finance-widget', $dir_url . 'assets/js/finance-widget.min.js', null, MOBBEX_VERSION, ['in_footer' => true]);
             wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
-            wp_localize_script('mbbx-product-button-js', 'mobbexWidget', [
+            wp_localize_script('mbbx-finance-widget', 'mobbexWidget', [
                 'widgetUpdateUrl' => get_rest_url(null, 'mobbex/v1/widget')
             ]);
-            wp_enqueue_script('mbbx-product-button-js', $dir_url . 'assets/js/finance-widget.js', null, MOBBEX_VERSION);
         }
 
         // Checkout page

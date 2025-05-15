@@ -32,10 +32,7 @@ class Config
     public $background;
     public $color;
     public $financial_widget_on_cart;
-    public $financial_widget_button_text;
-    public $financial_widget_button_logo;
     public $checkout_banner;
-    public $financial_widget_styles;
     public $advanced_configuration_tab;
     public $multicard;
     public $multivendor;
