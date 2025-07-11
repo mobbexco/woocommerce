@@ -216,7 +216,8 @@ class Order
             $this->order->get_billing_email() ?: $user->user_email,
             get_post_meta($this->id, '_billing_dni', true) ?: get_user_meta($user->ID, 'billing_dni', true),
             $this->order->get_billing_phone() ?: get_user_meta($user->ID, 'phone_number', true),
-            $user->ID
+            $user->ID,
+            $user->user_registered
         );
 
         $checkout->set_addresses($this->order);
