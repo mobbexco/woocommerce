@@ -105,9 +105,11 @@ class Checkout
      * @param string|null $phone
      * @param string|int|null $uid
      */
-    public function set_customer($name, $email, $identification = '12123123', $phone = null, $uid = null)
+    public function set_customer($name, $email, $identification = '12123123', $phone = null, $uid = null, $created_at = null)
     {
-        $this->customer = compact('name', 'email', 'identification', 'phone', 'uid');
+        $createdAt = \Mobbex\dateToTime($created_at);
+
+        $this->customer = compact('name', 'email', 'identification', 'phone', 'uid', 'createdAt');
     }
 
     /**
