@@ -81,6 +81,7 @@ class MobbexGateway
         // Init controllers
         new \Mobbex\WP\Checkout\Controller\Payment;
         new \Mobbex\WP\Checkout\Controller\LogTable;
+        new \Mobbex\WP\Checkout\Controller\Sources;
 
         //Register hooks
         self::$registrar->register_hooks();
