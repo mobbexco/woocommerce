@@ -189,21 +189,35 @@ class Product
 
         $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
-        // Try to enqueue scripts
-        wp_enqueue_script('mbbx-finance-widget', $dir_url . "assets/js/finance-widget.min.js", ['react', 'react-dom'], MOBBEX_VERSION, ['in_footer' => true]);
-        wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
-
-        // Get product plans
-        extract($this->config->get_products_plans($products_ids));
-
-        $data = [
-            'price'   => $price,
-            'sources' => \Mobbex\Repository::getSources($price, \Mobbex\Repository::getInstallments($products_ids, $common_plans, $advanced_plans)),
-            'style'   => [
-                'show_button'   => isset($params['show_button']) ? $params['show_button'] : true,
-                'theme'         => $this->config->theme,
-            ]
+        $query = [
+            'mbbx_products_price' => $price,
+            'mbbx_products_ids'   => implode(',', $products_ids),
         ];
+        
+        $data = [
+            'theme'       => $this->config->theme,
+            'sources_url' => add_query_arg(
+                $query,
+                get_rest_url(null, 'mobbex/v1/sources')
+            ),
+            'show_featured_installments' => filter_var(
+                $this->config->show_featured_installments, 
+                FILTER_VALIDATE_BOOLEAN
+            ),
+        ];
+
+        // Try to enqueue styles and scripts
+        wp_enqueue_style(
+            'mobbex_product_style',
+            $dir_url . 'assets/css/product.css',
+            null, MOBBEX_VERSION
+        );
+        wp_enqueue_script(
+            'mbbx-finance-widget', $dir_url . "assets/js/finance-widget.min.js",
+            ['react', 'react-dom'],
+            MOBBEX_VERSION,
+            ['in_footer' => true]
+        );
 
         include_once __DIR__ . '/../templates/finance-widget.php';
     }
