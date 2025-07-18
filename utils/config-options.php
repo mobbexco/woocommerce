@@ -203,6 +203,14 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
+    'show_featured_installments' => [
+        'title'       => __('Mostrar cuotas destacadas', 'mobbex-for-woocommerce'),
+        'description' => __('Permite mostrar u ocultar cuotas destacadas en el widget de financiación.', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'yes',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
     'checkout_banner' => [
         'title'       => __('Mobbex Banner in Checkout', 'mobbex-for-woocommerce'),
         'description' => __('You can set a banner to show in Mobbex checkout. (ex. https://res.mobbex.com/ecommerce/mobbex_1.png).', 'mobbex-for-woocommerce'),
