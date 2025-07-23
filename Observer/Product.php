@@ -195,15 +195,12 @@ class Product
         ];
 
         $data = [
-            'theme'       => $this->config->theme,
+            'show_featured_installments' => $this->config->show_featured_installments == 'yes',
+            'theme' => $this->config->theme,
             'sources_url' => add_query_arg(
                 $query,
                 get_rest_url(null, 'mobbex/v1/sources')
-            ),
-            'show_featured_installments' => filter_var(
-                $this->config->show_featured_installments, 
-                FILTER_VALIDATE_BOOLEAN
-            ),
+            )
         ];
 
         // Try to enqueue styles and scripts

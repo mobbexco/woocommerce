@@ -2,11 +2,6 @@
 
 namespace Mobbex\WP\Checkout\Controller;
 
-// if (!defined('ABSPATH')) exit;
-
-/**
- * Sources Class controller.
- */
 class Sources
 {
     /** @var \Mobbex\WP\Checkout\Model\Config */
@@ -14,9 +9,6 @@ class Sources
     
     /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
-
-    /** @var \Mobbex\WP\Checkout\Model\Helper */
-    public $helper;
 
     public function __construct()
     {
@@ -68,7 +60,6 @@ class Sources
                 'success' => true,
                 'sources' => $sources,
             ]);
-
         } catch (\Exception $e) {
             $this->logger->log('error', 'Sources > getSources', $e->getMessage());
             return rest_ensure_response([
