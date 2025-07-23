@@ -193,7 +193,7 @@ class Product
             'mbbx_products_price' => $price,
             'mbbx_products_ids'   => implode(',', $products_ids),
         ];
-        
+
         $data = [
             'theme'       => $this->config->theme,
             'sources_url' => add_query_arg(
@@ -214,7 +214,7 @@ class Product
         );
         wp_enqueue_script(
             'mbbx-finance-widget', $dir_url . "assets/js/finance-widget.min.js",
-            ['react', 'react-dom'],
+            null,
             MOBBEX_VERSION,
             ['in_footer' => true]
         );

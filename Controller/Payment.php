@@ -96,44 +96,49 @@ final class Payment
     public function mobbex_webhook($request)
     {
         try {
-            $requestData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? apply_filters('mobbex_order_webhook',  json_decode(file_get_contents('php://input'), true)) : apply_filters('mobbex_order_webhook', $request->get_params());
-            $postData    = !empty($requestData['data']) ? $requestData['data'] : [];
-            $id          = $request->get_param('mobbex_order_id');
-            $token       = $request->get_param('mobbex_token');
+            $token    = $request->get_param('mobbex_token');
+            $orderId  = $request->get_param('mobbex_order_id');
+            $postData = apply_filters('mobbex_order_webhook', json_decode(file_get_contents('php://input') ?: '', true));
 
-            $this->logger->log('debug', 'payment > mobbex_webhook | Mobbex Webhook: Formating transaction', compact('id', 'token', 'postData'));
+            if (!$token || !\Mobbex\Repository::validateToken($token))
+                throw new \Exception('Invalid token provided.');
 
-            //order webhook filter
-            $webhookData = \Mobbex\WP\Checkout\Model\Helper::format_webhook_data($id, $postData);
-            
-            // Save transaction
-            global $wpdb;
-            $wpdb->insert($wpdb->prefix.'mobbex_transaction', $webhookData, \Mobbex\WP\Checkout\Model\Helper::db_column_format($webhookData));
+            if (empty($postData['data']) || empty($postData['type']))
+                throw new \Exception('Empty data or type provided.');
 
-            // Add db saved id to webhook data array
-            $webhookData['id'] = $wpdb->insert_id;
+            $this->logger->log('debug', "Processing webhook for order $orderId", $postData);
 
-            // Try to process webhook
-            $result = $this->process_webhook($id, $token, $webhookData);
-            
-            return [
-                'result'   => $result,
-                'platform' => [
-                    'name'      => 'woocommerce',
-                    'version'   => MOBBEX_VERSION,
-                    'ecommerce' => [
-                        'wordpress'   => get_bloginfo('version'),
-                        'woocommerce' => WC_VERSION
-                    ]
-                ],
-            ];
+            switch ($postData['type']) {
+                case 'checkout':
+                    $result = $this->process_checkout_webhook($orderId, $postData);
+                    break;
+
+                default:
+                    $result = apply_filters('mobbexExternalWebhookProcess', 'Unsupported webhook type', $postData, $request);
+                    break;
+            }
         } catch (\Exception $e) {
-            $this->logger->log('error', "payment > mobbex_webhook | REST API > Error", $e->getMessage());
+            http_response_code(500);
 
-            return [
-                "result" => false,
-            ];
+            $orderId = isset($orderId) ? $orderId : 0;
+            $result  = "Error processing webhook for order $orderId: " . $e->getMessage();
+        } finally {
+            $this->logger->log(
+                isset($e) ? 'error' : 'debug', "Webhook processed for order $orderId: $result"
+            );
         }
+
+        return [
+            'result'   => $result,
+            'platform' => [
+                'name'      => 'woocommerce',
+                'version'   => MOBBEX_VERSION,
+                'ecommerce' => [
+                    'wordpress'   => get_bloginfo('version'),
+                    'woocommerce' => WC_VERSION
+                ]
+            ],
+        ];
     }
 
     /**
@@ -143,36 +148,47 @@ final class Payment
      * @param string $token
      * @param array $data
      * 
-     * @return bool 
+     * @return string
      */
-    public function process_webhook($order_id, $token, $data)
+    public function process_checkout_webhook($order_id, $postData)
     {
+        global $wpdb;
+
+        $data   = \Mobbex\WP\Checkout\Model\Helper::format_webhook_data($order_id, $postData['data']);
         $status = isset($data['status_code']) ? $data['status_code'] : null;
         $order  = wc_get_order($order_id);
 
-        $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Processing data', compact('order_id', 'data'));
-
-        if (!$status || !$order_id || !$token || !\Mobbex\Repository::validateToken($token))
-            return $this->logger->log('error', 'payment > process_webhook | Mobbex Webhook: Invalid mobbex token or empty data');
+        if (!$status || !$order_id)
+            throw new \Exception('Invalid data received.');
 
         if ($this->config->process_webhook_retries != 'yes' && $this->is_request_duplicated($data))
-            return $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook: Duplicated Request Detected');
-        
+            return 'Duplicated Request Detected';
+
         // Avoid 3xx status codes
         if ($status > 299 && $status < 400)
-            return $this->logger->log('debug', 'payment > process_webhook | Mobbex Webhook Received OK: ', $data);
+            return 'Ignored 3xx status code';
+
+        // Save transaction
+        $wpdb->insert($wpdb->prefix.'mobbex_transaction', $data, \Mobbex\WP\Checkout\Model\Helper::db_column_format($data));
+        $data['id'] = $wpdb->insert_id;
 
         // Catch refunds webhooks
-        if ($status == 602 || $status == 605)
-            return !is_wp_error($this->refund_order($data));
+        if ($status == 602 || $status == 605) {
+            $refundRes = $this->refund_order($data);
+
+            if (is_wp_error($refundRes))
+                throw new \Exception("Error processing refund: " . $refundRes->get_error_message());
+
+            return 'Refund processed successfully';
+        }
 
         // Bypass any child webhook (except refunds)
         if ($data['parent'] != 'yes')
-            return (bool) $this->add_child_note($order, $data);
+            return $this->add_child_note($order, $data) ? 'Child note added' : 'Failed to add child note';
 
         // Exit if it is a expired operation and the order has already been paid
         if ($order->is_paid() && $status == 401)
-            return true;
+            return 'Operation expired and order already paid';
 
         $order->update_meta_data('mobbex_webhook', json_decode($data['data'], true));
         $order->update_meta_data('mobbex_payment_id', $data['payment_id']);
@@ -224,9 +240,9 @@ final class Payment
         $this->update_order_status($order, $data);
 
         //action with the checkout data
-        do_action('mobbex_webhook_process', $order_id, json_decode($data['data'], true));
+        do_action('mobbex_webhook_process', $order_id, $postData['data']);
 
-        return true;
+        return 'Webhook processed successfully';
     }
 
     /**
