@@ -2,21 +2,21 @@
 
 namespace Mobbex\WP\Checkout\Observer;
 
-class Product 
+class Product
 {
     /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
     /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
-    
+
     public function __construct()
     {
         $this->config = new \Mobbex\WP\Checkout\Model\Config();
         $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
 
-        // Create financial widget shortcode
-        add_shortcode('mobbex_button', [$this, 'shortcode_mobbex_button']);
+        // Create finance widget shortcode
+        add_shortcode('mobbex_finance_widget', [$this, 'shortcode_mobbex_finance_widget']);
     }
 
     /** ADMIN SECTION **/
@@ -95,8 +95,7 @@ class Product
 
         // Get plans selected
         foreach ($_POST as $key => $value) {
-            if (strpos($key, 'common_plan_') !== false && $value === 'no'
-            ) {
+            if (strpos($key, 'common_plan_') !== false && $value === 'no') {
                 // Add UID to common plans
                 $options['common_plans'][] = explode('common_plan_', $key)[1];
             } else if (strpos($key, 'advanced_plan_') !== false && $value === 'yes') {
@@ -136,17 +135,17 @@ class Product
     /**
      * Display finance widget open button in product page.
      */
-    public function display_finnacial_button()
+    public function display_finance_widget()
     {
-        do_shortcode('[mobbex_button]');
+        do_shortcode('[mobbex_finance_widget]');
     }
 
     /**
-     * Creates a updated financial widget with selected variant price & returns it in a string
+     * Creates a updated finance widget with selected variant price & returns it in a string
      * 
      * @return string $widget
      */
-    public function financial_widget_update()
+    public function finance_widget_update()
     {
         if (empty($_POST['price']) || empty($_POST['id']))
             exit;
@@ -154,7 +153,7 @@ class Product
         //Get parent product id to get plans
         $product_id = isset($_POST['child']) && $_POST['child'] ? wc_get_product($_POST['id'])->get_parent_id() : $_POST['id'];
 
-        ob_start() && do_shortcode('[mobbex_button ' . http_build_query([
+        ob_start() && do_shortcode('[mobbex_finance_widget ' . http_build_query([
             'price'        => $_POST['price'],
             'products_ids' => implode(',', [$product_id]),
             'show_button'  => false,
@@ -164,14 +163,13 @@ class Product
     }
 
     /**
-     * Add new button to show a modal with financial information
+     * Show a modal with financial information
      * only if the checkbox of financial information is checked
-     * Shortcode function, return button html
-     * and a hidden table with plans
-     * in woocommerce echo do_shortcode('[mobbex_button]'); in content-single-product.php
-     * or [mobbex_button] in wordpress pages
+     * Shortcode function, return finance widget component (finance-widget.min.js)
+     * in woocommerce echo do_shortcode('[mobbex_finance_widget]'); in content-single-product.php
+     * or [mobbex_finance_widget] in wordpress pages
      */
-    public function shortcode_mobbex_button($params)
+    public function shortcode_mobbex_finance_widget($params)
     {
         global $post;
 
@@ -192,10 +190,10 @@ class Product
         $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
         // Try to enqueue scripts
-        wp_enqueue_script('mbbx-product-button-js', $dir_url . "assets/js/finance-widget.js", null, MOBBEX_VERSION);
+        wp_enqueue_script('mbbx-finance-widget', $dir_url . "assets/js/finance-widget.min.js", null, MOBBEX_VERSION, ['in_footer' => true]);
         wp_enqueue_style('mobbex_product_style', $dir_url . 'assets/css/product.css', null, MOBBEX_VERSION);
 
-        //Get product plans
+        // Get product plans
         extract($this->config->get_products_plans($products_ids));
 
         $data = [
@@ -204,9 +202,6 @@ class Product
             'style'   => [
                 'show_button'   => isset($params['show_button']) ? $params['show_button'] : true,
                 'theme'         => $this->config->theme,
-                'custom_styles' => $this->config->financial_widget_styles,
-                'text'          => $this->config->financial_widget_button_text,
-                'logo'          => $this->config->financial_widget_button_logo
             ]
         ];
 
@@ -235,11 +230,11 @@ class Product
         if ($cart->is_empty())
             return;
 
-        foreach ( $cart->get_cart() as $item ){
+        foreach ($cart->get_cart() as $item){
             $subscription = \Mobbex\Repository::getProductSubscription(
-                $this->config->get_product_subscription_uid($item['product_id']), 
+                $this->config->get_product_subscription_uid($item['product_id']),
                 true
-                );
+            );
             isset($subscription['setupFee']) ? $cart->add_fee(__("{$subscription['name']} Sign-up Fee", 'woocommerce'), $subscription['setupFee'], false) : '';
         }
     }
@@ -255,7 +250,7 @@ class Product
     public function display_sign_up_fee_on_price($price_html, $product)
     {
         // Sometimes the hook gets an array type product and avoid non subscription products
-        if (!is_object($product) || !$this->is_subscription($product->get_id()) )
+        if (!is_object($product) || !$this->is_subscription($product->get_id()))
             return $price_html;
 
         // Set sign up price
