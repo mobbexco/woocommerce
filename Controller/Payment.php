@@ -113,6 +113,10 @@ final class Payment
                     $result = $this->process_checkout_webhook($orderId, $postData);
                     break;
 
+                case 'checkout:expired':
+                    $result = $this->process_checkout_webhook($orderId, $postData);
+                    break;
+
                 default:
                     $result = apply_filters('mobbexExternalWebhookProcess', 'Unsupported webhook type', $postData, $request);
                     break;

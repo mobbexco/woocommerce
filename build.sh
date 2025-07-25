@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VER="3.20.3"
+VER="4.0.0"
 
 # Remove installed packages
 rm -rf vendor composer.lock
@@ -13,9 +13,9 @@ composer install --no-dev
 
 # Copy files to temp dir
 if type robocopy > /dev/null; then
-    robocopy . woocommerce-mobbex -MIR -XD .git .vscode woocommerce-mobbex -XF .gitignore build.sh readme.md *.zip
+    robocopy . woocommerce-mobbex -MIR -XD .git .vscode .github woocommerce-mobbex -XF .gitignore build.sh readme.md *.zip
 elif type rsync > /dev/null; then
-    rsync -r --exclude={'.git','.vscode','woocommerce-mobbex','.gitignore','build.sh','readme.md','*.zip'} . ./woocommerce-mobbex
+    rsync -r --exclude={'.git','.vscode','.github','woocommerce-mobbex','.gitignore','build.sh','readme.md','*.zip'} . ./woocommerce-mobbex
 fi
 
 # Compress
