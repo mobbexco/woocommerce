@@ -221,7 +221,7 @@ return [
 
     'custom_featured_installments' => [
         'title'       => __('Mostrar Opciones Personalizadas', 'mobbex-for-woocommerce'),
-        'description' => __('Ingresa hasta tres ID de financiación activos separados por una coma.', 'mobbex-for-woocommerce'),
+        'description' => __('Ingresa los ID de financiación activos separados por una coma. Se mostrarán hasta 3 opciones distintas', 'mobbex-for-woocommerce'),
         'type'        => 'text',
         'default'     => '',
         'class'       => 'mbbx-into-appearance',
