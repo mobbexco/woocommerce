@@ -195,9 +195,9 @@ class Product
         ];
 
         $data = [
-            'show_featured_installments' => $this->config->show_featured_installments == 'yes',
-            'theme' => $this->config->theme,
-            'sources_url' => add_query_arg(
+            'theme'                 => $this->config->theme,
+            'featured_installments' => $this->handle_featured_installments(),
+            'sources_url'           => add_query_arg(
                 $query,
                 get_rest_url(null, 'mobbex/v1/sources')
             )
@@ -268,5 +268,29 @@ class Product
         $sign_up_price = $this->config->get_product_subscription_signup_fee($product->get_id());
 
         return $sign_up_price ? $price_html .= __(" /month and a $$sign_up_price sign-up fee") : $price_html;
+    }
+
+    public function handle_featured_installments()
+    {
+        if ($this->config->show_featured_installments === 'yes')
+            return $this->get_featured_installments();
+        else
+            return null;
+    }
+
+    public function get_featured_installments()
+    {
+        if ($this->config->best_featured_installments === 'yes')
+            return "[]";
+        elseif (!empty($this->config->custom_featured_installments))
+            return json_encode(
+                preg_split('/\s*,\s*/', 
+                trim($this->config->custom_featured_installments))
+            );
+        else
+            (new \Mobbex\WP\Checkout\Model\Logger)->log(
+                'error',
+                __('Error en la configuración de financiación destacada.', 'mobbex-for-woocommerce')
+            );
     }
 }
