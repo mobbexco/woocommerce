@@ -61,11 +61,57 @@
 
         // If own dni option is active, hide custom dni option
         if (ownDni.checked) hideElements(customDni);
-        ownDni.onchange = function () { hideElements(customDni); }
+        ownDni.onchange = function () {
+          hideElements(customDni);
+        };
+    }
+
+    /**
+     * Toggle featured installments options.
+     * Manage the enabling  of the best and custom featured installments options. 
+     * 
+    */
+    function toogleFeaturedInstallmentsOptions() {
+
+      var showFeaturedInstallments = document.getElementById(
+        "woocommerce_mobbex_show_featured_installments"
+      );
+      var bestFeaturedInstallments = document.getElementById(
+        "woocommerce_mobbex_best_featured_installments"
+      );
+      var customFeaturedInstallments = document.getElementById(
+        "woocommerce_mobbex_custom_featured_installments"
+      );
+
+      if (!showFeaturedInstallments.checked){
+        bestFeaturedInstallments.setAttribute('disabled', 'disabled');
+        customFeaturedInstallments.setAttribute('disabled', 'disabled');
+      }
+      
+      if (showFeaturedInstallments.checked && bestFeaturedInstallments.checked)
+        customFeaturedInstallments.setAttribute('disabled', 'disabled');
+
+      showFeaturedInstallments.onchange = () => {
+        if (showFeaturedInstallments.checked) {
+            bestFeaturedInstallments.removeAttribute('disabled');
+            customFeaturedInstallments.removeAttribute('disabled');
+        } else {
+            bestFeaturedInstallments.setAttribute('disabled', 'disabled');
+            customFeaturedInstallments.setAttribute('disabled', 'disabled');
+        }
+      }
+
+      bestFeaturedInstallments.onchange = () => {
+        if (bestFeaturedInstallments.checked)
+            customFeaturedInstallments.setAttribute('disabled', 'disabled');
+        else
+            customFeaturedInstallments.removeAttribute('disabled');
+      };
     }
 
     window.addEventListener('load', function () {
         initConfigTabs(['appearance', 'advanced', 'orders']);
         addDynamicToDniFields();
+        toogleFeaturedInstallmentsOptions();
     });
 }) (window)
