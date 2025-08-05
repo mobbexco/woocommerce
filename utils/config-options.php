@@ -204,10 +204,26 @@ return [
     ],
 
     'show_featured_installments' => [
-        'title'       => __('Mostrar cuotas destacadas', 'mobbex-for-woocommerce'),
-        'description' => __('Permite mostrar u ocultar cuotas destacadas en el widget de financiación.', 'mobbex-for-woocommerce'),
+        'title'       => __('Mostrar financiación destacada', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostraran opciones de financiación destacadas en el modal.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',
         'default'     => 'yes',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
+    'best_featured_installments' => [
+        'title'       => __('Mostrar Mejores Opciones', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostrarán las mejores opciones financiación disponibles.', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'no',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
+    'custom_featured_installments' => [
+        'title'       => __('Mostrar Opciones Personalizadas', 'mobbex-for-woocommerce'),
+        'description' => __('Ingresa hasta tres ID de financiación activos separados por una coma.', 'mobbex-for-woocommerce'),
+        'type'        => 'text',
+        'default'     => '',
         'class'       => 'mbbx-into-appearance',
     ],
 
