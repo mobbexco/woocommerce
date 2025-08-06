@@ -270,27 +270,40 @@ class Product
         return $sign_up_price ? $price_html .= __(" /month and a $$sign_up_price sign-up fee") : $price_html;
     }
 
+
+    /* Finance Widget */
+    
+    /**
+     * Handle featured installments configuration and return the correct value
+     * 
+     * @return string|null
+     */
     public function handle_featured_installments()
     {
-        if ($this->config->show_featured_installments === 'yes')
-            return $this->get_featured_installments();
-        else
-            return null;
+        return $this->config->show_featured_installments === 'yes'
+            ? $this->get_featured_installments()
+            : null;
     }
 
+    /**
+     * Get featured installments value
+     * 
+     * @return string|null
+     */
     public function get_featured_installments()
     {
         if ($this->config->best_featured_installments === 'yes')
             return "[]";
-        elseif (!empty($this->config->custom_featured_installments))
-            return json_encode(
-                preg_split('/\s*,\s*/', 
-                trim($this->config->custom_featured_installments))
-            );
-        else
-            (new \Mobbex\WP\Checkout\Model\Logger)->log(
-                'error',
-                __('Error en la configuración de financiación destacada.', 'mobbex-for-woocommerce')
-            );
+
+        if (!empty($this->config->custom_featured_installments))
+            return json_encode(preg_split('/\s*,\s*/', trim(
+                $this->config->custom_featured_installments
+            )));
+
+        (new \Mobbex\WP\Checkout\Model\Logger)->log(
+            'error',
+            __('Error en la configuración de financiación destacada.', 'mobbex-for-woocommerce')
+        );
+        return null;
     }
 }
