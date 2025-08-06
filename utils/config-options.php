@@ -205,23 +205,23 @@ return [
 
     'show_featured_installments' => [
         'title'       => __('Mostrar financiación destacada', 'mobbex-for-woocommerce'),
-        'description' => __('Se mostraran opciones de financiación destacadas en el modal.', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostraran planes de financiación destacados en el modal.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',
         'default'     => 'yes',
         'class'       => 'mbbx-into-appearance',
     ],
 
     'best_featured_installments' => [
-        'title'       => __('Mostrar Mejores Opciones', 'mobbex-for-woocommerce'),
-        'description' => __('Se mostrarán las mejores opciones financiación disponibles.', 'mobbex-for-woocommerce'),
+        'title'       => __('Mejores Planes', 'mobbex-for-woocommerce'),
+        'description' => __('Muestra automáticamente los planes de financiación más convenientes según precio y cuotas.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',
         'default'     => 'no',
         'class'       => 'mbbx-into-appearance',
     ],
 
     'custom_featured_installments' => [
-        'title'       => __('Mostrar Opciones Personalizadas', 'mobbex-for-woocommerce'),
-        'description' => __('Ingresa los ID de financiación activos separados por una coma. Se mostrarán hasta 3 opciones distintas', 'mobbex-for-woocommerce'),
+        'title'       => __('Planes Personalizados', 'mobbex-for-woocommerce'),
+        'description' => __('Ingresa los identificadores(ID) de los planes de financiación que quieras mostrar. Serán agrupandos en hasta 3 filas aquellos que compartan precio y cantidad de cuotas.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
         'default'     => '',
         'class'       => 'mbbx-into-appearance',
