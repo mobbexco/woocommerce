@@ -68,7 +68,6 @@ class Order
         $this->add_items($checkout);
         $this->add_installments($checkout);
         $this->add_customer($checkout);
-        $this->maybe_add_signup_fee($checkout);
 
         try {
             $response = $checkout->create();
@@ -132,19 +131,44 @@ class Order
     {
         $order_items    = $this->order->get_items() ?: [];
         $shipping_items = $this->order->get_items('shipping') ?: [];
+        $coupons        = $this->order->get_items('coupon') ?: [];
 
-        foreach ($order_items as $item)
+        foreach ($order_items as $item) {
+            $id     = $item->get_product_id();
+            $is_sub = $this->config->get_product_subscription_uid($id);
+            // to properly calculate the total in subscriptions, the subtotal is used.
+            $total  = $is_sub ? $item->get_subtotal() : $this->calculate_item_price($item);
+
             $checkout->add_item(
-                $this->calculate_item_price($item),
+                $id,
+                $total,
                 $item->get_quantity(),
                 $item->get_name(),
-                $this->helper->get_product_image($item->get_product_id()),
-                $this->config->get_product_entity($item->get_product_id()),
-                $this->config->get_product_subscription_uid($item->get_product_id())
+                $this->helper->get_product_image($id),
+                $this->config->get_product_entity($id),
+                $is_sub,
             );
+        }
 
         foreach ($shipping_items as $item)
-            $checkout->add_item($item->get_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce') . $item->get_name());
+            $checkout->add_item(
+                $item->get_id(), 
+                $item->get_total(), 
+                1, 
+                __('Shipping: ', 'mobbex-for-woocommerce') . $item->get_name()
+            );
+
+        foreach ($coupons as $coupon)
+            $checkout->add_item(
+                $item->get_id(), 
+                $coupon->get_discount(), 
+                1, 
+                __('Descuento: ', 'mobbex-for-woocommerce'), 
+                null, 
+                null, 
+                null, 
+                true
+            );
     }
 
     /**
@@ -358,27 +382,5 @@ class Order
     public function has_childs($parent)
     {
         return isset($parent['operation_type']) && $parent['operation_type'] == 'payment.multiple-sources';
-    }
-
-    /**
-     * Maybe add product subscriptions sign-up fee 
-     * 
-     * @param object $checkout used to get items and total
-     * 
-     * @return int|string total cleared
-     */
-    public function maybe_add_signup_fee($checkout)
-    { 
-        foreach ($checkout->items as $item)
-            if($item['type'] == 'subscription') {
-                try {
-                    $subscription = \Mobbex\Repository::getProductSubscription($item['reference'], true);
-
-                    if (isset($subscription['setupFee']) && $subscription['setupFee'] > 0)
-                        $checkout->total -= $subscription['setupFee'];
-                } catch (\Exception $e) {
-                    $this->logger->log('error', 'class-order-helper > maybe_add_signup_fee | Error getting subscription fee', $e->getMessage());
-                }
-            }
     }
 }
