@@ -246,7 +246,9 @@ class Product
                 $this->config->get_product_subscription_uid($item['product_id']),
                 true
             );
-            isset($subscription['setupFee']) ? $cart->add_fee(__("{$subscription['name']} Sign-up Fee", 'woocommerce'), $subscription['setupFee'], false) : '';
+            isset($subscription['setupFee']) && $subscription['setupFee'] > 0 
+                ? $cart->add_fee(__("{$subscription['name']} (Costo de instalación)", 'woocommerce'), $subscription['setupFee'], false) 
+                : '';
         }
     }
 
