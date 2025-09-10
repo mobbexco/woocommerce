@@ -156,23 +156,31 @@ class Checkout
     /**
      * Add an item.
      * 
+     * @param int $id
      * @param int|string $total
      * @param int $quantity
      * @param string|null $description
      * @param string|null $image
      * @param string|null $entity
      */
-    public function add_item($total, $quantity = 1, $description = null, $image = null, $entity = null, $subscription = null)
+    public function add_item($id, $total, $quantity = 1, $description = null, $image = null, $entity = null, $subscription = null, $coupon = false)
     {
-        if($subscription) {
+        if($subscription){
+            $fee_total = $this->config->get_product_subscription_signup_fee($id);
             $this->items[] = [
                 'type'      => 'subscription',
                 'reference' => $subscription,
-                'total'     => $total
+                'total'     => $total + $fee_total > 0 ? $fee_total : 0,
             ];
-        } else {
-            $this->items[] = compact('total', 'quantity', 'description', 'image', 'entity');
         }
+        elseif($coupon)
+            $this->items[] = [
+                'total'       => -$total,
+                'quantity'    => $quantity,
+                'description' => $description
+            ];
+        else
+            $this->items[] = compact('total', 'quantity', 'description', 'image', 'entity');
     }
 
     /**
