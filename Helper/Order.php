@@ -146,7 +146,7 @@ class Order
                 $item->get_name(),
                 $this->helper->get_product_image($id),
                 $this->config->get_product_entity($id),
-                $is_sub,
+                $is_sub
             );
         }
 
