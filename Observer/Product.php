@@ -274,6 +274,6 @@ class Product
         // Set sign up price
         $sign_up_price = $this->config->get_product_subscription_signup_fee($product->get_id());
 
-        return $sign_up_price ? $price_html .= __(" /month and a $$sign_up_price sign-up fee") : $price_html;
+        return $sign_up_price ? $price_html .= __(" /mes y $$sign_up_price de costo de instalación") : $price_html;
     }
 }
