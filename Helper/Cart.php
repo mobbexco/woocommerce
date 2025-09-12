@@ -117,15 +117,17 @@ class Cart
     {
         $items = $this->cart->get_cart() ?: [];
 
-        foreach ($items as $item)
+        foreach ($items as $item) {
+            $id = $item['product_id'];
             $checkout->add_item(
+                $id,
                 $this->calculate_item_price($item),
                 $item['quantity'],
                 $item['data']->get_name(),
-                $this->helper->get_product_image($item['product_id']),
-                $this->config->get_product_entity($item['product_id'])
+                $this->helper->get_product_image($id),
+                $this->config->get_product_entity($id)
             );
-
+        }
         $checkout->add_item($this->cart->get_shipping_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce'));
     }
 
