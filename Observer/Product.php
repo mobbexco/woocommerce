@@ -246,13 +246,10 @@ class Product
         if ($cart->is_empty())
             return;
 
-        foreach ($cart->get_cart() as $item){
-            $subscription = \Mobbex\Repository::getProductSubscription(
-                $this->config->get_product_subscription_uid($item['product_id']),
-                true
-            );
-            isset($subscription['setupFee']) && $subscription['setupFee'] > 0 
-                ? $cart->add_fee(__("{$subscription['name']} (Costo de instalación)", 'woocommerce'), $subscription['setupFee'], false) 
+        foreach ($cart->get_cart() as $item) {
+            $sign_up_price = $this->config->get_product_subscription_signup_fee($item['product_id']);
+            $sign_up_price > 0 
+                ? $cart->add_fee("Costo de instalación", $sign_up_price * $item['quantity'] , false) 
                 : '';
         }
     }
