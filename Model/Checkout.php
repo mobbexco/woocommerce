@@ -166,16 +166,16 @@ class Checkout
     public function add_item($id, $total, $quantity = 1, $description = null, $image = null, $entity = null, $subscription = null, $coupon = false)
     {
         if($subscription){
-            $fee_total = $this->config->get_product_subscription_signup_fee($id);
+            $fee_total = (float) $this->config->get_product_subscription_signup_fee($id);
             $this->items[] = [
                 'type'      => 'subscription',
                 'reference' => $subscription,
-                'total'     => $total + $fee_total > 0 ? $fee_total : 0,
+                'total'     => (float) $total + max(0, $fee_total),
             ];
         }
         elseif($coupon)
             $this->items[] = [
-                'total'       => -$total,
+                'total'       => (float) -$total,
                 'quantity'    => $quantity,
                 'description' => $description
             ];
