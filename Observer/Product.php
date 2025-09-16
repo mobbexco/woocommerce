@@ -42,6 +42,7 @@ class Product
         //subscriptions
         $is_subscription  = (bool) $this->config->get_catalog_settings($id, 'mbbx_sub_enable', $meta_type);
         $subscription_uid = $this->config->get_catalog_settings($id, 'mbbx_sub_uid', $meta_type);
+        $subscription_fee = $this->config->get_catalog_settings($id, 'mbbx_sub_sign_up_fee', $meta_type);
 
         // Render template
         $template = $meta_type == 'post' ? 'product-settings.php' : 'category-settings.php';
@@ -82,6 +83,7 @@ class Product
             'mbbx_entity'           => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
             'mbbx_sub_enable'       => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
             'mbbx_sub_uid'          => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
+            'mbbx_sub_sign_up_fee'  => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
             'mbbx_enable_multisite' => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
             'common_plans'          => [],
             'advanced_plans'        => [],
@@ -106,7 +108,10 @@ class Product
 
         // Save all $options data as meta data
         foreach ($options as $key => $option)
-            update_metadata($meta_type, $id, $key, strpos($key, "_plans") ? json_encode($option) : $option);
+            update_metadata($meta_type, $id, $key, strpos($key, "_plans") 
+                ? json_encode($option)
+                : $option
+            );
 
         if ($options['mbbx_enable_multisite'])
             $this->save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
@@ -241,12 +246,11 @@ class Product
         if ($cart->is_empty())
             return;
 
-        foreach ($cart->get_cart() as $item){
-            $subscription = \Mobbex\Repository::getProductSubscription(
-                $this->config->get_product_subscription_uid($item['product_id']),
-                true
-            );
-            isset($subscription['setupFee']) ? $cart->add_fee(__("{$subscription['name']} Sign-up Fee", 'woocommerce'), $subscription['setupFee'], false) : '';
+        foreach ($cart->get_cart() as $item) {
+            $sign_up_price = $this->config->get_product_subscription_signup_fee($item['product_id']);
+            $sign_up_price > 0 
+                ? $cart->add_fee("Costo de instalación", $sign_up_price * $item['quantity'] , false) 
+                : '';
         }
     }
 
@@ -267,6 +271,6 @@ class Product
         // Set sign up price
         $sign_up_price = $this->config->get_product_subscription_signup_fee($product->get_id());
 
-        return $sign_up_price ? $price_html .= __(" /month and a $$sign_up_price sign-up fee") : $price_html;
+        return $sign_up_price ? $price_html .= __(" /mes y $$sign_up_price de costo de instalación") : $price_html;
     }
 }

@@ -40,9 +40,12 @@ window.addEventListener('load', function () {
     //subscription event
     var issubscription         = document.querySelector('#mbbx_sub_enable');
     var subscriptionUidOptions = document.querySelector('.mbbx_sub_uid_field');
+    var subscriptionSignUpFee  = document.querySelector('.mbbx_sub_sign_up_fee_field');
     //show subscription uid if product is type subscription
     mbbxToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
+    mbbxToggleOptions(issubscription, true, [subscriptionSignUpFee], 'really-hidden');
     issubscription.onclick = function () {
         mbbxToggleOptions(issubscription, true, [subscriptionUidOptions], 'really-hidden');
+        mbbxToggleOptions(issubscription, true, [subscriptionSignUpFee], 'really-hidden');
     }
 });
