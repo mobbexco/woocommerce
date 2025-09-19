@@ -211,7 +211,7 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
-    'best_featured_installments' => [
+    'auto_featured_installments' => [
         'title'       => __('Mejores Planes', 'mobbex-for-woocommerce'),
         'description' => __('Muestra automáticamente los planes de financiación más convenientes según precio y cuotas.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',

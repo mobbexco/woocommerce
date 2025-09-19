@@ -292,7 +292,7 @@ class Product
      */
     public function get_featured_installments()
     {
-        if ($this->config->best_featured_installments === 'yes')
+        if ($this->config->auto_featured_installments === 'yes')
             return "[]";
 
         if (!empty($this->config->custom_featured_installments))

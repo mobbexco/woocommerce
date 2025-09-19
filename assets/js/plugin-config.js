@@ -77,7 +77,7 @@
         "woocommerce_mobbex_show_featured_installments"
       );
       var bestFeaturedInstallments = document.getElementById(
-        "woocommerce_mobbex_best_featured_installments"
+        "woocommerce_mobbex_auto_featured_installments"
       );
       var customFeaturedInstallments = document.getElementById(
         "woocommerce_mobbex_custom_featured_installments"
