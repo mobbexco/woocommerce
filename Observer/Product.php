@@ -200,9 +200,9 @@ class Product
         ];
 
         $data = [
-            'show_featured_installments' => $this->config->show_featured_installments == 'yes',
-            'theme' => $this->config->theme,
-            'sources_url' => add_query_arg(
+            'theme'                 => $this->config->theme,
+            'featured_installments' => $this->handle_featured_installments(),
+            'sources_url'           => add_query_arg(
                 $query,
                 get_rest_url(null, 'mobbex/v1/sources')
             )
@@ -272,5 +272,42 @@ class Product
         $sign_up_price = $this->config->get_product_subscription_signup_fee($product->get_id());
 
         return $sign_up_price ? $price_html .= __(" /mes y $$sign_up_price de costo de instalación") : $price_html;
+    }
+
+
+    /* Finance Widget */
+    
+    /**
+     * Handle featured installments configuration and return the correct value
+     * 
+     * @return string|null
+     */
+    public function handle_featured_installments()
+    {
+        return $this->config->show_featured_installments === 'yes'
+            ? $this->get_featured_installments()
+            : null;
+    }
+
+    /**
+     * Get featured installments value
+     * 
+     * @return string|null
+     */
+    public function get_featured_installments()
+    {
+        if ($this->config->auto_featured_installments === 'yes')
+            return "[]";
+
+        if (!empty($this->config->custom_featured_installments))
+            return json_encode(preg_split('/\s*,\s*/', trim(
+                $this->config->custom_featured_installments
+            )));
+
+        (new \Mobbex\WP\Checkout\Model\Logger)->log(
+            'error',
+            __('Error en la configuración de financiación destacada.', 'mobbex-for-woocommerce')
+        );
+        return null;
     }
 }

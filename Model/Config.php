@@ -52,6 +52,8 @@ class Config
     public $show_no_interest_labels;
     public $final_currency;
     public $show_featured_installments;
+    public $auto_featured_installments;
+    public $custom_featured_installments;
 
     public function __construct()
     {
