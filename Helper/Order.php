@@ -136,8 +136,8 @@ class Order
         foreach ($order_items as $item) {
             $id     = $item->get_product_id();
             $is_sub = $this->config->get_product_subscription_uid($id);
-            // to properly calculate the total in subscriptions, the subtotal is used.
-            $total  = $is_sub ? $item->get_subtotal() : $this->calculate_item_price($item);
+            // to properly calculate the total in subscriptions or coupons case, the subtotal is used.
+            $total  = $is_sub || !empty($coupons) ? $item->get_subtotal() : $this->calculate_item_price($item);
 
             $checkout->add_item(
                 $id,
