@@ -206,13 +206,8 @@ class Config
      */
     public function get_product_subscription_signup_fee($id)
     { 
-        try {
-            // Try to get subscription data from cache; otherwise it get it from API
-            $subscription = \Mobbex\Repository::getProductSubscription($this->get_product_subscription_uid($id), true);
-            return isset($subscription['setupFee']) ? $subscription['setupFee'] : '';
-        } catch (\Exception $e) {
-            (new \Mobbex\WP\Checkout\Model\Logger)->log('error', 'Config > get_product_subscription_signup_fee | Failed obtaining setup fee: ' . $e->getMessage(), $subscription);
-        }
+        if ($this->get_catalog_settings($id, 'mbbx_sub_enable'))
+            return $this->get_catalog_settings($id, 'mbbx_sub_sign_up_fee');
     }
 
     /**

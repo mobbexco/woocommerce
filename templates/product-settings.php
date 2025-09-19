@@ -81,6 +81,14 @@
             'desc_tip'      => true,
             'wrapper_class' => 'really-hidden',
         ]);
+        
+        woocommerce_wp_text_input([
+            'id'            => 'mbbx_sub_sign_up_fee',
+            'value'         => $subscription_fee,
+            'label'         => __('Subscription Sign-up Fee:', 'mobbex-for-woocommerce'),
+            'desc_tip'      => true,
+            'wrapper_class' => 'really-hidden',
+        ]);
         ?>
     </div>
     <?php do_action('mbbx_product_options_end') ?>
