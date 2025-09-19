@@ -128,7 +128,12 @@ class Cart
                 $this->config->get_product_entity($id)
             );
         }
-        $checkout->add_item($this->cart->get_shipping_total(), 1, __('Shipping: ', 'mobbex-for-woocommerce'));
+        $checkout->add_item(
+            0, 
+            $this->cart->get_shipping_total(), 
+            1, 
+            __('Shipping: ', 'mobbex-for-woocommerce')
+        );
     }
 
     /**
