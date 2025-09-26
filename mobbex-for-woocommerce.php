@@ -3,10 +3,10 @@
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
 Version:      4.1.0
-WC tested up to: 4.6.1
+WC tested up to: 10.2.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
-Copyright: 2020 mobbex.com
+Copyright: 2025 mobbex.com
  */
 
 // Only requires autload if the file exists to avoid fatal errors
