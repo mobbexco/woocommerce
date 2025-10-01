@@ -129,15 +129,21 @@ class Order
      */
     private function add_items($checkout)
     {
+        $subs_items     = [];
         $order_items    = $this->order->get_items() ?: [];
         $shipping_items = $this->order->get_items('shipping') ?: [];
-        $coupons        = $this->order->get_items('coupon') ?: [];
 
         foreach ($order_items as $item) {
             $id     = $item->get_product_id();
             $is_sub = $this->config->get_product_subscription_uid($id);
-            // to properly calculate the total in subscriptions or coupons case, the subtotal is used.
-            $total  = $is_sub || !empty($coupons) ? $item->get_subtotal() : $this->calculate_item_price($item);
+
+            // push subs and use subtotal to properly calculate the total in subscriptions.
+            if ($is_sub) {
+                array_push($subs_items, $is_sub);
+                $total = $item->get_subtotal();
+            } else {
+                $total = $this->calculate_item_price($item);
+            }
 
             $checkout->add_item(
                 $id,
@@ -152,23 +158,27 @@ class Order
 
         foreach ($shipping_items as $item)
             $checkout->add_item(
-                $item->get_id(), 
+                0, 
                 $item->get_total(), 
                 1, 
                 __('Shipping: ', 'mobbex-for-woocommerce') . $item->get_name()
             );
 
-        foreach ($coupons as $coupon)
-            $checkout->add_item(
-                $item->get_id(), 
-                $coupon->get_discount(), 
-                1, 
-                __('Descuento: ', 'mobbex-for-woocommerce'), 
-                null, 
-                null, 
-                null, 
-                true
-            );
+        // in subscriptions coupons items are showed at checkout
+        if (!empty($subs_items)) {
+            $coupons = $this->order->get_items('coupon') ?: [];
+            foreach ($coupons as $coupon)
+                $checkout->add_item(
+                    0, 
+                    $coupon->get_discount(), 
+                    1, 
+                    __('Descuento: ', 'mobbex-for-woocommerce'), 
+                    null, 
+                    null, 
+                    null, 
+                    true
+                );
+        }
     }
 
     /**

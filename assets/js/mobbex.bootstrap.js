@@ -66,8 +66,9 @@ jQuery(function ($) {
             success: (response) => {
                 response.result == 'success' ? callback(response) && unlockForm() : handleErrorResponse(response);
             },
-            error: () => {
+            error: (e) => {
                 handleErrorResponse({
+                    log: e,
                     result: 'errors',
                     reload: false,
                     messages: ['Se produjo un error al procesar la transacción. Intente nuevamente']
@@ -111,6 +112,7 @@ jQuery(function ($) {
 
             onError: (error) => {
                 handleErrorResponse({
+                    log: error,
                     result: 'errors',
                     reload: false,
                     messages: ['Se produjo un error al procesar la transacción. Intente nuevamente']
@@ -144,12 +146,20 @@ jQuery(function ($) {
                 location.href = response.return_url + '&status=' + data.data.status.code;
             } else {
                 handleErrorResponse({
+                    log: data,
                     result: 'errors',
                     reload: false,
                     messages: ['Se produjo un error al procesar la transacción. Intente nuevamente']
                 });
             }
-        }).catch(error => alert(error));
+        }).catch(error => {
+            handleErrorResponse({
+                log: error,
+                result: 'errors',
+                reload: false,
+                messages: ['Se produjo un error al procesar la operación. Intente nuevamente']
+            });
+        });
     }
 
     // Utils
@@ -197,6 +207,10 @@ jQuery(function ($) {
                     checkout_form.prepend('<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout"><ul class="woocommerce-error" role="alert"><li>'+message+'</li></ul></div>')
                 }
             }
+        }
+
+        if (response?.log) {
+            console.error(`Mobbex Checkout Error: ${response.log}`);
         }
 
         unlockForm();
