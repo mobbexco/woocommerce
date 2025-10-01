@@ -297,9 +297,10 @@ final class Payment
         // Create a fee item with the diff amount
         $item = new \WC_Order_Item_Fee;
         $item->set_props([
-            'name'   => $data['total'] > $order_total ? 'Cargo financiero' : 'Descuento financiero',
-            'amount' => $data['total'] - $order_total,
-            'total'  => $data['total'] - $order_total,
+            'name'       => $data['total'] > $order_total ? 'Cargo financiero' : 'Descuento financiero',
+            'amount'     => $data['total'] - $order_total,
+            'total'      => $data['total'] - $order_total,
+            'tax_status' => \Automattic\WooCommerce\Enums\ProductTaxStatus::NONE,
         ]);
 
         $order->add_item($item);
