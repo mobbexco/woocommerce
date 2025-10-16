@@ -141,6 +141,10 @@ class Config
     {
         $data = get_metadata($catalog_type, $id, $field_name, true);
 
+        if ($field_name == "advanced_plans" && isset($data))
+            foreach($data as &$plan)
+                $plan = explode('advanced_plan_', $plan)[1];
+
         if (strpos($field_name, '_plans'))
             return $data ? $this->maybe_decode($data) : [];
 
