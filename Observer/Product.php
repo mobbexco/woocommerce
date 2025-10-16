@@ -30,10 +30,20 @@ class Product
     {
         $meta_type = $term ? 'term' : 'post';
         $id        = is_object($term) ? $term->term_id : get_the_ID();
+        $product   = wc_get_product($id);
 
-        // Get plan fields and current store data to use in template
-        extract($this->config->get_catalog_plans($id, $meta_type, true));
-        extract($this->format_fields(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans)));
+        // gets plans
+        $filtered_plans = \Mobbex\Repository::getPlansFilterFields($id, [], []);
+        
+        // gets selected plans and featured plans settings
+        $selected_plans = $product->get_meta("selected_plans") ?: "[]";
+        $manual         = $product->get_meta("mobbex_manual_config") ?: "no";
+        $featured_plans = $product->get_meta("mobbex_featured_plans") ?: "[]";
+        $show_plans     = $product->get_meta("mobbex_show_featured_plans") ?: "no";
+
+        $common_plans   = json_encode($product->get_meta("common_plans")) ?: "[]";
+        $advanced_plans = json_encode($product->get_meta("advanced_plans")) ?: "[]";
+
         extract($this->config->get_store_data($meta_type, $id));
 
         //multivendor
@@ -80,38 +90,61 @@ class Product
         $meta_type = current_action() == 'woocommerce_process_product_meta' ? 'post' : 'term';
 
         $options = [
-            'mbbx_entity'           => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
-            'mbbx_sub_enable'       => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
-            'mbbx_sub_uid'          => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
-            'mbbx_sub_sign_up_fee'  => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
-            'mbbx_enable_multisite' => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
-            'common_plans'          => [],
-            'advanced_plans'        => [],
+            'common_plans'               => [],
+            'advanced_plans'             => [],
+            'selected_plans'             => [],
+            'mobbex_featured_plans'      => '',
+            'mobbex_show_featured_plans' => 'no',
+            'mobbex_manual_config'       => 'no',
+            'mbbx_entity'                => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
+            'mbbx_sub_uid'               => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
+            'mbbx_sub_enable'            => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
+            'mbbx_sub_sign_up_fee'       => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
+            'mbbx_enable_multisite'      => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
         ];
 
         // Get multisite options
         $store        = !empty($_POST['mbbx_store']) ? $_POST['mbbx_store'] : false;
-        $name         = !empty($_POST['mbbx_store_name']) ? $_POST['mbbx_store_name'] : false;
         $api_key      = !empty($_POST['mbbx_api_key']) ? $_POST['mbbx_api_key'] : false;
+        $name         = !empty($_POST['mbbx_store_name']) ? $_POST['mbbx_store_name'] : false;
         $access_token = !empty($_POST['mbbx_access_token']) ? $_POST['mbbx_access_token'] : false;
 
-        // Get plans selected
-        foreach ($_POST as $key => $value) {
-            if (strpos($key, 'common_plan_') !== false && $value === 'no') {
-                // Add UID to common plans
-                $options['common_plans'][] = explode('common_plan_', $key)[1];
-            } else if (strpos($key, 'advanced_plan_') !== false && $value === 'yes') {
-                // Add UID to advanced plans
-                $options['advanced_plans'][] = explode('advanced_plan_', $key)[1];
-            }
-        }
+        // Get activated plans
+        $common_plans   = !empty($_POST['common_plans'])
+            ? json_decode(stripslashes($_POST['common_plans']), true) 
+            : [];
+        $advanced_plans = !empty($_POST['advanced_plans'])
+            ? json_decode(stripslashes($_POST['advanced_plans']), true) 
+            : [];
+
+        // Get plans selected and configuration
+        $options['selected_plans'] = !empty($_POST['selected_plans']) 
+            ? $_POST['selected_plans']
+            : [];
+        $options['mobbex_manual_config'] = !empty($_POST['mobbex_manual_config'])
+            ? $_POST['mobbex_manual_config']
+            : 'no';
+        $options['mobbex_featured_plans'] = !empty($_POST['mobbex_featured_plans']) 
+            ? $_POST['mobbex_featured_plans']
+            : [];
+        $options['mobbex_show_featured_plans'] = !empty($_POST['mobbex_show_featured_plans']) 
+            ? $_POST['mobbex_show_featured_plans'] 
+            : 'no';
+
+        // Add UID to common and advanced plans
+        foreach ($common_plans as $common_plan => $value)
+            if (strpos($value, 'common_plan') !== false)
+                // $options['common_plans'][] = explode('common_plan_', $value)[1];
+                $options['common_plans'][] = $value;
+
+        foreach ($advanced_plans as $advanced_plan => $value)
+             if (strpos($value, 'advanced_plan') !== false)
+                // $options['advanced_plans'][] = explode('advanced_plan_', $value)[1];
+                $options['advanced_plans'][] = $value;
 
         // Save all $options data as meta data
         foreach ($options as $key => $option)
-            update_metadata($meta_type, $id, $key, strpos($key, "_plans") 
-                ? json_encode($option)
-                : $option
-            );
+            update_metadata($meta_type, $id, $key, $option);
 
         if ($options['mbbx_enable_multisite'])
             $this->save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
