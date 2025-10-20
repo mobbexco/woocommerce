@@ -51,9 +51,7 @@ class Config
     public $method_icon;
     public $show_no_interest_labels;
     public $final_currency;
-    public $show_featured_installments;
-    public $auto_featured_installments;
-    public $custom_featured_installments;
+    public $show_featured_installments_on_cart;
 
     public function __construct()
     {
@@ -141,11 +139,7 @@ class Config
     {
         $data = get_metadata($catalog_type, $id, $field_name, true);
 
-        if ($field_name == "advanced_plans" && isset($data))
-            foreach($data as &$plan)
-                $plan = explode('advanced_plan_', $plan)[1];
-
-        if (strpos($field_name, '_plans'))
+        if (isset($data) && strpos($field_name, '_plans'))
             return $data ? $this->maybe_decode($data) : [];
 
         return $data ?: '';

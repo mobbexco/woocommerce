@@ -10,10 +10,14 @@ class Product
     /** @var \Mobbex\WP\Checkout\Model\Helper */
     public $helper;
 
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
+    public $logger;
+
     public function __construct()
     {
         $this->config = new \Mobbex\WP\Checkout\Model\Config();
         $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
+        $this->logger = new \Mobbex\WP\Checkout\Model\Logger;
 
         // Create finance widget shortcode
         add_shortcode('mobbex_finance_widget', [$this, 'shortcode_mobbex_finance_widget']);
@@ -93,7 +97,7 @@ class Product
             'common_plans'               => [],
             'advanced_plans'             => [],
             'selected_plans'             => [],
-            'mobbex_featured_plans'      => '',
+            'mobbex_featured_plans'      => '[]',
             'mobbex_show_featured_plans' => 'no',
             'mobbex_manual_config'       => 'no',
             'mbbx_entity'                => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
@@ -133,14 +137,10 @@ class Product
 
         // Add UID to common and advanced plans
         foreach ($common_plans as $common_plan => $value)
-            if (strpos($value, 'common_plan') !== false)
-                // $options['common_plans'][] = explode('common_plan_', $value)[1];
-                $options['common_plans'][] = $value;
+            $options['common_plans'][] = $value;
 
         foreach ($advanced_plans as $advanced_plan => $value)
-             if (strpos($value, 'advanced_plan') !== false)
-                // $options['advanced_plans'][] = explode('advanced_plan_', $value)[1];
-                $options['advanced_plans'][] = $value;
+            $options['advanced_plans'][] = $value;
 
         // Save all $options data as meta data
         foreach ($options as $key => $option)
@@ -210,14 +210,15 @@ class Product
     public function shortcode_mobbex_finance_widget($params)
     {
         global $post;
+        $products_ids = [];
 
         // Try to get shortcode params
         if (isset($params['price'])) {
             $price        = $params['price'];
             $products_ids = isset($params['products_ids']) ? explode(',', $params['products_ids']) : [];
         } else if (is_cart()) {
-            $price        = WC()->cart->get_total(null);
-            $products_ids = array_column(WC()->cart->get_cart() ?: [], 'product_id');
+            $price          = WC()->cart->get_total(null);
+            $products_ids   = array_column(WC()->cart->get_cart() ?: [], 'product_id');
         } else if ($post && $post->post_type == 'product') {
             $price        = wc_get_product($post->ID)->get_price();
             $products_ids = [$post->ID];
@@ -225,21 +226,23 @@ class Product
             return;
         }
 
-        $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
-
         $query = [
             'mbbx_products_price' => $price,
             'mbbx_products_ids'   => implode(',', $products_ids),
         ];
 
+        $featured_plans = $this->handle_featured_installments($products_ids);
+
         $data = [
+            'featured_installments' => $featured_plans,
             'theme'                 => $this->config->theme,
-            'featured_installments' => $this->handle_featured_installments(),
             'sources_url'           => add_query_arg(
                 $query,
                 get_rest_url(null, 'mobbex/v1/sources')
-            )
-        ];
+                )
+            ];
+            
+        $dir_url = str_replace('/Observer', '', plugin_dir_url(__FILE__));
 
         // Try to enqueue styles and scripts
         wp_enqueue_style(
@@ -311,36 +314,69 @@ class Product
     /* Finance Widget */
     
     /**
-     * Handle featured installments configuration and return the correct value
+     * Handle featured installments configuration and return the correct value depending on context.
+     * In cart it is only possible to show auto-selected featured plans
      * 
      * @return string|null
      */
-    public function handle_featured_installments()
+    public function handle_featured_installments($products_ids = [])
     {
-        return $this->config->show_featured_installments === 'yes'
-            ? $this->get_featured_installments()
-            : null;
+        if(!isset($products_ids) || empty($products_ids)){
+            $this->logger->log(
+                "error", 
+                "Error: No se encontraron productos para obtener financiación destacada.",
+                "mobbex-for-woocommerce"
+            );
+            return null;
+        }
+
+        if (is_cart()){
+            $this->logger->log(
+                "debug", 
+                "show_featured_installments_on_cart config:",
+                $this->config->show_featured_installments_on_cart
+            );
+            return $this->config->show_featured_installments_on_cart
+                ? "[]"
+                : null;
+        }
+        
+        if(count($products_ids) == 1)
+            return $this->get_featured_plans_configuration($products_ids[0]);
+        else
+            return "[]";
     }
 
     /**
-     * Get featured installments value
+     * Get product featured plans configuration
+     * 
+     * @param string|int $product_id 
      * 
      * @return string|null
      */
-    public function get_featured_installments()
+    public function get_featured_plans_configuration($product_id)
     {
-        if ($this->config->auto_featured_installments === 'yes')
-            return "[]";
+        $product        = wc_get_product($product_id);
+        $manual_config  = $product->get_meta("mobbex_manual_config") ?: "no";
+        $featured_plans = $product->get_meta("mobbex_featured_plans") ?: "[]";
+        $show_featured  = $product->get_meta("mobbex_show_featured_plans") ?: "no";
 
-        if (!empty($this->config->custom_featured_installments))
-            return json_encode(preg_split('/\s*,\s*/', trim(
-                $this->config->custom_featured_installments
-            )));
-
-        (new \Mobbex\WP\Checkout\Model\Logger)->log(
-            'error',
-            __('Error en la configuración de financiación destacada.', 'mobbex-for-woocommerce')
+        $this->logger->log(
+            "debug",
+            "get_featured_plans > product_id: $product_id - featured plans configuration",
+            [
+                "manual_select"           => $manual_config,
+                "show_featured_plans"     => $show_featured,
+                "selected_featured_plans" => $featured_plans,
+            ]
         );
-        return null;
+
+        if ($show_featured == "no")
+            return null;
+
+        if ($manual_config == "yes")
+            return $featured_plans;
+        else
+            return "[]";
     }
 }
