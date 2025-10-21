@@ -34,20 +34,20 @@ class Product
     {
         $meta_type = $term ? 'term' : 'post';
         $id        = is_object($term) ? $term->term_id : get_the_ID();
-        $product   = wc_get_product($id);
 
         // gets plans
-        $filtered_plans = \Mobbex\Repository::getPlansFilterFields($id, [], []);
-        
-        // gets selected plans and featured plans settings
-        $selected_plans = $product->get_meta("selected_plans") ?: "[]";
-        $manual         = $product->get_meta("mobbex_manual_config") ?: "no";
-        $featured_plans = $product->get_meta("mobbex_featured_plans") ?: "[]";
-        $show_plans     = $product->get_meta("mobbex_show_featured_plans") ?: "no";
+        $filtered_plans = \Mobbex\Repository::getPlansFilterFields($id);
+        extract($this->config->get_catalog_plans($id, $meta_type, true));
 
-        $common_plans   = json_encode($product->get_meta("common_plans")) ?: "[]";
-        $advanced_plans = json_encode($product->get_meta("advanced_plans")) ?: "[]";
+        // gets plans configurator settings
+        $selected_plans = $this->config->get_catalog_settings($id, "selected_plans", $meta_type) ?: "[]";
+        $manual         = $this->config->get_catalog_settings($id, "mobbex_manual_config", $meta_type) ?: "no";
+        $featured_plans = $this->config->get_catalog_settings($id, "mobbex_featured_plans", $meta_type) ?: "[]";
+        $show_plans     = $this->config->get_catalog_settings($id, "mobbex_show_featured_plans", $meta_type) ?: "no";
+        $common_plans   = $this->config->get_catalog_settings($id, "common_plans", $meta_type) ?: "[]";
+        $advanced_plans = $this->config->get_catalog_settings($id, "advanced_plans", $meta_type) ?: "[]";
 
+        // gets store data
         extract($this->config->get_store_data($meta_type, $id));
 
         //multivendor
