@@ -114,9 +114,6 @@ class Product
         $access_token = !empty($_POST['mbbx_access_token']) ? $_POST['mbbx_access_token'] : false;
 
         // Get activated plans
-        $common_plans   = !empty($_POST['common_plans'])
-            ? json_decode(stripslashes($_POST['common_plans']), true) 
-            : [];
         $advanced_plans = !empty($_POST['advanced_plans'])
             ? json_decode(stripslashes($_POST['advanced_plans']), true) 
             : [];
@@ -135,10 +132,7 @@ class Product
             ? $_POST['mobbex_show_featured_plans'] 
             : 'no';
 
-        // Add UID to common and advanced plans
-        foreach ($common_plans as $common_plan => $value)
-            $options['common_plans'][] = $value;
-
+        // Add UID to advanced plans
         foreach ($advanced_plans as $advanced_plan => $value)
             $options['advanced_plans'][] = $value;
 
