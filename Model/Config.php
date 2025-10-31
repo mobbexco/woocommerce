@@ -236,13 +236,13 @@ class Config
     {
         //Get product plans
         $common_plans   = $this->get_catalog_settings($id, 'common_plans', $catalog_type) ?: [];
-        $advanced_plans = $this->get_catalog_settings($id, 'advanced_plans', $catalog_type) ?: [];
+        $advanced_plans = $this->get_catalog_settings($id, 'mobbex_advanced_plans', $catalog_type) ?: [];
 
         //Get plans from categories
         if(!$admin && $catalog_type === 'post') {
             foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId){
                 $common_plans   = array_merge($common_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term'));
-                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'advanced_plans', 'term'));
+                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'mobbex_advanced_plans', 'term'));
             }
         }
 
@@ -301,5 +301,45 @@ class Config
             // Save selection and new store data
             update_option('mbbx_stores', $stores) && update_metadata($meta_type, $id, 'mbbx_store', $new_store);
         }
+    }
+
+    /**
+     * Get product featured plans configuration
+     * 
+     * @param string|int $product_id 
+     * 
+     * @return string|null
+     */
+    public function get_featured_plans_configuration($id)
+    {
+        $show_featured = $this->get_catalog_settings($id, "mobbex_show_featured_plans", "post") ?: "no";
+        if ($show_featured == "no")
+            return null;
+
+        $manual_config = $this->get_catalog_settings($id, "mobbex_manual_config", "post") ?: "no";
+        if ($manual_config == "no")
+            return "[]";
+
+        $featured_plans = $this->get_catalog_settings($id, 'mobbex_featured_plans', 'post');
+        return $this->get_categories_featured_plans($id, $featured_plans);
+    }
+
+    /**
+     * Get featured plans from product categories
+     * 
+     * @param string|int $id
+     * @param array      $featured_plans
+     * 
+     * @return string $comprlete_featured_plans
+     */
+    public function get_categories_featured_plans($id, $featured_plans = []) 
+    {
+        foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
+            $featured_plans = array_merge(
+                $featured_plans, 
+                $this->get_catalog_settings($categoryId, 'mobbex_featured_plans', 'term')
+            );
+
+        return json_encode($featured_plans);
     }
 }
