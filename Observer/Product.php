@@ -41,10 +41,10 @@ class Product
 
         // gets plans configurator settings
         $manual         = $this->config->get_catalog_settings($id, "mobbex_manual_config", $meta_type) ?: "no";
+        $show_plans     = $this->config->get_catalog_settings($id, "mobbex_show_featured", $meta_type) ?: "no";
         $featured_plans = $this->config->get_catalog_settings($id, "mobbex_featured_plans", $meta_type) ?: null;
         $advanced_plans = $this->config->get_catalog_settings($id, "mobbex_advanced_plans", $meta_type) ?: null;
         $selected_plans = $this->config->get_catalog_settings($id, "mobbex_selected_plans", $meta_type) ?: null;
-        $show_plans     = $this->config->get_catalog_settings($id, "mobbex_show_featured_plans", $meta_type) ?: "no";
 
         // gets store data
         extract($this->config->get_store_data($meta_type, $id));
@@ -93,17 +93,17 @@ class Product
         $meta_type = current_action() == 'woocommerce_process_product_meta' ? 'post' : 'term';
 
         $options = [
-            'common_plans'               => [],
-            'mobbex_advanced_plans'      => [],
-            'mobbex_selected_plans'      => [],
-            'mobbex_featured_plans'      => [],
-            'mobbex_show_featured_plans' => 'no',
-            'mobbex_manual_config'       => 'no',
-            'mbbx_entity'                => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
-            'mbbx_sub_uid'               => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
-            'mbbx_sub_enable'            => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
-            'mbbx_sub_sign_up_fee'       => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
-            'mbbx_enable_multisite'      => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
+            'common_plans'          => [],
+            'mobbex_advanced_plans' => [],
+            'mobbex_selected_plans' => [],
+            'mobbex_featured_plans' => [],
+            'mobbex_show_featured'  => 'no',
+            'mobbex_manual_config'  => 'no',
+            'mbbx_entity'           => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
+            'mbbx_sub_uid'          => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
+            'mbbx_sub_enable'       => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
+            'mbbx_sub_sign_up_fee'  => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
+            'mbbx_enable_multisite' => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
         ];
 
         // Get multisite options
@@ -118,16 +118,16 @@ class Product
             : [];
 
         // Get plans selected and configuration
-        $options['mobbex_selected_plans'] = !empty($_POST['mobbex_selected_plans']) 
-            ? $_POST['mobbex_selected_plans']
-            : [];
         $options['mobbex_manual_config'] = !empty($_POST['mobbex_manual_config'])
             ? $_POST['mobbex_manual_config']
             : 'no';
         $options['mobbex_featured_plans'] = !empty($_POST['mobbex_featured_plans']) 
             ? $_POST['mobbex_featured_plans']
             : [];
-        $options['mobbex_show_featured_plans'] = !empty($_POST['mobbex_show_featured_plans']) 
+        $options['mobbex_selected_plans'] = !empty($_POST['mobbex_selected_plans']) 
+            ? $_POST['mobbex_selected_plans']
+            : [];
+        $options['mobbex_show_featured'] = !empty($_POST['mobbex_show_featured_plans'])
             ? $_POST['mobbex_show_featured_plans'] 
             : 'no';
 
