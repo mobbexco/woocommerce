@@ -250,7 +250,7 @@ class Config
         $common_plans   = array_unique($common_plans);
         $advanced_plans = array_unique($advanced_plans);
 
-       return compact('common_plans', 'advanced_plans');
+        return compact('common_plans', 'advanced_plans');
     }
 
     /**
@@ -312,34 +312,68 @@ class Config
      */
     public function get_featured_plans_configuration($id)
     {
-        $show_featured = $this->get_catalog_settings($id, "mobbex_show_featured_plans", "post") ?: "no";
-        if ($show_featured == "no")
+        $show_featured = $this->get_all_settings($id, "mobbex_show_featured");
+        if (!$show_featured)
             return null;
 
-        $manual_config = $this->get_catalog_settings($id, "mobbex_manual_config", "post") ?: "no";
-        if ($manual_config == "no")
+        $manual_config = $this->get_all_settings($id, "mobbex_manual_config");
+        if (!$manual_config)
             return "[]";
 
-        $featured_plans = $this->get_catalog_settings($id, 'mobbex_featured_plans', 'post');
-        return $this->get_categories_featured_plans($id, $featured_plans);
+        return $this->get_all_settings($id, "mobbex_featured_plans");
     }
 
     /**
-     * Get featured plans from product categories
+     * Get specific field values from product categories
      * 
      * @param string|int $id
-     * @param array      $featured_plans
+     * @param string     $field_name
+     * @param bool       $merge
      * 
-     * @return string $comprlete_featured_plans
+     * @return string|bool
      */
-    public function get_categories_featured_plans($id, $featured_plans = []) 
+    private function get_all_settings($id, $field_name) 
     {
+        // gets product settings
+        $product_field_value = $this->get_catalog_settings($id, $field_name, "post");
+
+        // gets categories settings
+        // merge in array value case
+        if (is_array($product_field_value)) {
+            $product_field_value = $this->get_all_product_featured_settings($id) ? $product_field_value : [];
+            foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
+                $product_field_value = array_merge(
+                    $product_field_value, 
+                    $this->get_catalog_settings($categoryId, $field_name, 'term')
+                );
+            return json_encode($product_field_value);
+        }
+
+        // check flags in string value case
+        $categories_values_array = [];
         foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
-            $featured_plans = array_merge(
-                $featured_plans, 
-                $this->get_catalog_settings($categoryId, 'mobbex_featured_plans', 'term')
+            array_push(
+                $categories_values_array,
+                $this->get_catalog_settings($categoryId, $field_name, 'term')
             );
 
-        return json_encode($featured_plans);
+        return empty($categories_values_array) 
+            ? $product_field_value == "yes"
+            : (in_array("yes", $categories_values_array) || $product_field_value == "yes");
+    }
+
+    /**
+     * Get product and its categories featured plans settings
+     * 
+     * @param string|int $id
+     * 
+     * @return bool
+     */
+    private function get_all_product_featured_settings($id) 
+    {
+        if ($this->get_catalog_settings($id, "mobbex_show_featured", "post") == "yes")
+            return $this->get_catalog_settings($id, "mobbex_manual_config", "post") == "yes";
+
+        return false;
     }
 }
