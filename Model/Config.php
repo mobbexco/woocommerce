@@ -340,12 +340,21 @@ class Config
         // gets categories settings
         // merge in array value case
         if (is_array($product_field_value)) {
-            $product_field_value = $this->get_all_product_featured_settings($id) ? $product_field_value : [];
-            foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
-                $product_field_value = array_merge(
+            $product_field_value = $this->display_featured_plans($id) 
+                ? $product_field_value 
+                : [];
+
+            foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId) {
+                $category_field_value = $this->display_featured_plans($categoryId, "term") 
+                    ? $this->get_catalog_settings($categoryId, $field_name, 'term') 
+                    : [];
+
+                $product_field_value   = array_merge(
                     $product_field_value, 
-                    $this->get_catalog_settings($categoryId, $field_name, 'term')
+                    $category_field_value 
                 );
+            }
+
             return json_encode($product_field_value);
         }
 
@@ -363,17 +372,17 @@ class Config
     }
 
     /**
-     * Get product and its categories featured plans settings
+     * Get catalog display featured plans settings
      * 
      * @param string|int $id
      * 
      * @return bool
      */
-    private function get_all_product_featured_settings($id) 
+    private function display_featured_plans($id, $catalog_type = "post") 
     {
-        if ($this->get_catalog_settings($id, "mobbex_show_featured", "post") == "yes")
-            return $this->get_catalog_settings($id, "mobbex_manual_config", "post") == "yes";
-
-        return false;
+        return (
+            ($this->get_catalog_settings($id, "mobbex_show_featured", $catalog_type) == "yes")
+            && ($this->get_catalog_settings($id, "mobbex_manual_config", $catalog_type) == "yes")
+        );
     }
 }
