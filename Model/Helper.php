@@ -310,4 +310,76 @@ class Helper
         return null;
     }
 
+    /**
+     * get_best_featured_plan get the best featured plan configured for a product
+     * 
+     * @param array $sources
+     * @param array $featured_plans
+     * 
+     * @return array best plan
+     */
+    public function get_best_featured_plan($sources, $featured_plans)
+    {
+        $featured_installments = [];
+
+        foreach ($sources as $source) {
+            if (empty($source['installments']) || empty($source['installments']['enabled'])) {
+                continue;
+            }
+
+            $installment_list = isset($source['installments']['list']) && is_array($source['installments']['list'])
+                ? $source['installments']['list']
+                : [];
+
+            foreach ($installment_list as $i) {
+                if (empty($i['uid'])) {
+                    continue;
+                }
+
+                if (in_array($i['uid'], $featured_plans, true) || in_array($i['reference'], $featured_plans, true)) {
+                    $featured_installments[] = [
+                        'count'      => isset($i['totals']['installment']['count']) ? $i['totals']['installment']['count'] : null,
+                        'amount'     => isset($i['totals']['installment']['amount']) ? $i['totals']['installment']['amount'] : null,
+                        'source'     => isset($source['source']['name']) ? $source['source']['name'] : 'Unknown',
+                        'percentage' => isset($i['totals']['financial']['percentage']) ? $i['totals']['financial']['percentage'] : 0,
+                    ];
+                }
+            }
+        }
+
+        if (empty($featured_installments))
+            return null;
+
+        return $this->get_best_plan($featured_installments);
+    }
+
+
+    /**
+     * get_best_plan evaluates between featured installments to get the best one
+     * 
+     * @param array $featured_installments
+     * 
+     * @return array best plan
+     */
+    private function get_best_plan($featured_installments)
+    {
+        $best = null;
+
+        foreach ($featured_installments as $plan) {
+            if ($best === null) {
+                $best = $plan;
+                continue;
+            }
+
+            $currentDiscount = isset($plan['percentage']) ? $plan['percentage'] : 0;
+            $bestDiscount = isset($best['percentage']) ? $best['percentage'] : 0;
+
+            if ($currentDiscount < $bestDiscount)
+                $best = $plan;
+            elseif ($currentDiscount == $bestDiscount && $plan['count'] > $best['count'])
+                $best = $plan;
+        }
+
+        return $best;
+    }
 }

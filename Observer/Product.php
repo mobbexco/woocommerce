@@ -338,4 +338,84 @@ class Product
             ? "[]"
             : $this->config->get_featured_plans_configuration($products_ids[0]);
     }
+
+    /**
+     * handle_product_tag handles show or not product tag/banner data
+     */
+    public function handle_product_tag() 
+    {
+        if (!$this->config->show_banner_on_products) return;
+
+        global $product;
+        if (!$product) return;
+
+        $tag_plan = $this->get_tag_featured_plan($product);
+
+        if (!$tag_plan) return;
+
+        echo '<div class="mobbex-finance-data"
+            data-product-id="' . esc_attr($product->get_id()) . '"
+            data-plan-count="' . esc_attr($tag_plan['count']) . '"
+            data-plan-amount="' . esc_attr($tag_plan['amount']) . '"
+            data-plan-source="' . esc_attr($tag_plan['source']) . '"
+            data-plan-percentage="' . esc_attr($tag_plan['percentage']) . '"
+        ></div>';
+    }
+
+    /**
+     * get_tag_featured_plan gets the required tag data
+     * 
+     * @param object $product
+     * 
+     * @return null|array
+     */
+    private function get_tag_featured_plan($product)
+    {
+        $id = $product->get_id();
+
+        $featured_plans = $this->config->get_all_settings($id, "mobbex_manual_config")
+            ? json_decode($this->config->get_all_settings($id, "mobbex_featured_plans"), true)
+            : null;
+
+        if (empty($featured_plans))
+            return null;
+
+        $total = $product->get_price();
+        return $this->get_featured_plan($featured_plans, $id, $total);
+    }
+
+    /**
+     * get_featured_plan get the best featured plan configured for a product
+     */
+    private function get_featured_plan($featured_plans, $id, $total) 
+    {
+        $sources = [];
+        // Get product plans
+        extract($this->config->get_products_plans([$id]));
+
+        $installments = \Mobbex\Repository::getInstallments(
+            [$id], 
+            $common_plans, 
+            $advanced_plans
+        );
+
+        // Get sources from cache or Mobbex API
+        try {
+            $sources = \Mobbex\Repository::getSources(
+                $total,
+                $installments
+            );
+        }  catch (\Exception $e) {
+            $this->logger->log(
+                'error', 
+                'Product > getSources', 
+                $e->getMessage()
+            );
+            return null;
+        }
+        if (empty($sources))
+            return null;
+
+        return $this->helper->get_best_featured_plan($sources, $featured_plans);
+    }
 }
