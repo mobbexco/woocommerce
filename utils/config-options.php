@@ -211,6 +211,14 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
+    'show_banner_on_products' => [
+        'title'       => __('Mostrar banner de financiación destacada en la vista general de la tienda', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostraran el plan de financiación destacado configurado en cada producto de la tienda.', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'yes',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
     'checkout_banner' => [
         'title'       => __('Mobbex Banner in Checkout', 'mobbex-for-woocommerce'),
         'description' => __('You can set a banner to show in Mobbex checkout. (ex. https://res.mobbex.com/ecommerce/mobbex_1.png).', 'mobbex-for-woocommerce'),
