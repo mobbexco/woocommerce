@@ -311,14 +311,14 @@ class Helper
     }
 
     /**
-     * get_best_featured_plan get the best featured plan configured for a product
+     * filter_featured_plans get the featured plans configured for a product
      * 
      * @param array $sources
      * @param array $featured_plans
      * 
-     * @return array best plan
+     * @return string best plan
      */
-    public function get_best_featured_plan($sources, $featured_plans)
+    public function filter_featured_plans($sources, $featured_plans)
     {
         $featured_installments = [];
 
@@ -350,36 +350,36 @@ class Helper
         if (empty($featured_installments))
             return null;
 
-        return $this->get_best_plan($featured_installments);
+        return $this->set_best_plan($featured_installments);
     }
 
 
     /**
-     * get_best_plan evaluates between featured installments to get the best one
+     * set_best_plan evaluates between featured installments to get the best one
      * 
      * @param array $featured_installments
      * 
-     * @return array best plan
+     * @return string $best_plan
      */
-    private function get_best_plan($featured_installments)
+    private function set_best_plan($featured_installments)
     {
-        $best = null;
+        $best_plan = null;
 
         foreach ($featured_installments as $plan) {
-            if ($best === null) {
-                $best = $plan;
+            if ($best_plan === null) {
+                $best_plan = $plan;
                 continue;
             }
 
             $currentDiscount = isset($plan['percentage']) ? $plan['percentage'] : 0;
-            $bestDiscount = isset($best['percentage']) ? $best['percentage'] : 0;
+            $bestDiscount    = isset($best_plan['percentage']) ? $best_plan['percentage'] : 0;
 
             if ($currentDiscount < $bestDiscount)
-                $best = $plan;
-            elseif ($currentDiscount == $bestDiscount && $plan['count'] > $best['count'])
-                $best = $plan;
+                $best_plan = $plan;
+            elseif ($currentDiscount == $bestDiscount && $plan['count'] > $best_plan['count'])
+                $best_plan = $plan;
         }
 
-        return $best;
+        return json_encode($best_plan);
     }
 }

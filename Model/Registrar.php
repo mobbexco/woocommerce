@@ -125,7 +125,7 @@ class Registrar
             ['name' => 'woocommerce_process_product_meta', 'callback' => [$this->product, 'save']],
             ['name' => 'create_product_cat', 'callback' => [$this->product, 'save']],
             ['name' => 'edited_product_cat', 'callback' => [$this->product, 'save']],
-            ['name' => 'woocommerce_after_shop_loop_item', 'callback' => [$this->product, 'handle_product_tag'], 'priority' => 20],
+            ['name' => 'woocommerce_after_shop_loop_item', 'callback' => [$this->product, 'handle_best_plan'], 'priority' => 20],
 
             //Order observer
             ['name' => 'woocommerce_valid_order_statuses_for_payment_complete', 'callback' => [$this->order, 'valid_statuses_for_payment_complete']],
