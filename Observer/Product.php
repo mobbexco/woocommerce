@@ -99,6 +99,7 @@ class Product
             'mobbex_featured_plans' => [],
             'mobbex_show_featured'  => 'no',
             'mobbex_manual_config'  => 'no',
+            'best_plan'             => null,
             'mbbx_entity'           => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
             'mbbx_sub_uid'          => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
             'mbbx_sub_enable'       => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
@@ -139,8 +140,78 @@ class Product
         foreach ($options as $key => $option)
             update_metadata($meta_type, $id, $key, $option);
 
+        // save best plan to show in produts catalog page
+        if ($meta_type == "post") {
+            $best_plan = $this->save_best_plan($id);
+        }
+
         if ($options['mbbx_enable_multisite'])
             $this->save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
+    }
+
+    /**
+     * save_best_plan saves the required data to show the best plan banner in products catalog page
+     * 
+     * @param object $product
+     * 
+     * @return null|array
+     */
+    private function save_best_plan($id)
+    {
+        $featured_plans = $this->config->get_all_settings($id, "mobbex_manual_config")
+            ? json_decode($this->config->get_all_settings($id, "mobbex_featured_plans"), true)
+            : null;
+
+        if (empty($featured_plans))
+            return null;
+
+        $best_plan = $this->get_best_plan($featured_plans, $id);
+        update_metadata('post', $id, 'best_plan', $best_plan);
+
+        return $best_plan;
+    }
+
+    /**
+     * get_best_plan get the best plan configured as featured plan for a product
+     * 
+     * @param array      $featured_plans
+     * @param int|string $id
+     * 
+     * @return null|string best plan in featured plans
+     */
+    private function get_best_plan($featured_plans, $id) 
+    {
+        $sources = [];
+        $total   = wc_get_product($id)->get_price();
+
+        // Get product plans
+        extract($this->config->get_products_plans([$id]));
+
+        $installments = \Mobbex\Repository::getInstallments(
+            [$id], 
+            $common_plans,
+            $advanced_plans
+        );
+
+        // Get sources from cache or Mobbex API
+        try {
+            $sources = \Mobbex\Repository::getSources(
+                $total,
+                $installments
+            );
+        }  catch (\Exception $e) {
+            $this->logger->log(
+                'error', 
+                'Product > getSources', 
+                $e->getMessage()
+            );
+            return null;
+        }
+        
+        if (empty($sources))
+            return null;
+
+        return $this->helper->filter_featured_plans($sources, $featured_plans);
     }
 
     /**
@@ -303,6 +374,31 @@ class Product
         return $sign_up_price ? $price_html .= __(" /mes y $$sign_up_price de costo de instalación") : $price_html;
     }
 
+    /**
+     * handle_best_plan handles show or not product best plan banner in shop view
+     */
+    public function handle_best_plan() 
+    {
+        if ($this->config->show_banner_on_products == "no") return;
+
+        global $product;
+        if (!$product) return;
+
+        $id = $product->get_id();
+
+        $best_plan = json_decode($this->config->get_catalog_settings($id, "best_plan"), true);
+
+        if (!$best_plan) return;
+
+        echo '<div class="mobbex-finance-data"
+            data-product-id="' . esc_attr($id) . '"
+            data-plan-count="' . esc_attr($best_plan['count']) . '"
+            data-plan-amount="' . esc_attr($best_plan['amount']) . '"
+            data-plan-source="' . esc_attr($best_plan['source']) . '"
+            data-plan-percentage="' . esc_attr($best_plan['percentage']) . '"
+        ></div>';
+    }
+
 
     /* Finance Widget */
     
@@ -337,85 +433,5 @@ class Product
         return count($products_ids) > 1
             ? "[]"
             : $this->config->get_featured_plans_configuration($products_ids[0]);
-    }
-
-    /**
-     * handle_product_tag handles show or not product tag/banner data
-     */
-    public function handle_product_tag() 
-    {
-        if (!$this->config->show_banner_on_products) return;
-
-        global $product;
-        if (!$product) return;
-
-        $tag_plan = $this->get_tag_featured_plan($product);
-
-        if (!$tag_plan) return;
-
-        echo '<div class="mobbex-finance-data"
-            data-product-id="' . esc_attr($product->get_id()) . '"
-            data-plan-count="' . esc_attr($tag_plan['count']) . '"
-            data-plan-amount="' . esc_attr($tag_plan['amount']) . '"
-            data-plan-source="' . esc_attr($tag_plan['source']) . '"
-            data-plan-percentage="' . esc_attr($tag_plan['percentage']) . '"
-        ></div>';
-    }
-
-    /**
-     * get_tag_featured_plan gets the required tag data
-     * 
-     * @param object $product
-     * 
-     * @return null|array
-     */
-    private function get_tag_featured_plan($product)
-    {
-        $id = $product->get_id();
-
-        $featured_plans = $this->config->get_all_settings($id, "mobbex_manual_config")
-            ? json_decode($this->config->get_all_settings($id, "mobbex_featured_plans"), true)
-            : null;
-
-        if (empty($featured_plans))
-            return null;
-
-        $total = $product->get_price();
-        return $this->get_featured_plan($featured_plans, $id, $total);
-    }
-
-    /**
-     * get_featured_plan get the best featured plan configured for a product
-     */
-    private function get_featured_plan($featured_plans, $id, $total) 
-    {
-        $sources = [];
-        // Get product plans
-        extract($this->config->get_products_plans([$id]));
-
-        $installments = \Mobbex\Repository::getInstallments(
-            [$id], 
-            $common_plans, 
-            $advanced_plans
-        );
-
-        // Get sources from cache or Mobbex API
-        try {
-            $sources = \Mobbex\Repository::getSources(
-                $total,
-                $installments
-            );
-        }  catch (\Exception $e) {
-            $this->logger->log(
-                'error', 
-                'Product > getSources', 
-                $e->getMessage()
-            );
-            return null;
-        }
-        if (empty($sources))
-            return null;
-
-        return $this->helper->get_best_featured_plan($sources, $featured_plans);
     }
 }
