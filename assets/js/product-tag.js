@@ -43,11 +43,16 @@ window.addEventListener("load", () => {
     const wrapper = document.createElement("div");
     wrapper.classList.add("mobbex-wrapper");
 
+    // flag container
+    const flagContainer = document.createElement("div");
+    flagContainer.classList.add("mobbex-flag-container");
+
     // insert before shop product img (over with style)
     imgElement.parentNode?.insertBefore(wrapper, imgElement);
     wrapper.appendChild(imgElement);
+    wrapper.appendChild(flagContainer);
 
-    // Flag parent
+    // Flag
     const flagBody = document.createElement("div");
     flagBody.classList.add("mobbex-flag");
 
@@ -91,22 +96,18 @@ window.addEventListener("load", () => {
     const bannerBottom = document.createElement("div");
     bannerBottom.classList.add("mobbex-product-banner-bottom");
 
-    if (plan.count > 1) {
+    if (plan.count > 1)
       bannerTop.innerHTML =
         "<span class='mobbex-installment-span-left'>Hasta</span><span class='mobbex-installment-span-right'>" +
         plan.count +
         " Cuotas</span>";
-      bannerBottom.innerHTML =
-        financeText(plan.percentage) + " de $" + plan.amount;
-    } else {
+    else
       bannerTop.innerHTML =
         "<span class='mobbex-installment-span-left'>En</span><span class='mobbex-installment-span-right'>" +
         plan.count +
         " Pago</span>";
-      bannerBottom.innerHTML =
-        financeText(plan.percentage) + " de $" + plan.amount;
-    }
-
+    
+    bannerBottom.innerHTML = financeText(plan.percentage) + " de $" + plan.amount;
     priceElement.parentNode?.insertBefore(banner, priceElement);
 
     // build banner elements jerarchy

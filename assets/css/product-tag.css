@@ -9,17 +9,24 @@
     display: inline-block;
 }
 
+.mobbex-flag-container {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 5;
+}
+
 .mobbex-flag {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
     top: -0.9rem;
     right: 0.625rem;
-    display: flex;
     min-height: 2.25rem;
     min-width: 5.375rem;
     max-height: 4.5rem;
     max-width: 6.75rem;
-    position: absolute;
     padding: 0 0.375rem 0.375rem 0.375rem;
-    flex-direction: column;
     color: var(--flag-text);
     font-family: var(--font-fmly);
     border-radius: 0 0.5rem 0.5rem 0.5rem;
@@ -27,6 +34,16 @@
     background: var(--tag-blue);
     box-shadow: 0.25rem 0.25rem 0.25rem 0 rgba(0, 0, 0, 0.10);
 }
+
+.mobbex-flag::before {
+    content: "";
+    position: absolute;
+    left: -0.875rem;
+    top: 0;
+    border-left: 0.875rem solid transparent;
+    border-bottom: 0.875rem solid #a09da3;
+}
+
 
 .mobbex-flag-top {
     height: 2.25rem;
@@ -66,14 +83,6 @@
     margin: 0 0.25rem 0.25rem 0.25rem;
     flex-direction: column;
     justify-content: center;
-}
-
-.mobbex-flag::before {
-    content: "";
-    left: -0.9rem;
-    position: absolute;
-    border-left: 0.875rem solid transparent;
-    border-bottom: 0.875rem solid #a09da3;
 }
 
 .mobbex-product-banner {
