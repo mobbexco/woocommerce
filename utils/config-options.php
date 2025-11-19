@@ -211,9 +211,17 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
+    'show_flag_on_products' => [
+        'title'       => __('Mostrar bandera de financiación destacada en productos', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostraré en una pequeña bandera el plan de financiación destacado configurado en cada producto de la tienda.', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'default'     => 'yes',
+        'class'       => 'mbbx-into-appearance',
+    ],
+
     'show_banner_on_products' => [
-        'title'       => __('Mostrar banner de financiación destacada en la vista general de la tienda', 'mobbex-for-woocommerce'),
-        'description' => __('Se mostraran el plan de financiación destacado configurado en cada producto de la tienda.', 'mobbex-for-woocommerce'),
+        'title'       => __('Mostrar banner de financiación destacada en productos', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostrará un banner con el plan de financiación destacado configurado en cada producto de la tienda.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',
         'default'     => 'yes',
         'class'       => 'mbbx-into-appearance',

@@ -26,8 +26,11 @@ window.addEventListener("load", () => {
         percentage: tag_plan.dataset.planPercentage
       };
 
-      addSourceFlag(product, anchorProp.img, plan);
-      addFinanceBanner(product, anchorProp.price, plan);
+      if (window.showFlag)
+        addSourceFlag(product, anchorProp.img, plan);
+
+      if (window.showBanner)
+        addFinanceBanner(product, anchorProp.price, plan);
     });
   }
 

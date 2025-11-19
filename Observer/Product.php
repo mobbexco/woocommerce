@@ -141,9 +141,8 @@ class Product
             update_metadata($meta_type, $id, $key, $option);
 
         // save best plan to show in produts catalog page
-        if ($meta_type == "post") {
-            $best_plan = $this->save_best_plan($id);
-        }
+        if ($meta_type == "post")
+            $this->save_best_plan($id);
 
         if ($options['mbbx_enable_multisite'])
             $this->save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
@@ -153,8 +152,6 @@ class Product
      * save_best_plan saves the required data to show the best plan banner in products catalog page
      * 
      * @param object $product
-     * 
-     * @return null|array
      */
     private function save_best_plan($id)
     {
@@ -167,8 +164,6 @@ class Product
 
         $best_plan = $this->get_best_plan($featured_plans, $id);
         update_metadata('post', $id, 'best_plan', $best_plan);
-
-        return $best_plan;
     }
 
     /**
@@ -379,7 +374,11 @@ class Product
      */
     public function handle_best_plan() 
     {
-        if ($this->config->show_banner_on_products == "no") return;
+        $show_flag   = $this->config->show_flag_on_products == "yes";
+        $show_banner = $this->config->show_banner_on_products == "yes";
+
+        if (!$show_banner && !$show_flag) 
+            return;
 
         global $product;
         if (!$product) return;
@@ -390,6 +389,12 @@ class Product
 
         if (!$best_plan) return;
 
+        // Pass PHP variables to JavaScript
+        $show_flag_js   = $show_flag ? 'true' : 'false';
+        $show_banner_js = $show_banner ? 'true' : 'false';
+
+        echo "<script>window.showFlag = $show_flag_js; window.showBanner = $show_banner_js;</script>";
+        
         echo '<div class="mobbex-finance-data"
             data-product-id="' . esc_attr($id) . '"
             data-plan-count="' . esc_attr($best_plan['count']) . '"

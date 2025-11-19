@@ -42,7 +42,7 @@ class Init
         }
 
         // Shop page
-        if (is_shop() && $this->config->show_banner_on_products == 'yes') {
+        if (is_shop() && ($this->config->show_banner_on_products == 'yes' || $this->config->show_flag_on_products == 'yes')) {
             wp_enqueue_script('mobbex-product-tag_script', $dir_url . 'assets/js/product-tag.js', null, MOBBEX_VERSION, ['in_footer' => true]);
             wp_enqueue_style('mobbex_product_tag_style', $dir_url . 'assets/css/product-tag.css', null, MOBBEX_VERSION);
         }
