@@ -51,9 +51,7 @@ class Config
     public $method_icon;
     public $show_no_interest_labels;
     public $final_currency;
-    public $show_featured_installments;
-    public $auto_featured_installments;
-    public $custom_featured_installments;
+    public $show_featured_installments_on_cart;
 
     public function __construct()
     {
@@ -141,7 +139,7 @@ class Config
     {
         $data = get_metadata($catalog_type, $id, $field_name, true);
 
-        if (strpos($field_name, '_plans'))
+        if (isset($data) && strpos($field_name, '_plans'))
             return $data ? $this->maybe_decode($data) : [];
 
         return $data ?: '';
@@ -238,13 +236,13 @@ class Config
     {
         //Get product plans
         $common_plans   = $this->get_catalog_settings($id, 'common_plans', $catalog_type) ?: [];
-        $advanced_plans = $this->get_catalog_settings($id, 'advanced_plans', $catalog_type) ?: [];
+        $advanced_plans = $this->get_catalog_settings($id, 'mobbex_advanced_plans', $catalog_type) ?: [];
 
         //Get plans from categories
         if(!$admin && $catalog_type === 'post') {
             foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId){
                 $common_plans   = array_merge($common_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term'));
-                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'advanced_plans', 'term'));
+                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'mobbex_advanced_plans', 'term'));
             }
         }
 
@@ -252,7 +250,7 @@ class Config
         $common_plans   = array_unique($common_plans);
         $advanced_plans = array_unique($advanced_plans);
 
-       return compact('common_plans', 'advanced_plans');
+        return compact('common_plans', 'advanced_plans');
     }
 
     /**
@@ -303,5 +301,88 @@ class Config
             // Save selection and new store data
             update_option('mbbx_stores', $stores) && update_metadata($meta_type, $id, 'mbbx_store', $new_store);
         }
+    }
+
+    /**
+     * Get product featured plans configuration
+     * 
+     * @param string|int $id 
+     * 
+     * @return string|null
+     */
+    public function get_featured_plans_configuration($id)
+    {
+        $show_featured = $this->get_all_settings($id, "show_featured");
+        if (!$show_featured)
+            return null;
+
+        $manual_config = $this->get_all_settings($id, "manual_config");
+        if (!$manual_config)
+            return "[]";
+
+        return $this->get_all_settings($id, "featured_plans");
+    }
+
+    /**
+     * Get specific field values from product categories
+     * 
+     * @param string|int $id
+     * @param string     $field_name
+     * 
+     * @return string|bool
+     */
+    private function get_all_settings($id, $field_name) 
+    {
+        // gets product settings
+        $product_field_value = $this->get_catalog_settings($id, $field_name, "post");
+
+        // gets categories settings
+        // merge in array value case
+        if (is_array($product_field_value)) {
+            $product_field_value = $this->should_display_featured_plans($id) 
+                ? $product_field_value 
+                : [];
+
+            foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId) {
+                $category_field_value = $this->should_display_featured_plans($categoryId, "term") 
+                    ? $this->get_catalog_settings($categoryId, $field_name, 'term') 
+                    : [];
+
+                $product_field_value   = array_merge(
+                    $product_field_value, 
+                    $category_field_value 
+                );
+            }
+
+            return json_encode($product_field_value);
+        }
+
+        // retrieves the field value in each product category
+        $category_values = [];
+        foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId)
+            array_push(
+                $category_values,
+                $this->get_catalog_settings($categoryId, $field_name, 'term')
+            );
+
+        return empty($category_values) 
+            ? $product_field_value == "yes"
+            : (in_array("yes", $category_values) || $product_field_value == "yes");
+    }
+
+    /**
+     * Get catalog display featured plans settings
+     * 
+     * @param string|int $id
+     * @param string     $catalog_type
+     * 
+     * @return bool
+     */
+    private function should_display_featured_plans($id, $catalog_type = "post") 
+    {
+        return (
+            ($this->get_catalog_settings($id, "show_featured", $catalog_type) == "yes")
+            && ($this->get_catalog_settings($id, "manual_config", $catalog_type) == "yes")
+        );
     }
 }

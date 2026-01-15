@@ -76,12 +76,14 @@ class Init
         if (($hook == 'post-new.php' || $hook == 'post.php') && $post->post_type == 'product') {
             wp_enqueue_style('mbbx-product-style', $dir_url . 'assets/css/product-admin.css', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-product-js', $dir_url . 'assets/js/product-admin.js', null, MOBBEX_VERSION);
+            wp_enqueue_script('mbbx-plan-configurator-js', $dir_url . 'assets/js/plans-configurator.min.js', null, MOBBEX_VERSION, ['in_footer' => true]);
         }
 
         // Category admin page
         if (isset($current_screen->id) && $current_screen->id == 'edit-product_cat') {
             wp_enqueue_style('mbbx-category-style', $dir_url . 'assets/css/category-admin.css', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-category-js', $dir_url . 'assets/js/category-admin.js', null, MOBBEX_VERSION);
+            wp_enqueue_script('mbbx-plan-configurator-js', $dir_url . 'assets/js/plans-configurator.min.js', null, MOBBEX_VERSION, ['in_footer' => true]);
         }
 
         // Plugin config page

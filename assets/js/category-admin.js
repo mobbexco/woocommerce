@@ -1,6 +1,8 @@
 function mbbxToggleOptions(optionToCheck, valueToShow, optionsToToggle, classUsed) {
     // Works with multiple elements
     for (var option of optionsToToggle) {
+        if (!option)
+            continue;
         if (optionToCheck.checked === valueToShow || optionToCheck.value === valueToShow) {
             option.classList.remove(classUsed);
         } else {
@@ -21,8 +23,10 @@ window.addEventListener('load', function () {
 
     // Show all multisite options when is enabled
     mbbxToggleOptions(isMultisite, true, allOptions, 'really-hidden');
-    isMultisite.onclick = function () {
-        mbbxToggleOptions(isMultisite, true, allOptions, 'really-hidden');
+    if (isMultisite) {
+        isMultisite.onclick = function () {
+            mbbxToggleOptions(isMultisite, true, allOptions, 'really-hidden');
+        }
     }
 
     var storeSelect = document.querySelector('select#mbbx_store');
@@ -33,7 +37,10 @@ window.addEventListener('load', function () {
     ];
 
     mbbxToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
-    storeSelect.onchange = function () {
-        mbbxToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
+
+    if (storeSelect) {
+        storeSelect.onchange = function () {
+            mbbxToggleOptions(storeSelect, 'new', newStoreOptions, 'hidden');
+        }
     }
 });
