@@ -1,6 +1,5 @@
 <div id="mbbx-plans-configurator" style="display:flex"></div>
 <script id="mbbx-finance-data">
-    window.mobbexSelectedPlans     = <?= $selected_plans ? json_encode($selected_plans) : "[]" ?>;
     window.mobbexAdvancedPlans     = <?= $advanced_plans ? json_encode($advanced_plans) : "[]" ?>;
     window.mobbexFeaturedPlans     = <?= $featured_plans ? json_encode($featured_plans) : "[]" ?>;
     window.mobbexManual            = Boolean(<?=!empty($manual) ? $manual == "yes" : 0 ?>);

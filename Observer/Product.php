@@ -40,11 +40,10 @@ class Product
         extract($this->config->get_catalog_plans($id, $meta_type, true));
 
         // gets plans configurator settings
-        $manual         = $this->config->get_catalog_settings($id, "mobbex_manual_config", $meta_type) ?: "no";
-        $show_plans     = $this->config->get_catalog_settings($id, "mobbex_show_featured", $meta_type) ?: "no";
-        $featured_plans = $this->config->get_catalog_settings($id, "mobbex_featured_plans", $meta_type) ?: null;
-        $advanced_plans = $this->config->get_catalog_settings($id, "mobbex_advanced_plans", $meta_type) ?: null;
-        $selected_plans = $this->config->get_catalog_settings($id, "mobbex_selected_plans", $meta_type) ?: null;
+        $manual         = $this->config->get_catalog_settings($id, "manual_config", $meta_type) ?: "no";
+        $show_plans     = $this->config->get_catalog_settings($id, "show_featured", $meta_type) ?: "no";
+        $featured_plans = $this->config->get_catalog_settings($id, "featured_plans", $meta_type) ?: null;
+        $advanced_plans = $this->config->get_catalog_settings($id, "advanced_plans", $meta_type) ?: null;
 
         // gets store data
         extract($this->config->get_store_data($meta_type, $id));
@@ -93,18 +92,16 @@ class Product
         $meta_type = current_action() == 'woocommerce_process_product_meta' ? 'post' : 'term';
 
         $options = [
-            'common_plans'          => [],
-            'mobbex_advanced_plans' => [],
-            'mobbex_selected_plans' => [],
-            'mobbex_featured_plans' => [],
-            'mobbex_show_featured'  => 'no',
-            'mobbex_manual_config'  => 'no',
-            'best_plan'             => null,
             'mbbx_entity'           => !empty($_POST['mbbx_entity']) ? $_POST['mbbx_entity'] : false,
             'mbbx_sub_uid'          => !empty($_POST['mbbx_sub_uid']) ? $_POST['mbbx_sub_uid'] : false,
             'mbbx_sub_enable'       => !empty($_POST['mbbx_sub_enable']) && $_POST['mbbx_sub_enable'] === 'yes',
+            'manual_config'         => !empty($_POST['mobbex_manual_config']) ? $_POST['mobbex_manual_config'] : 'no',
+            'featured_plans'        => !empty($_POST['mobbex_featured_plans']) ? $_POST['mobbex_featured_plans'] : [],
             'mbbx_sub_sign_up_fee'  => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
             'mbbx_enable_multisite' => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
+            'show_featured'         => !empty($_POST['mobbex_show_featured_plans']) ? $_POST['mobbex_show_featured_plans'] : 'no',
+            'advanced_plans'        => !empty($_POST['mobbex_advanced_plans']) ? json_decode(stripslashes($_POST['mobbex_advanced_plans']), true) : [],
+            'best_plan'             => null,
         ];
 
         // Get multisite options
@@ -112,29 +109,6 @@ class Product
         $api_key      = !empty($_POST['mbbx_api_key']) ? $_POST['mbbx_api_key'] : false;
         $name         = !empty($_POST['mbbx_store_name']) ? $_POST['mbbx_store_name'] : false;
         $access_token = !empty($_POST['mbbx_access_token']) ? $_POST['mbbx_access_token'] : false;
-
-        // Get activated plans
-        $advanced_plans = !empty($_POST['mobbex_advanced_plans'])
-            ? json_decode(stripslashes($_POST['mobbex_advanced_plans']), true) 
-            : [];
-
-        // Get plans selected and configuration
-        $options['mobbex_manual_config'] = !empty($_POST['mobbex_manual_config'])
-            ? $_POST['mobbex_manual_config']
-            : 'no';
-        $options['mobbex_featured_plans'] = !empty($_POST['mobbex_featured_plans']) 
-            ? $_POST['mobbex_featured_plans']
-            : [];
-        $options['mobbex_selected_plans'] = !empty($_POST['mobbex_selected_plans']) 
-            ? $_POST['mobbex_selected_plans']
-            : [];
-        $options['mobbex_show_featured'] = !empty($_POST['mobbex_show_featured_plans'])
-            ? $_POST['mobbex_show_featured_plans'] 
-            : 'no';
-
-        // Add UID to advanced plans
-        foreach ($advanced_plans as $advanced_plan => $value)
-            $options['mobbex_advanced_plans'][] = $value;
 
         // Save all $options data as meta data
         foreach ($options as $key => $option)
@@ -269,32 +243,30 @@ class Product
     public function shortcode_mobbex_finance_widget($params)
     {
         global $post;
-        $products_ids = [];
+        $product_ids = [];
 
         // Try to get shortcode params
         if (isset($params['price'])) {
             $price        = $params['price'];
-            $products_ids = isset($params['products_ids']) ? explode(',', $params['products_ids']) : [];
+            $product_ids  = isset($params['products_ids']) ? explode(',', $params['products_ids']) : [];
         } else if (is_cart()) {
-            $price          = WC()->cart->get_total(null);
-            $products_ids   = array_column(WC()->cart->get_cart() ?: [], 'product_id');
+            $price        = WC()->cart->get_total(null);
+            $product_ids  = array_column(WC()->cart->get_cart() ?: [], 'product_id');
         } else if ($post && $post->post_type == 'product') {
-            $price        = wc_get_product($post->ID)->get_price();
-            $products_ids = [$post->ID];
+            $price       = wc_get_product($post->ID)->get_price();
+            $product_ids = [$post->ID];
         } else {
             return;
         }
 
         $query = [
             'mbbx_products_price' => $price,
-            'mbbx_products_ids'   => implode(',', $products_ids),
+            'mbbx_products_ids'   => implode(',', $product_ids),
         ];
 
-        $featured_plans = $this->handle_featured_installments($products_ids);
-
         $data = [
-            'featured_installments' => $featured_plans,
             'theme'                 => $this->config->theme,
+            'featured_installments' => $this->handle_featured_installments($product_ids),
             'sources_url'           => add_query_arg(
                 $query,
                 get_rest_url(null, 'mobbex/v1/sources')
@@ -411,11 +383,13 @@ class Product
      * Handle featured installments configuration and return the correct value depending on context.
      * In cart it is only possible to show auto-selected featured plans
      * 
+     * @param array $product_ids
+     * 
      * @return string|null
      */
-    public function handle_featured_installments($products_ids = [])
+    public function handle_featured_installments($product_ids = [])
     {
-        if(!isset($products_ids) || empty($products_ids)){
+        if(!isset($product_ids) || empty($product_ids)){
             $this->logger->log(
                 "error", 
                 "Error: No se encontraron productos para obtener financiación destacada.",
@@ -435,8 +409,8 @@ class Product
                 : null;
         }
         
-        return count($products_ids) > 1
+        return count($product_ids) > 1
             ? "[]"
-            : $this->config->get_featured_plans_configuration($products_ids[0]);
+            : $this->config->get_featured_plans_configuration($product_ids[0]);
     }
 }
