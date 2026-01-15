@@ -41,6 +41,12 @@ class Init
             ]);
         }
 
+        // Shop page
+        if (is_shop() && ($this->config->show_banner_on_products == 'yes' || $this->config->show_flag_on_products == 'yes')) {
+            wp_enqueue_script('mobbex-product-tag_script', $dir_url . 'assets/js/product-tag.js', null, MOBBEX_VERSION, ['in_footer' => true]);
+            wp_enqueue_style('mobbex_product_tag_style', $dir_url . 'assets/css/product-tag.css', null, MOBBEX_VERSION);
+        }
+
         // Checkout page
         if (is_checkout()) {
             // Exclude scripts from cache plugins minification
@@ -84,6 +90,7 @@ class Init
             wp_enqueue_style('mbbx-category-style', $dir_url . 'assets/css/category-admin.css', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-category-js', $dir_url . 'assets/js/category-admin.js', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-plan-configurator-js', $dir_url . 'assets/js/plans-configurator.min.js', null, MOBBEX_VERSION, ['in_footer' => true]);
+            include_once __DIR__ . '/../templates/product-tags.php';
         }
 
         // Plugin config page

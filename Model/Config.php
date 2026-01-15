@@ -52,6 +52,8 @@ class Config
     public $show_no_interest_labels;
     public $final_currency;
     public $show_featured_installments_on_cart;
+    public $show_flag_on_products;
+    public $show_banner_on_products;
 
     public function __construct()
     {
@@ -331,7 +333,7 @@ class Config
      * 
      * @return string|bool
      */
-    private function get_all_settings($id, $field_name) 
+    public function get_all_settings($id, $field_name) 
     {
         // gets product settings
         $product_field_value = $this->get_catalog_settings($id, $field_name, "post");

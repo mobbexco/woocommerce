@@ -100,7 +100,8 @@ class Product
             'mbbx_sub_sign_up_fee'  => !empty($_POST['mbbx_sub_sign_up_fee']) ? $_POST['mbbx_sub_sign_up_fee'] : false,
             'mbbx_enable_multisite' => !empty($_POST['mbbx_enable_multisite']) && $_POST['mbbx_enable_multisite'] === 'yes',
             'show_featured'         => !empty($_POST['mobbex_show_featured_plans']) ? $_POST['mobbex_show_featured_plans'] : 'no',
-            'advanced_plans'        => !empty($_POST['mobbex_advanced_plans']) ? json_decode(stripslashes($_POST['mobbex_advanced_plans']), true) : []
+            'advanced_plans'        => !empty($_POST['mobbex_advanced_plans']) ? json_decode(stripslashes($_POST['mobbex_advanced_plans']), true) : [],
+            'best_plan'             => null,
         ];
 
         // Get multisite options
@@ -113,8 +114,73 @@ class Product
         foreach ($options as $key => $option)
             update_metadata($meta_type, $id, $key, $option);
 
+        // save best plan to show in produts catalog page
+        if ($meta_type == "post")
+            $this->save_best_plan($id);
+
         if ($options['mbbx_enable_multisite'])
             $this->save_store($meta_type, $id, $store, compact('name', 'api_key', 'access_token'));
+    }
+
+    /**
+     * save_best_plan saves the required data to show the best plan banner in products catalog page
+     * 
+     * @param object $product
+     */
+    private function save_best_plan($id)
+    {
+        $featured_plans = $this->config->get_all_settings($id, "mobbex_manual_config")
+            ? json_decode($this->config->get_all_settings($id, "mobbex_featured_plans"), true)
+            : null;
+
+        if (empty($featured_plans))
+            return null;
+
+        $best_plan = $this->get_best_plan($featured_plans, $id);
+        update_metadata('post', $id, 'best_plan', $best_plan);
+    }
+
+    /**
+     * get_best_plan get the best plan configured as featured plan for a product
+     * 
+     * @param array      $featured_plans
+     * @param int|string $id
+     * 
+     * @return null|string best plan in featured plans
+     */
+    private function get_best_plan($featured_plans, $id) 
+    {
+        $sources = [];
+        $total   = wc_get_product($id)->get_price();
+
+        // Get product plans
+        extract($this->config->get_products_plans([$id]));
+
+        $installments = \Mobbex\Repository::getInstallments(
+            [$id], 
+            $common_plans,
+            $advanced_plans
+        );
+
+        // Get sources from cache or Mobbex API
+        try {
+            $sources = \Mobbex\Repository::getSources(
+                $total,
+                $installments
+            );
+        }  catch (\Exception $e) {
+            $this->logger->log(
+                'error', 
+                'Product > getSources', 
+                $e->getMessage()
+            );
+            return null;
+        }
+        
+        if (empty($sources))
+            return null;
+
+        return $this->helper->filter_featured_plans($sources, $featured_plans);
     }
 
     /**
@@ -273,6 +339,41 @@ class Product
         $sign_up_price = $this->config->get_product_subscription_signup_fee($product->get_id());
 
         return $sign_up_price ? $price_html .= __(" /mes y $$sign_up_price de costo de instalación") : $price_html;
+    }
+
+    /**
+     * handle_best_plan handles show or not product best plan banner in shop view
+     */
+    public function handle_best_plan() 
+    {
+        $show_flag   = $this->config->show_flag_on_products == "yes";
+        $show_banner = $this->config->show_banner_on_products == "yes";
+
+        if (!$show_banner && !$show_flag) 
+            return;
+
+        global $product;
+        if (!$product) return;
+
+        $id = $product->get_id();
+
+        $best_plan = json_decode($this->config->get_catalog_settings($id, "best_plan"), true);
+
+        if (!$best_plan) return;
+
+        // Pass PHP variables to JavaScript
+        $show_flag_js   = $show_flag ? 'true' : 'false';
+        $show_banner_js = $show_banner ? 'true' : 'false';
+
+        echo "<script>window.showFlag = $show_flag_js; window.showBanner = $show_banner_js;</script>";
+        
+        echo '<div class="mobbex-finance-data"
+            data-product-id="' . esc_attr($id) . '"
+            data-plan-count="' . esc_attr($best_plan['count']) . '"
+            data-plan-amount="' . esc_attr($best_plan['amount']) . '"
+            data-plan-source="' . esc_attr($best_plan['source']) . '"
+            data-plan-percentage="' . esc_attr($best_plan['percentage']) . '"
+        ></div>';
     }
 
 
