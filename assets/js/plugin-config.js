@@ -4,7 +4,7 @@
    * @param {Element|NodeList} options
    */
   function hideElements(options) {
-    if (options instanceof NodeList || Array.isArray(options)) {
+    if (options instanceof NodeList) {
       for (const option of options) hideElements(option);
     } else {
       // Hide row container if exists
@@ -68,22 +68,8 @@
     };
   }
 
-  function addDynamicToTransparentFields() {
-    var transparent = document.getElementById("woocommerce_mobbex_transparent");
-    var tTitle = document.getElementById(
-      "woocommerce_mobbex_transparent_title",
-    );
-    var tLogo = document.getElementById("woocommerce_mobbex_transparent_logo");
-
-    if (!transparent.checked) hideElements([tTitle, tLogo]);
-    transparent.onchange = function () {
-      hideElements([tTitle, tLogo]);
-    };
-  }
-
   window.addEventListener("load", function () {
-    initConfigTabs(["appearance", "advanced", "orders"]);
+    initConfigTabs(["appearance", "advanced", "orders", "transparent"]);
     addDynamicToDniFields();
-    addDynamicToTransparentFields();
   });
 })(window);

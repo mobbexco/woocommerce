@@ -40,29 +40,6 @@ return [
         'default' => 'yes',
     ],
 
-    'transparent' => [
-        'title'   => __('Enable/Disable Mobbex Transparent', 'mobbex-for-woocommerce'),
-        'type'    => 'checkbox',
-        'label'   => __('It allows payments to be made directly from the site, via a form and without redirecting to Mobbex. PCI compliance certification is required for integration.', 'mobbex-for-woocommerce'),
-        'default' => 'no'
-    ],
-
-    'transparent_title' => [
-        'title'         => __('Mobbex Transparent Title', 'mobbex-for-woocommerce'),
-        'type'          => 'text',
-        'description'   => __('Text to show on transparent form', 'mobbex-for-woocommerce'),
-        'default'       => 'Pay with Mobbex',
-        'desc_tip'      => true
-    ],
-
-    'transparent_logo' => [
-        'title'         => __('Mobbex Transparent Logo', 'mobbex-for-woocommerce'),
-        'type'          => 'text',
-        'description'   => __('Insert image url to show on transparent form', 'mobbex-for-woocommerce'),
-        'default'       => '',
-        'desc_tip'      => true
-    ],
-
     'wallet' => [
         'title'   => __('Enable/Disable Wallet', 'mobbex-for-woocommerce'),
         'type'    => 'checkbox',
@@ -271,6 +248,38 @@ return [
         'class'       => 'mbbx-into-appearance',
     ],
 
+    'transparent_configuration_tab' => [
+        'title' => __('Transparent Configuration', 'mobbex-for-woocommerce'),
+        'type'  => 'title',
+        'class' => 'mbbx-tab mbbx-tab-transparent',
+    ],
+
+    'transparent' => [
+        'title'   => __('Enable/Disable Mobbex Transparent', 'mobbex-for-woocommerce'),
+        'type'    => 'checkbox',
+        'label'   => __('It allows payments to be made directly from the site, via a form and without redirecting to Mobbex. PCI compliance certification is required for integration.', 'mobbex-for-woocommerce'),
+        'default' => 'no',
+        'class'   => 'mbbx-into-transparent',
+    ],
+
+    'transparent_title' => [
+        'title'         => __('Mobbex Transparent Title', 'mobbex-for-woocommerce'),
+        'type'          => 'text',
+        'description'   => __('Text to show on transparent form', 'mobbex-for-woocommerce'),
+        'default'       => 'Pagar con tarjeta de crédito/débito',
+        'desc_tip'      => true,
+        'class'         => 'mbbx-into-transparent',
+    ],
+
+    'transparent_logo' => [
+        'title'         => __('Mobbex Transparent Logo', 'mobbex-for-woocommerce'),
+        'type'          => 'text',
+        'description'   => __('Insert image url to show on transparent form', 'mobbex-for-woocommerce'),
+        'default'       => '',
+        'desc_tip'      => true,
+        'class'         => 'mbbx-into-transparent',
+    ],
+
     /* Advanced options */
 
     'advanced_configuration_tab' => [
@@ -412,6 +421,5 @@ return [
         'class'   => 'mbbx-into-advanced',
         'type'    => 'checkbox',
         'default' => 'no',
-    ],
-
+    ]
 ];
