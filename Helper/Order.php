@@ -233,7 +233,7 @@ class Order
         extract($this->config->get_products_plans($products_ids));
 
         //Add installments
-        $checkout->add_installments($products_ids, $common_plans, $advanced_plans);
+        $checkout->add_installments($products_ids, $advanced_plans);
     }
 
     /**

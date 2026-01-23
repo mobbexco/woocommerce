@@ -44,7 +44,7 @@ class Sources
 
         $installments = \Mobbex\Repository::getInstallments(
             $products_ids, 
-            $common_plans, 
+            [], 
             $advanced_plans
         );
 
