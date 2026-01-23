@@ -194,7 +194,7 @@ class Cart
         extract($this->config->get_products_plans($product_ids));
 
         //Add installments
-        $checkout->add_installments($product_ids, $common_plans, $advanced_plans);
+        $checkout->add_installments($product_ids, $advanced_plans);
     }
 
     /**
