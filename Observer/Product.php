@@ -129,8 +129,8 @@ class Product
      */
     private function save_best_plan($id)
     {
-        $featured_plans = $this->config->get_all_settings($id, "mobbex_manual_config")
-            ? json_decode($this->config->get_all_settings($id, "mobbex_featured_plans"), true)
+        $featured_plans = $this->config->get_all_settings($id, "manual_config")
+            ? json_decode($this->config->get_all_settings($id, "featured_plans"), true)
             : null;
 
         if (empty($featured_plans))
@@ -158,7 +158,7 @@ class Product
 
         $installments = \Mobbex\Repository::getInstallments(
             [$id], 
-            $common_plans,
+            [],
             $advanced_plans
         );
 
@@ -168,7 +168,7 @@ class Product
                 $total,
                 $installments
             );
-        }  catch (\Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->log(
                 'error', 
                 'Product > getSources', 
