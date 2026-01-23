@@ -1,7 +1,7 @@
 :root {
     --tag-blue: #006EFB;
     --flag-text: #ffffff;
-    --font-fmly: 'Source Sans Pro';
+    --mbbx-font: 'sans-serif';
 }
 
 .mobbex-wrapper {
@@ -28,7 +28,7 @@
     max-width: 6.75rem;
     padding: 0 0.375rem 0.375rem 0.375rem;
     color: var(--flag-text);
-    font-family: var(--font-fmly);
+    font-family: var(--mbbx-font);
     border-radius: 0 0.5rem 0.5rem 0.5rem;
     border: 0.03125rem solid #A09DA3;
     background: var(--tag-blue);
@@ -95,7 +95,7 @@
     width: 100%;
     max-width: fit-content;
     max-height: fit-content;
-    font-family: var(--font-fmly);
+    font-family: var(--mbbx-font);
 }
 
 .mobbex-product-banner-top {
