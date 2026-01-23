@@ -14,7 +14,9 @@ define('MOBBEX_ADVANCED_PLANS', 'https://api.mobbex.com/p/sources/rules/{rule}/i
 define('MOBBEX_COUPON', 'https://mobbex.com/console/{entity.uid}/operations/?oid={payment.id}');
 
 define('MOBBEX_WC_GATEWAY', 'WC_Gateway_Mobbex');
+define('MOBBEX_WC_TRANSPARENT', 'WC_Gateway_Mobbex_Transparent');
 define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
+define('MOBBEX_WC_GATEWAY_TRANSPARENT_ID', 'mobbex_transparent');
 
 define('MOBBEX_VERSION', '4.1.1');
 define('MOBBEX_SDK_VERSION', '1.1.0');
