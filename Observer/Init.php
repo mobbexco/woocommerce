@@ -90,7 +90,6 @@ class Init
             wp_enqueue_style('mbbx-category-style', $dir_url . 'assets/css/category-admin.css', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-category-js', $dir_url . 'assets/js/category-admin.js', null, MOBBEX_VERSION);
             wp_enqueue_script('mbbx-plan-configurator-js', $dir_url . 'assets/js/plans-configurator.min.js', null, MOBBEX_VERSION, ['in_footer' => true]);
-            include_once __DIR__ . '/../templates/product-tags.php';
         }
 
         // Plugin config page
