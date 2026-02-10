@@ -152,13 +152,35 @@ class Order
         $id = $post ? $post->ID : $_REQUEST['id'];
 
         //For compatibility with HPOS
-        $screen = class_exists('\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController') && wc_get_container()->get(\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled()
+        $custom_orders_table_exists = class_exists(
+            '\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController'
+        );
+        if ($custom_orders_table_exists)
+            $custom_orders_table_class = wc_get_container()->get(
+                \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class
+            );
+
+        $screen = $custom_orders_table_exists && $custom_orders_table_class->custom_orders_table_usage_is_enabled()
             ? wc_get_page_screen_id('shop-order')
             : 'shop_order';
 
+        $method = wc_get_order($id)->get_payment_method();
+        $order_util = new \Automattic\WooCommerce\Utilities\OrderUtil();
+
         //Only displayed if a payment was made with Mobbex.
-        if (($post->post_type == 'shop_order' || \Automattic\WooCommerce\Utilities\OrderUtil::is_order($id, wc_get_order_types())) && wc_get_order($id)->get_payment_method() == 'mobbex')
-            add_meta_box('mbbx_order_panel', __('Mobbex Payment Information', 'mobbex-for-woocommerce'), [$this, 'show_payment_info_panel'], $screen, 'side', 'core');
+        if (
+            ($post->post_type == 'shop_order' || $order_util::is_order($id, wc_get_order_types()))
+            && ($method == "mobbex" || $method == "mobbex_transparent")
+        ) {
+            add_meta_box(
+                'mbbx_order_panel',
+                __('Mobbex Payment Information', 'mobbex-for-woocommerce'),
+                [$this, 'show_payment_info_panel'],
+                $screen,
+                'side',
+                'core'
+            );
+        }
     }
 
     /**
