@@ -221,16 +221,15 @@ class Config
      */
     public function get_products_plans($ids)
     {
-        $common_plans = $advanced_plans = [];
+        $advanced_plans = [];
 
         foreach ($ids as $id) {
             $product_plans = $this->get_catalog_plans($id); 
             //Merge all catalog plans
-            $common_plans   = array_merge($common_plans, $product_plans['common_plans']);
             $advanced_plans = array_merge($advanced_plans, $product_plans['advanced_plans']);
         }
 
-        return compact('common_plans', 'advanced_plans');
+        return compact('advanced_plans');
     }
 
     /**
@@ -241,22 +240,19 @@ class Config
     public function get_catalog_plans($id, $catalog_type = 'post', $admin = false)
     {
         //Get product plans
-        $common_plans   = $this->get_catalog_settings($id, 'common_plans', $catalog_type) ?: [];
-        $advanced_plans = $this->get_catalog_settings($id, 'mobbex_advanced_plans', $catalog_type) ?: [];
+        $advanced_plans = $this->get_catalog_settings($id, 'advanced_plans', $catalog_type) ?: [];
 
         //Get plans from categories
         if(!$admin && $catalog_type === 'post') {
             foreach (wc_get_product_term_ids($id, 'product_cat') as $categoryId){
-                $common_plans   = array_merge($common_plans, $this->get_catalog_settings($categoryId, 'common_plans', 'term'));
-                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'mobbex_advanced_plans', 'term'));
+                $advanced_plans = array_merge($advanced_plans, $this->get_catalog_settings($categoryId, 'advanced_plans', 'term'));
             }
         }
 
         //Avoid duplicated plans
-        $common_plans   = array_unique($common_plans);
         $advanced_plans = array_unique($advanced_plans);
 
-        return compact('common_plans', 'advanced_plans');
+        return compact('advanced_plans');
     }
 
     /**

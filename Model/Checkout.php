@@ -186,11 +186,10 @@ class Checkout
     /**
      * Add an installments to show in checkout.
      * @param array $products List of product id's
-     * @param array $common_plans List of product common plans
      * @param array $advanced_plans List of product advanced plans
      */
-    public function add_installments($products, $common_plans, $advanced_plans)
+    public function add_installments($products, $advanced_plans)
     {
-        $this->installments = \Mobbex\Repository::getInstallments($products, $common_plans, $advanced_plans);
+        $this->installments = \Mobbex\Repository::getInstallments($products, [], $advanced_plans);
     }
 }

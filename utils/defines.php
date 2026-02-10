@@ -18,7 +18,7 @@ define('MOBBEX_WC_TRANSPARENT', 'WC_Gateway_Mobbex_Transparent');
 define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
 define('MOBBEX_WC_GATEWAY_TRANSPARENT_ID', 'mobbex_transparent');
 
-define('MOBBEX_VERSION', '4.1.1');
+define('MOBBEX_VERSION', '5.0.0');
 define('MOBBEX_SDK_VERSION', '1.1.0');
 define('MOBBEX_EMBED_VERSION', '1.2.0');
 
