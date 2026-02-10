@@ -126,11 +126,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
                 throw new \Mobbex\Exception('Para realizar una devolución parcial en este pedido, especifique el id de la transacción en el campo "Razón".', 596);
 
             // Make request
-            return $this->helper->api->request([
+            return \Mobbex\Api::request([
                 'method' => 'POST',
                 'uri'    => 'operations/' . ($child ?: $parent)['payment_id'] . '/refund',
                 'body'   => [
-                    'total'     => (float) $helper->order->get_remaining_refund_amount() ? $amount : null,
+                    'total'     => $helper->order->get_remaining_refund_amount() ? (float) $amount : null,
                     'emitEvent' => false,
                 ]
             ]);
