@@ -82,6 +82,7 @@ class MobbexGateway
         new \Mobbex\WP\Checkout\Controller\Payment;
         new \Mobbex\WP\Checkout\Controller\LogTable;
         new \Mobbex\WP\Checkout\Controller\Sources;
+        new \Mobbex\WP\Checkout\Controller\Detect;
 
         //Register hooks
         self::$registrar->register_hooks();
@@ -252,9 +253,11 @@ class MobbexGateway
     {
         // First add gateway
         require_once plugin_dir_path(__FILE__) . 'gateway.php';
+        require_once plugin_dir_path(__FILE__) . 'gateway-transparent.php';
 
         add_filter('woocommerce_payment_gateways', function ($methods) {
             $methods[] = MOBBEX_WC_GATEWAY;
+            $methods[] = MOBBEX_WC_TRANSPARENT;
             return $methods;
         });
 
@@ -268,7 +271,13 @@ class MobbexGateway
      */
     public static function load_woocommerce_blocks_support($payment_method_registry)
     {
-        $payment_method_registry->register(new \Mobbex\WP\Checkout\Model\BlockPaymentMethod);
+        // Register redirect and transparent gateway block
+        try {
+            $payment_method_registry->register(new \Mobbex\WP\Checkout\Model\BlockPaymentMethod);
+            $payment_method_registry->register(new \Mobbex\WP\Checkout\Model\BlockTransparent);
+        } catch (\Exception $e) {
+            error_log('[Mobbex Transparent] Error registering payment method: ' . $e->getMessage());
+        }
     }
 
     public static function add_assets($type, $name, $route)
