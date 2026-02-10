@@ -83,61 +83,49 @@ final class BlockTransparent extends AbstractPaymentMethodType
      */
     public function get_payment_method_data()
     {
-        $gateway = new \WC_Gateway_Mobbex_Transparent();
+        try {
+            $gateway = new \WC_Gateway_Mobbex_Transparent();
 
-        return [
-            'title'       => $gateway->config->transparent_title,
-            'description' => '',
-            'supports'    => ['products'],
-        ];
-        // try {
-        //     // Crear instancia del gateway
-        //     $gateway = new \WC_Gateway_Mobbex_Transparent();
+            if (!$gateway) {
+                $this->logger->log('error', '[Mobbex Transparent Block] Could not instantiate gateway');
+                return [];
+            }
 
-        //     if (!$gateway) {
-        //         $this->logger->log('error', '[Mobbex Transparent Block] Could not instantiate gateway');
-        //         return [];
-        //     }
+            $intent_token = method_exists($gateway, 'get_intent_token') ? $gateway->get_intent_token() : '';
 
-        //     // Obtener intent token
-        //     $intent_token = method_exists($gateway, 'get_intent_token') ? $gateway->get_intent_token() : false;
+            if (empty($intent_token)) {
+                $this->logger->log('warning', '[Mobbex Transparent Block] Could not retrieve intent token');
+            }
 
-        //     if (!$intent_token) {
-        //         $this->logger->log('warning', '[Mobbex Transparent Block] Could not retrieve intent token');
-        //     }
+            $data = [
+                'supports'     => ['products'],
+                'intent_token' => $intent_token ?: '',
+                'public_key'   => $this->config->api_key,
+                'description'  => $gateway->description ?? '',
+                'title'        => $gateway->config->transparent_title,
+                'i18n'         => [
+                    'cvv_label'                => __('CVV', 'mobbex-for-woocommerce'),
+                    'card_dni_label'           => __('DNI', 'mobbex-for-woocommerce'),
+                    'installments_label'       => __('Cuotas', 'mobbex-for-woocommerce'),
+                    'expiration_label'         => __('Vencimiento', 'mobbex-for-woocommerce'),
+                    'card_number_label'        => __('Número de tarjeta', 'mobbex-for-woocommerce'),
+                    'installments_loading'     => __('Cargando cuotas...', 'mobbex-for-woocommerce'),
+                    'installments_placeholder' => __('Seleccionar cuotas', 'mobbex-for-woocommerce'),
+                    'processing'               => __('Procesando pago...', 'mobbex-for-woocommerce'),
+                    'card_name_label'          => __('Nombre en la tarjeta', 'mobbex-for-woocommerce'),
+                ]
+            ];
 
-        //     $data = [
-        //         'title'         => $gateway->title,
-        //         'description'   => $gateway->description ?? '',
-        //         'supports'      => ['products'],
-        //         'ajax_url'      => admin_url('admin-ajax.php'),
-        //         'intent_token'  => $intent_token ?: '',
-        //         'public_key'    => $this->config->api_key,
-        //         'show_banner'   => false, // Puedes agregar esto a la configuración
-        //         'i18n'          => [
-        //             'card_number_label' => __('Número de tarjeta', 'mobbex-for-woocommerce'),
-        //             'card_name_label' => __('Nombre en la tarjeta', 'mobbex-for-woocommerce'),
-        //             'card_dni_label' => __('DNI', 'mobbex-for-woocommerce'),
-        //             'expiration_label' => __('Vencimiento', 'mobbex-for-woocommerce'),
-        //             'cvv_label' => __('CVV', 'mobbex-for-woocommerce'),
-        //             'installments_label' => __('Cuotas', 'mobbex-for-woocommerce'),
-        //             'installments_loading' => __('Cargando cuotas...', 'mobbex-for-woocommerce'),
-        //             'installments_placeholder' => __('Seleccionar cuotas', 'mobbex-for-woocommerce'),
-        //             'processing' => __('Procesando pago...', 'mobbex-for-woocommerce'),
-        //         ]
-        //     ];
-
-        //     $this->logger->log('debug', '[Mobbex Transparent Block] Payment method data prepared', [
-        //         'has_intent_token' => !empty($intent_token),
-        //         'has_public_key' => !empty($this->config->api_key)
-        //     ]);
-
-        //     return $data;
-        // } catch (\Exception $e) {
-        //     $this->logger->log('error', '[Mobbex Transparent Block] Error preparing payment method data', [
-        //         'error' => $e->getMessage()
-        //     ]);
-        //     return [];
-        // }
+            $this->logger->log('debug', '[Mobbex Transparent Block] Payment method data prepared', [
+                'has_intent_token' => !empty($intent_token),
+                'has_public_key' => !empty($this->config->api_key)
+            ]);
+            return $data;
+        } catch (\Exception $e) {
+            $this->logger->log('error', '[Mobbex Transparent Block] Error preparing payment method data', [
+                'error' => $e->getMessage()
+            ]);
+            return [];
+        }
     }
 }
