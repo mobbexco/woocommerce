@@ -232,7 +232,7 @@ class Helper
      * 
      * @return string url
      */
-    public function get_api_endpoint($endpoint, $order_id)
+    public function get_api_endpoint($endpoint, $order_id, $status = '')
     {
         // Create necessary query array
         $query = [
@@ -244,6 +244,9 @@ class Helper
         if ($order_id)
             // Add mobbex order id
             $query['mobbex_order_id'] = $order_id;
+        
+        if (!empty($status))
+            $query['status'] = $status;
     
         if ($endpoint === 'mobbex_webhook') {
             if ($this->config->debug_mode != 'no')
