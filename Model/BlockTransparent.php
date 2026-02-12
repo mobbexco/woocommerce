@@ -83,6 +83,9 @@ final class BlockTransparent extends AbstractPaymentMethodType
      */
     public function get_payment_method_data()
     {
+        if (!is_checkout())
+            return [];
+
         try {
             $gateway = new \WC_Gateway_Mobbex_Transparent();
 
