@@ -164,7 +164,11 @@ class Order
             ? wc_get_page_screen_id('shop-order')
             : 'shop_order';
 
-        $method = wc_get_order($id)->get_payment_method();
+        $order = wc_get_order($id);
+        if (!$order)
+            return;
+
+        $method = $order->get_payment_method();
         $order_util = new \Automattic\WooCommerce\Utilities\OrderUtil();
 
         //Only displayed if a payment was made with Mobbex.

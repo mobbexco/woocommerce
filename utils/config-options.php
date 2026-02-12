@@ -255,11 +255,12 @@ return [
     ],
 
     'transparent' => [
-        'title'   => __('Enable/Disable Mobbex Transparent', 'mobbex-for-woocommerce'),
-        'type'    => 'checkbox',
-        'label'   => __('It allows payments to be made directly from the site, via a form and without redirecting to Mobbex. PCI compliance certification is required for integration.', 'mobbex-for-woocommerce'),
-        'default' => 'no',
-        'class'   => 'mbbx-into-transparent',
+        'title'       => __('Enable/Disable Mobbex Transparent', 'mobbex-for-woocommerce'),
+        'type'        => 'checkbox',
+        'label'       => __('It allows payments to be made directly from the site, via a form and without redirecting to Mobbex. PCI compliance certification is required for integration.', 'mobbex-for-woocommerce'),
+        'default'     => 'no',
+        'description' => __('Requires Block active in checkout page', 'mobbex-for-woocommerce'),
+        'class'       => 'mbbx-into-transparent',
     ],
 
     'transparent_title' => [

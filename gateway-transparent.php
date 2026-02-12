@@ -68,18 +68,16 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
         $this->logger->log('debug', '[Mobbex Transparent] Gateway > Ready and initializing');
 
         $this->enabled = $this->config->transparent;
-
-        // String variables. That's used on checkout view
         $this->logo    = $this->config->transparent_logo;
         $this->title   = $this->config->transparent_title;
 
-        $this->method_title = __('Mobbex Transparent', 'mobbex-for-woocommerce');
+        $this->method_title       = __('Mobbex Transparent', 'mobbex-for-woocommerce');
         $this->method_description = __('Allows payments in site without leaving the site.', 'mobbex-for-woocommerce');
 
-        // Mostrar formulario de pago en checkout
+        // show form in checkout
         $this->has_fields = true;
 
-        // Hook para guardar opciones del admin
+        // Hook to save admin options
         add_action(
             'woocommerce_update_options_payment_gateways_' . $this->id,
             ['\WC_Gateway_Mobbex', 'process_admin_options']
