@@ -94,11 +94,6 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
      */
     public function get_intent_token()
     {
-        $session_token = WC()->session->get('mobbex_transparent_intent_token');
-
-        if ($session_token) 
-            return $session_token;
-
         // Get intent token from temporary checkout
         $intent_token = $this->create_intent_token();
 
@@ -109,8 +104,7 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
             );
             return '';
         }
-
-        WC()->session->set('mobbex_transparent_intent_token', $intent_token);
+        
         return $intent_token;
     }
 
