@@ -15,16 +15,10 @@ final class BlockTransparent extends AbstractPaymentMethodType
      */
     protected $name = 'mobbex_transparent';
 
-    /** 
-     * Config model instance.
-     * @var \Mobbex\WP\Checkout\Model\Config 
-     */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
-    /**
-     * Logger instance
-     * @var \Mobbex\WP\Checkout\Model\Logger
-     */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
     /**
@@ -100,10 +94,14 @@ final class BlockTransparent extends AbstractPaymentMethodType
                 $this->logger->log('warning', '[Mobbex Transparent Block] Could not retrieve intent token');
             }
 
+            // TO DO: add sourcesUrl to get sources logo
+            // $order        = wc_get_order($order_id);
+            // $products_ids = $gateway->helper::get_product_ids($order);;
+
+
             $data = [
                 'supports'     => ['products'],
                 'intent_token' => $intent_token ?: '',
-                'public_key'   => $this->config->api_key,
                 'description'  => $gateway->description ?? '',
                 'title'        => $gateway->config->transparent_title,
                 'i18n'         => [
@@ -120,8 +118,7 @@ final class BlockTransparent extends AbstractPaymentMethodType
             ];
 
             $this->logger->log('debug', '[Mobbex Transparent Block] Payment method data prepared', [
-                'has_intent_token' => !empty($intent_token),
-                'has_public_key' => !empty($this->config->api_key)
+                'has_intent_token' => !empty($intent_token)
             ]);
             return $data;
         } catch (\Exception $e) {
