@@ -1,16 +1,9 @@
-<?php
+﻿<?php
 
 defined('ABSPATH') || exit;
 
 return [
     /* General options */
-
-    'enabled' => [
-        'title'   => __('Enable/Disable', 'mobbex-for-woocommerce'),
-        'type'    => 'checkbox',
-        'label'   => __('Enable checking out with Mobbex.', 'mobbex-for-woocommerce'),
-        'default' => 'yes',
-    ],
 
     'api-key' => [
         'title'       => __('API Key', 'mobbex-for-woocommerce'),
@@ -19,11 +12,19 @@ return [
         'default'     => '',
     ],
 
-    'access-token' => [
-        'title'       => __('Access Token', 'mobbex-for-woocommerce'),
-        'description' => __('Your Mobbex access token.', 'mobbex-for-woocommerce'),
-        'type'        => 'text',
-        'default'     => '',
+    'connect' => [
+        'title'       => __('Connect', 'mobbex-for-woocommerce'),
+        'type'        => 'button',
+        'class'       => 'button',
+        'label'       => __('Connect with Mobbex.', 'mobbex-for-woocommerce'),
+        'description' => __('Use API key to connect with Mobbex. Save your credentials and then click this button to link your account.', 'mobbex-for-woocommerce')
+    ],
+
+    'enabled' => [
+        'title'   => __('Enable/Disable', 'mobbex-for-woocommerce'),
+        'type'    => 'checkbox',
+        'label'   => __('Enable checking out with Mobbex.', 'mobbex-for-woocommerce'),
+        'default' => 'yes',
     ],
 
     'test' => [
@@ -196,32 +197,32 @@ return [
     ],
 
     'financial_widget_on_cart' => [
-        'title'       => __('Widget de financiación en carrito', 'mobbex-for-woocommerce'),
-        'description' => __('Mostrar el botón de financiación en la página del carrito.', 'mobbex-for-woocommerce'),
+        'title'       => __('Widget de financiaciÃ³n en carrito', 'mobbex-for-woocommerce'),
+        'description' => __('Mostrar el botÃ³n de financiaciÃ³n en la pÃ¡gina del carrito.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',
         'default'     => 'no',
         'class'       => 'mbbx-into-appearance',
     ],
 
     'show_featured_installments_on_cart' => [
-        'title'       => __('Mostrar financiación destacada en el carrito', 'mobbex-for-woocommerce'),
-        'description' => __('Se mostraran planes de financiación destacados dentro del modal en la vista de carrito.', 'mobbex-for-woocommerce'),
+        'title'       => __('Mostrar financiaciÃ³n destacada en el carrito', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostraran planes de financiaciÃ³n destacados dentro del modal en la vista de carrito.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',
         'default'     => 'yes',
         'class'       => 'mbbx-into-appearance',
     ],
 
     'show_flag_on_products' => [
-        'title'       => __('Mostrar bandera de financiación destacada en productos', 'mobbex-for-woocommerce'),
-        'description' => __('Se mostraré en una pequeña bandera el plan de financiación destacado configurado en cada producto de la tienda.', 'mobbex-for-woocommerce'),
+        'title'       => __('Mostrar bandera de financiaciÃ³n destacada en productos', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostrarÃ© en una pequeÃ±a bandera el plan de financiaciÃ³n destacado configurado en cada producto de la tienda.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',
         'default'     => 'yes',
         'class'       => 'mbbx-into-appearance',
     ],
 
     'show_banner_on_products' => [
-        'title'       => __('Mostrar banner de financiación destacada en productos', 'mobbex-for-woocommerce'),
-        'description' => __('Se mostrará un banner con el plan de financiación destacado configurado en cada producto de la tienda.', 'mobbex-for-woocommerce'),
+        'title'       => __('Mostrar banner de financiaciÃ³n destacada en productos', 'mobbex-for-woocommerce'),
+        'description' => __('Se mostrarÃ¡ un banner con el plan de financiaciÃ³n destacado configurado en cada producto de la tienda.', 'mobbex-for-woocommerce'),
         'type'        => 'checkbox',
         'default'     => 'yes',
         'class'       => 'mbbx-into-appearance',
@@ -260,7 +261,7 @@ return [
     'multicard' => [
         'title'   => __('Enable/Disable Multicard', 'mobbex-for-woocommerce'),
         'type'    => 'checkbox',
-        'label'   => __('Allow to pay the operation with multiple cards (incompatible with marketplace).', 'mobbex-for-woocommerce'), // Permite abonar la operación con múltiples tarjetas
+        'label'   => __('Allow to pay the operation with multiple cards (incompatible with marketplace).', 'mobbex-for-woocommerce'), // Permite abonar la operaciÃ³n con mÃºltiples tarjetas
         'default' => 'no',
         'class'   => 'mbbx-into-advanced',
     ],
@@ -268,7 +269,7 @@ return [
     'multivendor' => [
         'title'   => __('Enable/Disable Multivendor', 'mobbex-for-woocommerce'),
         'type'    => 'select',
-        'label'   => __('Allow to pay the operation with multiple vendor (incompatible with multicard).', 'mobbex-for-woocommerce'), // Permite abonar la operación con múltiples tarjetas
+        'label'   => __('Allow to pay the operation with multiple vendor (incompatible with multicard).', 'mobbex-for-woocommerce'), // Permite abonar la operaciÃ³n con mÃºltiples tarjetas
         'options' => [
             'no'      => __('Disable', 'mobbex-for-woocommerce'),
             'active'  => __('Active', 'mobbex-for-woocommerce'),
@@ -332,7 +333,7 @@ return [
 
     'payment_methods' => [
         'title'   => __('Medios de pago en sitio', 'mobbex-for-woocommerce'),
-        'label'   => __('Habilita la subdivisión de los métodos de pago en la página de finalización de la compra. Las opciones se verán en el checkout.', 'mobbex-for-woocommerce'),
+        'label'   => __('Habilita la subdivisiÃ³n de los mÃ©todos de pago en la pÃ¡gina de finalizaciÃ³n de la compra. Las opciones se verÃ¡n en el checkout.', 'mobbex-for-woocommerce'),
         'class'   => 'mbbx-into-advanced',
         'type'    => 'checkbox',
         'default' => 'no',
@@ -348,7 +349,7 @@ return [
 
     'disable_template'=> [
         'title'   => __('Deshabilitar plantilla', 'mobbex-for-woocommerce'),
-        'label'   => __('Deshabilitar plantilla para el mostrado de los métodos de pago.', 'mobbex-for-woocommerce'),
+        'label'   => __('Deshabilitar plantilla para el mostrado de los mÃ©todos de pago.', 'mobbex-for-woocommerce'),
         'class'   => 'mbbx-into-advanced',
         'type'    => 'checkbox',
         'default' => 'no',
@@ -366,8 +367,8 @@ return [
     ],
 
     'return_timeout' => [
-        'title'             => __('Tiempo de redirección', 'mobbex-for-woocommerce'),
-        'description'       => __('Establecer tiempo de espera en segundos para la redirección/cierre checkout', 'mobbex-for-woocommerce'),
+        'title'             => __('Tiempo de redirecciÃ³n', 'mobbex-for-woocommerce'),
+        'description'       => __('Establecer tiempo de espera en segundos para la redirecciÃ³n/cierre checkout', 'mobbex-for-woocommerce'),
         'class'             => 'mbbx-into-advanced',
         'type'              => 'number',
         'default'           => 5,
@@ -386,10 +387,11 @@ return [
 
     'process_webhook_retries' => [
         'title'   => __('Procesar reintentos de webhooks', 'mobbex-for-woocommerce'),
-        'label'   => __('Permite procesar nuevamente un webhook si este se reenvía de forma automática (los reintentos manuales siempre se procesan).', 'mobbex-for-woocommerce'),
+        'label'   => __('Permite procesar nuevamente un webhook si este se reenvÃ­a de forma automÃ¡tica (los reintentos manuales siempre se procesan).', 'mobbex-for-woocommerce'),
         'class'   => 'mbbx-into-advanced',
         'type'    => 'checkbox',
         'default' => 'no',
     ],
 
 ];
+
