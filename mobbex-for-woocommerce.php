@@ -82,6 +82,7 @@ class MobbexGateway
         new \Mobbex\WP\Checkout\Controller\Payment;
         new \Mobbex\WP\Checkout\Controller\LogTable;
         new \Mobbex\WP\Checkout\Controller\Sources;
+        new \Mobbex\WP\Checkout\Controller\Connect;
 
         //Register hooks
         self::$registrar->register_hooks();
@@ -226,9 +227,10 @@ class MobbexGateway
             ));
 
         // Check if credentials are configured
-        if (self::$config->enabled == 'yes' && (!self::$config->api_key || !self::$config->access_token))
+        $settings = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', []);
+        if ($settings['enabled'] == 'yes' && (!$settings['api_key'] || !$settings['access_token']))
             self::$logger->notice(sprintf(
-                'Debe especificar el API Key y Access Token en la <a href="%s">configuración</a>.',
+                'Debe conectar la aplicación con la consola de Mobbex en <a href="%s">configuración</a>.',
                 admin_url('admin.php?page=wc-settings&tab=checkout&section=mobbex')
             ));
     }
