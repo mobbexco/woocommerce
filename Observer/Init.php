@@ -94,8 +94,20 @@ class Init
 
         // Plugin config page
         if ($hook == 'woocommerce_page_wc-settings' && isset($_GET['section']) && $_GET['section'] == 'mobbex') {
-            wp_enqueue_style('mbbx-plugin-style', $dir_url . 'assets/css/plugin-config.css', null, MOBBEX_VERSION);
+            $settings = get_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', []);
+
             wp_enqueue_script('mbbx-plugin-js', $dir_url . 'assets/js/plugin-config.js', null, MOBBEX_VERSION);
+            wp_enqueue_script('mbbx-connect-js', $dir_url . 'assets/js/connect-button.js', null, MOBBEX_VERSION);
+            wp_enqueue_style('mbbx-plugin-style', $dir_url . 'assets/css/plugin-config.css', null, MOBBEX_VERSION);
+            wp_localize_script('mbbx-connect-js', 'mobbexPluginConfig', [
+                'isConnected'          => !empty($settings['access-token']),
+                'connectStartUrl'      => get_rest_url(null, 'mobbex/v1/connect_start'),
+                'connectRedirectUrl'   => get_rest_url(null, 'mobbex/v1/connect_redirect'),
+                'connectLabel'         => __('Connect with Mobbex.', 'mobbex-for-woocommerce'),
+                'connectDescription'   => __('Use API key to connect with Mobbex. Save your credentials and then click this button to link your account.', 'mobbex-for-woocommerce'),
+                'connectedLabel'       => __('Already connected with Mobbex', 'mobbex-for-woocommerce'),
+                'connectedDescription' => __('Your credentials are saved and ready to use', 'mobbex-for-woocommerce'),
+            ]);
         }
     }
 

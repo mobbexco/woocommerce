@@ -138,4 +138,48 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             return new \WP_Error($e->getCode(), $e->getMessage(), isset($e->data) ? $e->data : '');
         }
     }
+
+    /**
+     * Render custom button field in WooCommerce gateway settings.
+     * Called by Woocommerce Gateway
+     *
+     * @param string $key
+     * @param array  $data
+     *
+     * @return string
+     */
+    public function generate_button_html($key, $data)
+    {
+        $field_key = $this->get_field_key($key);
+
+        $data = wp_parse_args(
+            $data,
+            [
+                'title'             => '',
+                'class'             => '',
+                'css'               => '',
+                'description'       => '',
+                'desc_tip'          => false,
+                'label'             => __('Click', 'mobbex-for-woocommerce'),
+                'custom_attributes' => [],
+            ]
+        );
+
+        $custom_attributes = [];
+        foreach ($data['custom_attributes'] as $attribute => $value) {
+            $custom_attributes[] = esc_attr($attribute) . '="' . esc_attr($value) . '"';
+        }
+
+        $button_class = trim('button button-secondary ' . $data['class']);
+
+        return '<tr valign="top">'
+            . '<th scope="row" class="titledesc"><label for="' . esc_attr($field_key) . '">' . wp_kses_post($data['title']) . '</label></th>'
+            . '<td class="forminp">'
+            . '<button type="button" id="' . esc_attr($field_key) . '" class="' . esc_attr($button_class) . '" style="' . esc_attr($data['css']) . '" ' . implode(' ', $custom_attributes) . '>'
+            . esc_html($data['label'])
+            . '</button>'
+            . $this->get_description_html($data)
+            . '</td>'
+            . '</tr>';
+    }
 }

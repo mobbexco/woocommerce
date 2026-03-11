@@ -10,6 +10,7 @@ class Config
     public $enabled;
     public $api_key;
     public $access_token;
+    public $connect;
     public $test;
     public $button;
     public $wallet;
