@@ -1,7 +1,7 @@
 (function (window) {
   /**
    * Bind connect button action in gateway Mobbex settings.
-   * Validate API key and then execute a backend request.
+   * Validate API key and then execute a backend request (/start_connect).
    */
   function handleConnectButton() {
     var apiKeyField = document.getElementById("woocommerce_mobbex_api-key");

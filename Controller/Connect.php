@@ -113,9 +113,10 @@ class Connect
                 ['status' => 502]
             );
 
-        // Temporarily cache connect_id with five minutes expiration time
+        // Temporarily cache api_key and user id with five minutes expiration time
         // transient api: https://developer.wordpress.org/apis/transients/
         set_transient("mbbx_connect_api_key_$connect_id", $api_key, 5 * MINUTE_IN_SECONDS);
+        set_transient("mbbx_connect_user_$connect_id", get_current_user_id(), 5 * MINUTE_IN_SECONDS);
 
         //garantee clear response
         ob_clean();
@@ -141,13 +142,22 @@ class Connect
                 'Missing connect id.', 
                 ['status' => 400]
             );
+        
+        // secure that session user is logged
+        $session_user = get_transient("mbbx_connect_user_$c_id");
+        if (empty($session_user) || (int) $session_user !== get_current_user_id())
+            return new \WP_Error(
+                'mbbx_connect_invalid_session', 
+                'Invalid session.', 
+                ['status' => 401]
+            );
 
         // get api key value from transient api cache
         $api_key = get_transient("mbbx_connect_api_key_$c_id");
         if (empty($api_key))
             return new \WP_Error(
                 'mbbx_connect_api_key', 
-                'Transient api key not found.', 
+                'Api key not found.', 
                 ['status' => 400]
             );
 
@@ -193,6 +203,7 @@ class Connect
 
         update_option('woocommerce_' . MOBBEX_WC_GATEWAY_ID . '_settings', $settings);
         delete_transient("mbbx_connect_api_key_$c_id");
+        delete_transient("mbbx_connect_user_$c_id");
 
         wp_safe_redirect(add_query_arg([
             'page'    => 'wc-settings',
