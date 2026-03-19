@@ -43,29 +43,54 @@ const TransparentContent = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState({});
   const [detectedSource, setDetectedSource] = useState(null);
+  const [availableCardTypes, setAvailableCardTypes] = useState([]);
 
   // constants
   const restUrl = "/wp-json/mobbex/v1";
   const intentToken = settings.intent_token;
-  const publicKey = settings.public_key;
+  const sourcesUrl = settings.sources_url;
 
-  /**
-   * init Mobbex.JS SDK
-   */
   useEffect(() => {
-    if (typeof window.MobbexJS !== "undefined" && publicKey) {
-      window.MobbexJS.setPublicKey(publicKey);
-    } else {
-      console.warn(
-        "[Mobbex Transparent] Mobbex.JS SDK not available or missing public key",
-        {
-          sdkAvailable: typeof window.MobbexJS !== "undefined",
-          hasPublicKey: !!publicKey,
-        },
-      );
-    }
-  }, [publicKey]);
+    const fetchSources = async () => {
+      if (!sourcesUrl) {
+        return;
+      }
 
+      try {
+        const res = await fetch(sourcesUrl);
+
+        if (!res.ok) {
+          console.error("[Mobbex] Error fetching payment sources:", res);
+          return;
+        }
+
+        const data = await res.json();
+        if (!data || !Array.isArray(data.sources)) {
+          console.error(
+            "[Mobbex] Invalid data format for payment sources:",
+            data,
+          );
+          return;
+        }
+
+        const filtered = data.sources.filter(
+          (source) =>
+            source?.view?.group === "card" && source?.installments?.enabled,
+        );
+
+        const cardTypes = filtered
+          .map((source) => source?.source?.reference || source?.source)
+          .filter(Boolean)
+          .slice(0, 4);
+
+        setAvailableCardTypes(cardTypes);
+      } catch (error) {
+        console.error("[Mobbex] Error loading card brands:", error);
+      }
+    };
+
+    fetchSources();
+  }, [sourcesUrl]);
   /**
    * Detect sources when card number is entered
    */
@@ -265,6 +290,49 @@ const TransparentContent = ({
     return cleaned;
   };
 
+  const getCardReference = (value) => {
+    if (!value) {
+      return "";
+    }
+
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (typeof value !== "object") {
+      return "";
+    }
+
+    return (
+      value.reference ||
+      value.source?.reference ||
+      value.card?.source?.reference ||
+      value.card?.brand?.reference ||
+      value.brand?.reference ||
+      value.name ||
+      ""
+    );
+  };
+
+  const normalizeCardType = (value) => {
+    const reference = getCardReference(value);
+    if (!reference) {
+      return "";
+    }
+
+    return String(reference).toLowerCase().replace(/\s+/g, "_");
+  };
+
+  const detectedCardType = normalizeCardType(detectedSource?.reference);
+
+  const previewCardTypes = availableCardTypes
+    .map((type) => normalizeCardType(type))
+    .filter(Boolean);
+
+  const cardIcons = detectedCardType
+    ? [detectedCardType]
+    : previewCardTypes.slice(0, 4);
+
   // Form render
   return (
     <div className="mobbex-transparent-form wc-block-components-form">
@@ -300,6 +368,21 @@ const TransparentContent = ({
           autoComplete="cc-number"
           inputMode="numeric"
         />
+        {!!cardIcons.length && (
+          <span className="mobbex-card-brands" aria-hidden="true">
+            {cardIcons.map((cardType) => (
+              <img
+                key={cardType}
+                className={`mobbex-card-brand-logo ${
+                  detectedCardType ? "is-detected" : "is-preview"
+                }`}
+                src={`https://res.mobbex.com/images/sources/original/${cardType}.png`}
+                alt={cardType}
+                loading="lazy"
+              />
+            ))}
+          </span>
+        )}
         {errors.cardNumber && (
           <span className="mobbex-field-error">{errors.cardNumber}</span>
         )}
