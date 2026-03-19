@@ -150,6 +150,7 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
      */
     public function process_payment($order_id)
     {
+        $status_code = null;
         try {
             $this->logger->log(
                 'debug', 
@@ -209,10 +210,12 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
                     '[Mobbex Transparent] Gateway > Operation process with error code', 0, $res
                 );
 
+            $status_code = $res['status']['code'];
+
             $redirect = $this->helper->get_api_endpoint(
                 'mobbex_return_url', 
                 $order_id, 
-                $res['status']['code']
+                $status_code
             );
 
             $result = [
@@ -228,10 +231,17 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
     
             return $result;
         } catch (\Exception $e) {
-            $this->logger->log('error', 'Transparent Gateway > process_payment', $e->getMessage());
+            $this->logger->log('error', 'Transparent Gateway > process_payment', [
+                'message' => $e->getMessage(),
+                'status_code' => $status_code,
+            ]);
+            $public_message = __(
+                'An error occurred while processing the transaction. Please try again.',
+                'mobbex-for-woocommerce'
+            );
             $error_result = [
                 'result'  => 'failure',
-                'message' => $e->getMessage(),
+                'message' => $public_message,
             ];
 
             // Make sure to use json in pay for order page
