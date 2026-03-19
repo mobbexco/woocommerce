@@ -94,16 +94,24 @@ final class BlockTransparent extends AbstractPaymentMethodType
                 $this->logger->log('warning', '[Mobbex Transparent Block] Could not retrieve intent token');
             }
 
-            // TO DO: add sourcesUrl to get sources logo
-            // $order        = wc_get_order($order_id);
-            // $products_ids = $gateway->helper::get_product_ids($order);;
+            $price        = WC()->cart->get_total(null);
+            $product_ids  = array_column(WC()->cart->get_cart() ?: [], 'product_id');
+            $query = [
+                'mbbx_products_price' => $price,
+                'mbbx_products_ids'   => implode(',', $product_ids),
+            ];
 
+            $sources_url = add_query_arg(
+                $query,
+                get_rest_url(null, 'mobbex/v1/sources')
+            );
 
             $data = [
                 'supports'     => ['products'],
                 'intent_token' => $intent_token ?: '',
                 'description'  => $gateway->description ?? '',
                 'title'        => $gateway->config->transparent_title,
+                'sources_url'  => $sources_url,
                 'i18n'         => [
                     'cvv_label'                => __('CVV', 'mobbex-for-woocommerce'),
                     'card_dni_label'           => __('DNI', 'mobbex-for-woocommerce'),

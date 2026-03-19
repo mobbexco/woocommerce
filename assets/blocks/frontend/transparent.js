@@ -1,1 +1,448 @@
-(()=>{"use strict";const e=window.React,t=window.wc.wcBlocksRegistry,a=window.wc.wcSettings,o=window.wp.i18n,r=(0,a.getSetting)("mobbex_transparent_data",{}),n=({eventRegistration:t,emitResponse:a,activePaymentMethod:n})=>{const[c,s]=(0,e.useState)(""),[m,l]=(0,e.useState)(""),[i,b]=(0,e.useState)(""),[d,p]=(0,e.useState)(""),[u,x]=(0,e.useState)(""),[g,f]=(0,e.useState)([]),[w,h]=(0,e.useState)(""),[N,E]=(0,e.useState)(!1),[_,v]=(0,e.useState)(!1),[y,S]=(0,e.useState)({}),[C,k]=(0,e.useState)(null),M="/wp-json/mobbex/v1",D=r.intent_token;(0,e.useEffect)(()=>{const e=setTimeout(async()=>{const e=c.replace(/\s/g,"");if(e.length>=6){E(!0);try{const t=e.substring(0,6),a=await fetch(M+"/detect",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({bin:t,token:D})});if(!a.ok)throw new Error(`Network response was not ok: ${a.statusText} - ${await a.text()}`);const r=await a.json();if(!r||"object"!=typeof r)throw new Error("Empty response data"+JSON.stringify(r));r.data?.installments&&r.data.installments.length>0?(k(r.data.source),f(r.data.installments),h(e=>r.data.installments.some(t=>String(t.reference)===String(e))?e:1===r.data.installments.length?String(r.data.installments[0].reference):""),j("cardNumber")):(S(e=>({...e,cardNumber:(0,o.__)("No se encontraron cuotas para esta tarjeta","mobbex-for-woocommerce")})),f([]),h(""),k(null))}catch(e){console.error("[Mobbex Transparent] Error detecting source:",e),S(e=>({...e,cardNumber:(0,o.__)("Error al detectar medio de pago","mobbex-for-woocommerce")}))}finally{E(!1)}}else f([]),h(""),k(null)},500);return()=>clearTimeout(e)},[c,D,M]),(0,e.useEffect)(()=>t.onPaymentSetup(async()=>{if("mobbex_transparent"===n)return T()?{type:a.responseTypes.SUCCESS,meta:{paymentMethodData:{number:String(c).replace(/\s/g,""),name:String(m),identification:String(i),expiry:String(d).replace(/\s/g,""),cvv:String(u),installments:String(w)}}}:{type:a.responseTypes.ERROR,message:(0,o.__)("Por favor complete todos los campos correctamente","mobbex-for-woocommerce")}}),[n,c,m,i,d,u,w]);const T=()=>{const e={};let t=!0;const a=c.replace(/\s/g,"");a&&/^\d{13,19}$/.test(a)||(e.cardNumber=(0,o.__)("Número de tarjeta inválido","mobbex-for-woocommerce"),t=!1),(!m||m.length<3)&&(e.cardName=(0,o.__)("Nombre inválido","mobbex-for-woocommerce"),t=!1),i&&/^\d{7,15}$/.test(i)||(e.cardDni=(0,o.__)("DNI inválido","mobbex-for-woocommerce"),t=!1);const r=d.replace(/\s/g,"");return r&&/^(0[1-9]|1[0-2])\/\d{2}$/.test(r)||(e.cardExpiration=(0,o.__)("Fecha de vencimiento inválida","mobbex-for-woocommerce"),t=!1),u&&/^\d{3,4}$/.test(u)||(e.securityCode=(0,o.__)("CVV inválido","mobbex-for-woocommerce"),t=!1),w||(e.installments=(0,o.__)("Debe seleccionar las cuotas","mobbex-for-woocommerce"),t=!1),S(e),t},j=e=>{S(t=>{const a={...t};return delete a[e],a})};return(0,e.createElement)("div",{className:"mobbex-transparent-form wc-block-components-form"},r.description&&(0,e.createElement)("p",{className:"mobbex-description"},r.description),r.show_banner&&(0,e.createElement)("div",{className:"mobbex-checkout-banner"},(0,e.createElement)("img",{src:"https://res.mobbex.com/images/sources/png/banner.png",alt:(0,o.__)("Medios de pago","mobbex-for-woocommerce")})),(0,e.createElement)("div",{className:"wc-block-components-text-input mobbex-form-row"},(0,e.createElement)("input",{type:"text",id:"mobbex-card-number",className:"mobbex-form-input "+(y.cardNumber?"has-error":""),value:c,onChange:e=>{s((e=>{const t=e.replace(/\s/g,"");return(t.match(/.{1,4}/g)?.join(" ")||t).substring(0,19)})(e.target.value)),j("cardNumber")},placeholder:"1234 5678 9012 3456",maxLength:"19",autoComplete:"cc-number",inputMode:"numeric"}),y.cardNumber&&(0,e.createElement)("span",{className:"mobbex-field-error"},y.cardNumber)),(0,e.createElement)("div",{className:"wc-block-components-text-input mobbex-form-row"},(0,e.createElement)("input",{type:"text",id:"mobbex-card-name",className:"mobbex-form-input "+(y.cardName?"has-error":""),value:m,onChange:e=>{l(e.target.value),j("cardName")},placeholder:"Nombre Tarjeta",autoComplete:"cc-name"}),y.cardName&&(0,e.createElement)("span",{className:"mobbex-field-error"},y.cardName)),(0,e.createElement)("div",{className:"wc-block-components-text-input mobbex-form-row"},(0,e.createElement)("input",{type:"text",id:"mobbex-card-dni",className:"mobbex-form-input "+(y.cardDni?"has-error":""),value:i,onChange:e=>{b(e.target.value.replace(/\D/g,"")),j("cardDni")},placeholder:"12345678",maxLength:"15",inputMode:"numeric"}),y.cardDni&&(0,e.createElement)("span",{className:"mobbex-field-error"},y.cardDni)),(0,e.createElement)("div",{className:"mobbex-form-row-group"},(0,e.createElement)("div",{className:"wc-block-components-text-input mobbex-form-row half"},(0,e.createElement)("input",{type:"text",id:"mobbex-card-expiration",className:"mobbex-form-input "+(y.cardExpiration?"has-error":""),value:d,onChange:e=>{p((e=>{const t=e.replace(/\D/g,"");if(t.length>=2){const e=t.substring(0,2),a=t.length>4?t.substring(t.length-2):t.substring(2,4);return a?e+" / "+a:e}return t})(e.target.value)),j("cardExpiration")},placeholder:"MM / AA",maxLength:"7",autoComplete:"cc-exp",inputMode:"numeric"}),y.cardExpiration&&(0,e.createElement)("span",{className:"mobbex-field-error"},y.cardExpiration)),(0,e.createElement)("div",{className:"wc-block-components-text-input mobbex-form-row half"},(0,e.createElement)("input",{type:"text",id:"mobbex-security-code",className:"mobbex-form-input "+(y.securityCode?"has-error":""),value:u,onChange:e=>{x(e.target.value.replace(/\D/g,"")),j("securityCode")},placeholder:"123",maxLength:"4",autoComplete:"cc-csc",inputMode:"numeric"}),y.securityCode&&(0,e.createElement)("span",{className:"mobbex-field-error"},y.securityCode))),(0,e.createElement)("div",{className:"wc-block-components-text-input mobbex-form-row"},(0,e.createElement)("select",{id:"mobbex-installments",className:"mobbex-form-input "+(y.installments?"has-error":""),value:w,onChange:e=>{h(e.target.value),j("installments")},disabled:N||0===g.length},(0,e.createElement)("option",{value:""},N?r.i18n?.installments_loading||(0,o.__)("Cargando cuotas...","mobbex-for-woocommerce"):0===g.length?(0,o.__)("Ingrese el número de tarjeta","mobbex-for-woocommerce"):r.i18n?.installments_placeholder||(0,o.__)("Seleccionar cuotas","mobbex-for-woocommerce")),g.map(t=>(0,e.createElement)("option",{key:t.reference,value:t.reference},t.name))),y.installments&&(0,e.createElement)("span",{className:"mobbex-field-error"},y.installments)),_&&(0,e.createElement)("div",{className:"mobbex-processing-message"},r.i18n?.processing||(0,o.__)("Procesando pago...","mobbex-for-woocommerce")))};(0,t.registerPaymentMethod)({name:"mobbex_transparent",label:(0,e.createElement)(()=>(0,e.createElement)("span",{className:"wc-block-components-transparent-label"},r.title||(0,o.__)("Tarjeta de Crédito/Débito","mobbex-for-woocommerce")),null),content:(0,e.createElement)(n,null),edit:(0,e.createElement)(n,null),canMakePayment:()=>!0,ariaLabel:r.title||"Mobbex Transparent",supports:{features:r.supports||["products"]}})})();
+(() => {
+  "use strict";
+  const e = window.React,
+    t = window.wc.wcBlocksRegistry,
+    r = window.wc.wcSettings,
+    o = window.wp.i18n,
+    a = (0, r.getSetting)("mobbex_transparent_data", {}),
+    n = ({ eventRegistration: t, emitResponse: r, activePaymentMethod: n }) => {
+      const [c, s] = (0, e.useState)(""),
+        [m, l] = (0, e.useState)(""),
+        [i, b] = (0, e.useState)(""),
+        [d, u] = (0, e.useState)(""),
+        [p, x] = (0, e.useState)(""),
+        [g, f] = (0, e.useState)([]),
+        [w, h] = (0, e.useState)(""),
+        [E, N] = (0, e.useState)(!1),
+        [y, v] = (0, e.useState)(!1),
+        [_, S] = (0, e.useState)({}),
+        [C, k] = (0, e.useState)(null),
+        [M, j] = (0, e.useState)([]),
+        D = "/wp-json/mobbex/v1",
+        T = a.intent_token,
+        P = a.sources_url;
+      (0, e.useEffect)(() => {
+        (async () => {
+          if (P)
+            try {
+              const e = await fetch(P);
+              if (!e.ok)
+                return void console.error(
+                  "[Mobbex] Error fetching payment sources:",
+                  e,
+                );
+              const t = await e.json();
+              if (!t || !Array.isArray(t.sources))
+                return void console.error(
+                  "[Mobbex] Invalid data format for payment sources:",
+                  t,
+                );
+              const r = t.sources
+                .filter(
+                  (e) => "card" === e?.view?.group && e?.installments?.enabled,
+                )
+                .map((e) => e?.source?.reference || e?.source)
+                .filter(Boolean)
+                .slice(0, 4);
+              j(r);
+            } catch (e) {
+              console.error("[Mobbex] Error loading card brands:", e);
+            }
+        })();
+      }, [P]),
+        (0, e.useEffect)(() => {
+          const e = setTimeout(async () => {
+            const e = c.replace(/\s/g, "");
+            if (e.length >= 6) {
+              N(!0);
+              try {
+                const t = e.substring(0, 6),
+                  r = await fetch(D + "/detect", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ bin: t, token: T }),
+                  });
+                if (!r.ok)
+                  throw new Error(
+                    `Network response was not ok: ${
+                      r.statusText
+                    } - ${await r.text()}`,
+                  );
+                const a = await r.json();
+                if (!a || "object" != typeof a)
+                  throw new Error("Empty response data" + JSON.stringify(a));
+                a.result && a.data?.source
+                  ? (k(a.data.source),
+                    f(a.data.source.installments.custom || []),
+                    1 === a.data.source.installments?.custom?.length &&
+                      h(a.data.source.installments.custom[0].reference),
+                    $("cardNumber"))
+                  : (S((e) => ({
+                      ...e,
+                      cardNumber: (0, o.__)(
+                        "No se encontraron cuotas para esta tarjeta",
+                        "mobbex-for-woocommerce",
+                      ),
+                    })),
+                    f([]));
+              } catch (e) {
+                console.error(
+                  "[Mobbex Transparent] Error detecting source:",
+                  e,
+                ),
+                  S((e) => ({
+                    ...e,
+                    cardNumber: (0, o.__)(
+                      "Error al detectar medio de pago",
+                      "mobbex-for-woocommerce",
+                    ),
+                  }));
+              } finally {
+                N(!1);
+              }
+            } else f([]), h(""), k(null);
+          }, 500);
+          return () => clearTimeout(e);
+        }, [c, T, D]),
+        (0, e.useEffect)(
+          () =>
+            t.onPaymentSetup(async () => {
+              if ("mobbex_transparent" === n)
+                return R()
+                  ? {
+                      type: r.responseTypes.SUCCESS,
+                      meta: {
+                        paymentMethodData: {
+                          number: String(c).replace(/\s/g, ""),
+                          name: String(m),
+                          identification: String(i),
+                          expiry: String(d).replace(/\s/g, ""),
+                          cvv: String(p),
+                          installments: String(w),
+                        },
+                      },
+                    }
+                  : {
+                      type: r.responseTypes.ERROR,
+                      message: (0, o.__)(
+                        "Por favor complete todos los campos correctamente",
+                        "mobbex-for-woocommerce",
+                      ),
+                    };
+            }),
+          [n, c, m, i, d, p, w],
+        );
+      const R = () => {
+          const e = {};
+          let t = !0;
+          const r = c.replace(/\s/g, "");
+          (r && /^\d{13,19}$/.test(r)) ||
+            ((e.cardNumber = (0, o.__)(
+              "Número de tarjeta inválido",
+              "mobbex-for-woocommerce",
+            )),
+            (t = !1)),
+            (!m || m.length < 3) &&
+              ((e.cardName = (0, o.__)(
+                "Nombre inválido",
+                "mobbex-for-woocommerce",
+              )),
+              (t = !1)),
+            (i && /^\d{7,15}$/.test(i)) ||
+              ((e.cardDni = (0, o.__)(
+                "DNI inválido",
+                "mobbex-for-woocommerce",
+              )),
+              (t = !1));
+          const a = d.replace(/\s/g, "");
+          return (
+            (a && /^(0[1-9]|1[0-2])\/\d{2}$/.test(a)) ||
+              ((e.cardExpiration = (0, o.__)(
+                "Fecha de vencimiento inválida",
+                "mobbex-for-woocommerce",
+              )),
+              (t = !1)),
+            (p && /^\d{3,4}$/.test(p)) ||
+              ((e.securityCode = (0, o.__)(
+                "CVV inválido",
+                "mobbex-for-woocommerce",
+              )),
+              (t = !1)),
+            w ||
+              ((e.installments = (0, o.__)(
+                "Debe seleccionar las cuotas",
+                "mobbex-for-woocommerce",
+              )),
+              (t = !1)),
+            S(e),
+            t
+          );
+        },
+        $ = (e) => {
+          S((t) => {
+            const r = { ...t };
+            return delete r[e], r;
+          });
+        },
+        L = (e) => {
+          const t = ((e) =>
+            e
+              ? "string" == typeof e
+                ? e
+                : "object" != typeof e
+                ? ""
+                : e.reference ||
+                  e.source?.reference ||
+                  e.card?.source?.reference ||
+                  e.card?.brand?.reference ||
+                  e.brand?.reference ||
+                  e.name ||
+                  ""
+              : "")(e);
+          return t ? String(t).toLowerCase().replace(/\s+/g, "_") : "";
+        },
+        A = L(C?.reference),
+        O = M.map((e) => L(e)).filter(Boolean),
+        B = A ? [A] : O.slice(0, 4);
+      return (0, e.createElement)(
+        "div",
+        { className: "mobbex-transparent-form wc-block-components-form" },
+        a.description &&
+          (0, e.createElement)(
+            "p",
+            { className: "mobbex-description" },
+            a.description,
+          ),
+        a.show_banner &&
+          (0, e.createElement)(
+            "div",
+            { className: "mobbex-checkout-banner" },
+            (0, e.createElement)("img", {
+              src: "https://res.mobbex.com/images/sources/png/banner.png",
+              alt: (0, o.__)("Medios de pago", "mobbex-for-woocommerce"),
+            }),
+          ),
+        (0, e.createElement)(
+          "div",
+          { className: "wc-block-components-text-input mobbex-form-row" },
+          (0, e.createElement)("input", {
+            type: "text",
+            id: "mobbex-card-number",
+            className: "mobbex-form-input " + (_.cardNumber ? "has-error" : ""),
+            value: c,
+            onChange: (e) => {
+              s(
+                ((e) => {
+                  const t = e.replace(/\s/g, "");
+                  return (t.match(/.{1,4}/g)?.join(" ") || t).substring(0, 19);
+                })(e.target.value),
+              ),
+                $("cardNumber");
+            },
+            placeholder: "1234 5678 9012 3456",
+            maxLength: "19",
+            autoComplete: "cc-number",
+            inputMode: "numeric",
+          }),
+          !!B.length &&
+            (0, e.createElement)(
+              "span",
+              { className: "mobbex-card-brands", "aria-hidden": "true" },
+              B.map((t) =>
+                (0, e.createElement)("img", {
+                  key: t,
+                  className:
+                    "mobbex-card-brand-logo " +
+                    (A ? "is-detected" : "is-preview"),
+                  src: `https://res.mobbex.com/images/sources/original/${t}.png`,
+                  alt: t,
+                  loading: "lazy",
+                }),
+              ),
+            ),
+          _.cardNumber &&
+            (0, e.createElement)(
+              "span",
+              { className: "mobbex-field-error" },
+              _.cardNumber,
+            ),
+        ),
+        (0, e.createElement)(
+          "div",
+          { className: "wc-block-components-text-input mobbex-form-row" },
+          (0, e.createElement)("input", {
+            type: "text",
+            id: "mobbex-card-name",
+            className: "mobbex-form-input " + (_.cardName ? "has-error" : ""),
+            value: m,
+            onChange: (e) => {
+              l(e.target.value), $("cardName");
+            },
+            placeholder: "Nombre Tarjeta",
+            autoComplete: "cc-name",
+          }),
+          _.cardName &&
+            (0, e.createElement)(
+              "span",
+              { className: "mobbex-field-error" },
+              _.cardName,
+            ),
+        ),
+        (0, e.createElement)(
+          "div",
+          { className: "wc-block-components-text-input mobbex-form-row" },
+          (0, e.createElement)("input", {
+            type: "text",
+            id: "mobbex-card-dni",
+            className: "mobbex-form-input " + (_.cardDni ? "has-error" : ""),
+            value: i,
+            onChange: (e) => {
+              b(e.target.value.replace(/\D/g, "")), $("cardDni");
+            },
+            placeholder: "12345678",
+            maxLength: "15",
+            inputMode: "numeric",
+          }),
+          _.cardDni &&
+            (0, e.createElement)(
+              "span",
+              { className: "mobbex-field-error" },
+              _.cardDni,
+            ),
+        ),
+        (0, e.createElement)(
+          "div",
+          { className: "mobbex-form-row-group" },
+          (0, e.createElement)(
+            "div",
+            {
+              className: "wc-block-components-text-input mobbex-form-row half",
+            },
+            (0, e.createElement)("input", {
+              type: "text",
+              id: "mobbex-card-expiration",
+              className:
+                "mobbex-form-input " + (_.cardExpiration ? "has-error" : ""),
+              value: d,
+              onChange: (e) => {
+                u(
+                  ((e) => {
+                    const t = e.replace(/\D/g, "");
+                    return t.length >= 2
+                      ? t.substring(0, 2) + " / " + t.substring(2, 4)
+                      : t;
+                  })(e.target.value),
+                ),
+                  $("cardExpiration");
+              },
+              placeholder: "MM / AA",
+              maxLength: "7",
+              autoComplete: "cc-exp",
+              inputMode: "numeric",
+            }),
+            _.cardExpiration &&
+              (0, e.createElement)(
+                "span",
+                { className: "mobbex-field-error" },
+                _.cardExpiration,
+              ),
+          ),
+          (0, e.createElement)(
+            "div",
+            {
+              className: "wc-block-components-text-input mobbex-form-row half",
+            },
+            (0, e.createElement)("input", {
+              type: "text",
+              id: "mobbex-security-code",
+              className:
+                "mobbex-form-input " + (_.securityCode ? "has-error" : ""),
+              value: p,
+              onChange: (e) => {
+                x(e.target.value.replace(/\D/g, "")), $("securityCode");
+              },
+              placeholder: "123",
+              maxLength: "4",
+              autoComplete: "cc-csc",
+              inputMode: "numeric",
+            }),
+            _.securityCode &&
+              (0, e.createElement)(
+                "span",
+                { className: "mobbex-field-error" },
+                _.securityCode,
+              ),
+          ),
+        ),
+        (0, e.createElement)(
+          "div",
+          { className: "wc-block-components-text-input mobbex-form-row" },
+          (0, e.createElement)(
+            "select",
+            {
+              id: "mobbex-installments",
+              className:
+                "mobbex-form-input " + (_.installments ? "has-error" : ""),
+              value: w,
+              onChange: (e) => {
+                h(e.target.value), $("installments");
+              },
+              disabled: E || 0 === g.length,
+            },
+            (0, e.createElement)(
+              "option",
+              { value: "" },
+              E
+                ? a.i18n?.installments_loading ||
+                    (0, o.__)("Cargando cuotas...", "mobbex-for-woocommerce")
+                : 0 === g.length
+                ? (0, o.__)(
+                    "Ingrese el número de tarjeta",
+                    "mobbex-for-woocommerce",
+                  )
+                : a.i18n?.installments_placeholder ||
+                  (0, o.__)("Seleccionar cuotas", "mobbex-for-woocommerce"),
+            ),
+            g.map((t) =>
+              (0, e.createElement)(
+                "option",
+                { key: t.reference, value: t.reference },
+                t.name,
+              ),
+            ),
+          ),
+          _.installments &&
+            (0, e.createElement)(
+              "span",
+              { className: "mobbex-field-error" },
+              _.installments,
+            ),
+        ),
+        y &&
+          (0, e.createElement)(
+            "div",
+            { className: "mobbex-processing-message" },
+            a.i18n?.processing ||
+              (0, o.__)("Procesando pago...", "mobbex-for-woocommerce"),
+          ),
+      );
+    };
+  (0, t.registerPaymentMethod)({
+    name: "mobbex_transparent",
+    label: (0, e.createElement)(
+      () =>
+        (0, e.createElement)(
+          "span",
+          { className: "wc-block-components-transparent-label" },
+          a.title ||
+            (0, o.__)("Tarjeta de Crédito/Débito", "mobbex-for-woocommerce"),
+        ),
+      null,
+    ),
+    content: (0, e.createElement)(n, null),
+    edit: (0, e.createElement)(n, null),
+    canMakePayment: () => !0,
+    ariaLabel: a.title || "Mobbex Transparent",
+    supports: { features: a.supports || ["products"] },
+  });
+})();
