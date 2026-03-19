@@ -229,7 +229,16 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
             return $result;
         } catch (\Exception $e) {
             $this->logger->log('error', 'Transparent Gateway > process_payment', $e->getMessage());
-            return new \WP_Error('error', $e->getMessage());
+            $error_result = [
+                'result'  => 'failure',
+                'message' => $e->getMessage(),
+            ];
+
+            // Make sure to use json in pay for order page
+            if (isset($_GET['pay_for_order']))
+                wp_send_json_error($error_result) && exit;
+
+            return $error_result;
         }
     }
 
