@@ -62,9 +62,10 @@ return [
         'default'     => '',
     ],
 
+    /** @deprecated it works only in classic checkout */
     'custom_dni' => [
         'title'       => __('Use custom DNI field', 'mobbex-for-woocommerce'),
-        'description' => __('If you ask for DNI field on checkout please provide the custom field.', 'mobbex-for-woocommerce'),
+        'description' => __('(deprecated) If you ask for DNI field on checkout please provide the custom field.', 'mobbex-for-woocommerce'),
         'type'        => 'text',
         'default'     => '',
     ],
