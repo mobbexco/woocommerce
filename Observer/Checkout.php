@@ -93,11 +93,11 @@ class Checkout
             'sanitize_callback' => function ($value) {
                 return is_string($value) ? trim($value) : $value;
             },
-            'validate_callback' => function (\WP_Error $errors, $field_key, $field_value) {
+            'validate_callback' => function ($field_value) {
                 if (!empty($field_value))
                     return;
 
-                $errors->add('mobbex_dni_required', __('Complete el campo DNI', MOBBEX_WC_TEXT_DOMAIN));
+                return new \WP_Error('mobbex_dni_required', __('Complete el campo DNI', MOBBEX_WC_TEXT_DOMAIN));
             },
         ]);
     }
