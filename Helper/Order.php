@@ -244,11 +244,17 @@ class Order
     private function add_customer($checkout)
     {
         $user = new \WP_User($this->order->get_user_id());
+        $dni  = get_post_meta($this->id, '_billing_dni', true) ?: get_user_meta($user->ID, 'billing_dni', true);
+
+        if (!$dni && $this->helper->checkout_blocks_ready()) {
+            $checkout_fields = \Automattic\WooCommerce\Blocks\Package::container()->get(\Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields::class);
+            $dni             = $checkout_fields->get_field_from_object(BLOCKS_DNI_FIELD_ID, $this->order, 'other');
+        }
 
         $checkout->set_customer(
             $this->order->get_formatted_billing_full_name() ?: $user->display_name,
             $this->order->get_billing_email() ?: $user->user_email,
-            get_post_meta($this->id, '_billing_dni', true) ?: get_user_meta($user->ID, 'billing_dni', true),
+            $dni,
             $this->order->get_billing_phone() ?: get_user_meta($user->ID, 'phone_number', true),
             $user->ID,
             $user->user_registered

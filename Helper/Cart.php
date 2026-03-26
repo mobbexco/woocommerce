@@ -205,11 +205,17 @@ class Cart
     private function add_customer($checkout)
     {
         $customer = $this->cart->get_customer();
+        $dni      = WC()->session->get('mbbx_billing_dni') ?: get_user_meta($customer->get_id(), 'billing_dni', true);
+
+        if (!$dni && $this->helper->checkout_blocks_ready()) {
+            $checkout_fields = \Automattic\WooCommerce\Blocks\Package::container()->get(\Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields::class);
+            $dni             = $checkout_fields->get_field_from_object(BLOCKS_DNI_FIELD_ID, $customer, 'other');
+        }
 
         $checkout->set_customer(
             $customer->get_billing_first_name() . ' ' . $customer->get_billing_last_name(),
             $customer->get_billing_email(),
-            WC()->session->get('mbbx_billing_dni') ?: (get_user_meta($customer->get_id(), 'billing_dni', true) ?: '12123123'),
+            $dni ?: '12123123',
             $customer->get_billing_phone() ?: get_user_meta($customer->get_id(), 'phone_number', true),
             $customer->get_id(),
             (string) $customer->get_date_created()
