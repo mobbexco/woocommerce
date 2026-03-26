@@ -50,7 +50,8 @@ class Checkout
     }
 
     /**
-     * Add Mobbex extra data fields to woocommerce checkout.
+     * @deprecated
+     * Add Mobbex extra data fields to woocommerce classic checkout.
      * 
      * @param array $fields
      * @return array $fields
@@ -58,10 +59,10 @@ class Checkout
      */
     public function add_checkout_fields($fields)
     {
-        if(!$this->helper->isReady() || $this->config->own_dni !== 'yes' || $this->config->custom_dni != '')
+        if (!$this->helper->should_add_own_dni_field())
             return $fields;
 
-        $cutomer_id = WC()->customer ? WC()->customer->get_id() : null;
+        $customer_id = WC()->customer ? WC()->customer->get_id() : null;
 
         $fields['billing_dni'] = [
             'type'        => 'text',
@@ -69,13 +70,40 @@ class Checkout
             'clear'       => false,
             'label'       => 'DNI',
             'placeholder' => 'Ingrese su DNI',
-            'default'     => WC()->session && WC()->session->get('mbbx_billing_dni') ? WC()->session->get('mbbx_billing_dni') : get_user_meta($cutomer_id, 'billing_dni', true),
+            'default'     => WC()->session && WC()->session->get('mbbx_billing_dni') ? WC()->session->get('mbbx_billing_dni') : get_user_meta($customer_id, 'billing_dni', true),
         ];
 
         return $fields;
     }
 
     /**
+     * Register the DNI field for Checkout Blocks.
+     */
+    public function register_blocks_checkout_fields()
+    {
+        if (!$this->helper->should_add_own_dni_field() || !function_exists('woocommerce_register_additional_checkout_field'))
+            return;
+
+        woocommerce_register_additional_checkout_field([
+            'id'                => BLOCKS_DNI_FIELD_ID,
+            'label'             => "DNI",
+            'location'          => 'contact',
+            'type'              => 'text',
+            'required'          => true,
+            'sanitize_callback' => function ($value) {
+                return is_string($value) ? trim($value) : $value;
+            },
+            'validate_callback' => function (\WP_Error $errors, $field_key, $field_value) {
+                if (!empty($field_value))
+                    return;
+
+                $errors->add('mobbex_dni_required', __('Complete el campo DNI', MOBBEX_WC_TEXT_DOMAIN));
+            },
+        ]);
+    }
+
+    /**
+     * @deprecated
      * Display the Mobbex extra fields in woocommerce checkout.
      * 
      * @param object $order
@@ -97,9 +125,7 @@ class Checkout
      */
     public function validate_checkout_fields()
     {
-        // Get dni field key
-        $own_dni = $this->config->own_dni == 'yes' ? 'billing_dni' : false;
-        $dni     = $this->config->custom_dni ? $this->config->custom_dni : $own_dni;
+        $dni = $this->helper->get_dni_field_key();
 
         // Exit if field is not configured
         if (!$dni)
@@ -121,9 +147,7 @@ class Checkout
     {
         $customer_id = wc_get_order($order_id)->get_customer_id();
 
-        // Get dni field key
-        $own_dni = $this->config->own_dni == 'yes' ? 'billing_dni' : false;
-        $dni     = $this->config->custom_dni ? $this->config->custom_dni : $own_dni;
+        $dni = $this->helper->get_dni_field_key();
 
         // Exit if field is not configured
         if (!$dni)
@@ -135,5 +159,20 @@ class Checkout
 
         // Save by order
         update_post_meta($order_id, '_billing_dni', $_POST[$dni]);
+    }
+
+    /**
+     * Get default DNI value from session or customer meta.
+     *
+     * @param int|null $customer_id
+     *
+     * @return string
+     */
+    public function get_dni_default_value($customer_id = null)
+    {
+        if (WC()->session && WC()->session->get('mbbx_billing_dni'))
+            return WC()->session->get('mbbx_billing_dni');
+
+        return $customer_id ? get_user_meta($customer_id, 'billing_dni', true) : '';
     }
 }

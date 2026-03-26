@@ -44,6 +44,12 @@ class Registrar
     {
         $this->add_actions();
         $this->add_filters();
+
+        // This registrar itself is initialized on WordPress `init`, so hooks like
+        // `woocommerce_init` may already have fired. Register Blocks checkout
+        // fields immediately instead of relying on an earlier lifecycle hook.
+        if ($this->helper->checkout_blocks_ready())
+            $this->checkout->register_blocks_checkout_fields();
     }
 
     /**

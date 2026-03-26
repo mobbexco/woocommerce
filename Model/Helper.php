@@ -382,4 +382,42 @@ class Helper
 
         return json_encode($best_plan);
     }
+
+    /**
+     * Returns true when Mobbex should add its own DNI field.
+     *
+     * `own_dni` must be enabled and no external DNI field should be configured.
+     *
+     * @return bool
+     */
+    public function should_add_own_dni_field()
+    {
+        return $this->config->own_dni === 'yes' && $this->config->custom_dni == '';
+    }
+
+    /**
+     * Returns the configured DNI field key to read from checkout submissions.
+     *
+     * `own_dni` must be enabled in all cases. If a custom field was configured,
+     * that field key takes precedence. Otherwise, the native plugin field is used.
+     *
+     * @return string|false
+     */
+    public function get_dni_field_key()
+    {
+        if ($this->config->own_dni !== 'yes')
+            return false;
+
+        return $this->config->custom_dni ?: 'billing_dni';
+    }
+
+
+    /**
+     * Checks if required Blocks Classes exists
+     */
+    public function checkout_blocks_ready()
+    {
+        return (class_exists('\Automattic\WooCommerce\Blocks\Package') 
+            && class_exists('\Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields'));
+    }
 }
