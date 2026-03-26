@@ -24,3 +24,5 @@ define('MOBBEX_LIST_PLANS', 'https://api.mobbex.com/p/sources/list/arg/{tax_id}?
 
 define('MOBBEX_PAYMENT_IMAGE', 'https://res.mobbex.com/images/sources/{reference}.png');
 
+// Blocks ids
+define('BLOCKS_DNI_FIELD_ID', 'mbbx/billing-dni');
