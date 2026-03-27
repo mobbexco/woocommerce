@@ -90,6 +90,8 @@ final class Detect
      */
     private function detect_card($bin, $token)
     {
+        $multivendor = $this->config->multivendor == "active" || $this->config->multivendor == "unified";
+
         $response = \Mobbex\Api::request([
             'method' => 'POST',
             'uri'    => "sources/detect/$token",
@@ -102,7 +104,7 @@ final class Detect
                     'filter'       => null,
                     'brand'        => true,
                     'brands'       => true,
-                    'multivendor'  => $this->config->multivendor == 'yes' ?: null,
+                    'multivendor'  => $multivendor ?: null,
                 ],
             ],
         ]);
