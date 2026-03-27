@@ -65,7 +65,6 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
             ], true));
             return;
         }
-        $this->logger->log('debug', '[Mobbex Transparent] Gateway > Ready and initializing');
 
         $this->enabled = $this->config->transparent;
         $this->logo    = $this->config->transparent_logo;
@@ -82,9 +81,6 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
             'woocommerce_update_options_payment_gateways_' . $this->id,
             ['\WC_Gateway_Mobbex', 'process_admin_options']
         );
-
-        // Log de inicialización
-        $this->logger->log('debug', '[Mobbex Transparent] Gateway > Initialized');
     }
 
     /**
