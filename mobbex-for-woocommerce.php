@@ -196,7 +196,7 @@ class MobbexGateway
     public static function check_upgrades()
     {
         try {
-            $request_uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
+            $request_uri = filter_input(INPUT_SERVER, 'REQUEST_URI') ?? '';
             // Checks current version updated and if it's not installing route
             if (get_option('woocommerce-mobbex-version') == MOBBEX_VERSION && !str_contains($request_uri, 'plugin-install'))
                 return;
