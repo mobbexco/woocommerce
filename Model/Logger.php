@@ -26,11 +26,15 @@ class Logger
      * @param string $mode debug | error | fatal    
      * @param string $message
      * @param array $data
+     * @param bool $hide_sensible_data
      */
     public function log($mode, $message, $data = [])
     {
         if ($mode === 'debug' && $this->config->debug_mode != 'yes')
             return;
+
+        if (!empty($data) && isset($data['body']))
+            $this->hideSensibleData($data);
         
         // Save log in database
         (new \Mobbex\WP\Checkout\Model\Db)->insert(
@@ -61,5 +65,19 @@ class Logger
             </div>
 <?php
         });
+    }
+
+    /**
+     * Hide sensible data from log.
+     * 
+     * @param array $data(reference)
+     */
+    private function hideSensibleData(&$data)
+    {
+        if (isset($data['body']['source']['card']['number']))
+            $data['body']['source']['card']['number'] = substr($data['body']['source']['card']['number'], 0, 6) . str_repeat('X', strlen($data['body']['source']['card']['number']) - 10) . substr($data['body']['source']['card']['number'], -4);
+
+        if (isset($data['body']['source']['card']['cvv']))
+            $data['body']['source']['card']['cvv'] = '[REDACTED]';
     }
 }

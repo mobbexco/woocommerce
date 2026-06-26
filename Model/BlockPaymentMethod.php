@@ -46,7 +46,7 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function get_payment_method_script_handles()
     {
-        $script_asset      = file_exists(plugin_dir_url(__FILE__) . '../assets/blocks/frontend/blocks.asset.php')
+        $script_asset      = file_exists(plugin_dir_url(__FILE__) . '../assets/blocks/frontend/payment-method.asset.php')
             ? require($script_asset_path)
             : array(
                 'dependencies' => array(),
@@ -55,7 +55,7 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
 
         wp_register_script(
             'wc-mobbex-payments-blocks',
-            plugin_dir_url(__FILE__) . '../assets/blocks/frontend/blocks.js',
+            plugin_dir_url(__FILE__) . '../assets/blocks/frontend/payment-method.js',
             $script_asset['dependencies'],
             $script_asset['version'],
             true

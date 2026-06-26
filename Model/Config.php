@@ -54,6 +54,10 @@ class Config
     public $show_featured_installments_on_cart;
     public $show_flag_on_products;
     public $show_banner_on_products;
+    public $transparent_configuration_tab;
+    public $transparent;
+    public $transparent_logo;
+    public $transparent_title;
 
     public function __construct()
     {

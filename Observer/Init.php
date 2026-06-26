@@ -64,6 +64,10 @@ class Init
                 'is_pay_for_order' => !empty($_GET['pay_for_order']),
             ]);
             wp_enqueue_script('mobbex-checkout-script');
+
+            if ($this->config->transparent == 'yes') {
+                wp_enqueue_style('mobbex-transparent-style', $dir_url . 'assets/css/transparent.css', null, MOBBEX_VERSION);
+            }
         }
     }
 

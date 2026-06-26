@@ -13,7 +13,7 @@ composer install --no-dev
 
 # Copy files to temp dir
 if type robocopy > /dev/null; then
-    robocopy . woocommerce-mobbex -MIR -XD .git .vscode .github woocommerce-mobbex -XF .gitignore build.sh readme.md *.zip
+    robocopy . woocommerce-mobbex -MIR -XD node_modules .git .vscode .github woocommerce-mobbex -XF .gitignore build.sh readme.md *.zip
 elif type rsync > /dev/null; then
     rsync -r --exclude={'.git','.vscode','.github','woocommerce-mobbex','.gitignore','build.sh','readme.md','*.zip'} . ./woocommerce-mobbex
 fi
