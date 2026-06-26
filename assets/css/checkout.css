@@ -52,3 +52,134 @@ img[src*='res.mobbex'], img[src*='res.sugaway'] {
         transform: translateX(-50%) translateY(-50%) rotate(359deg);
     }
 }
+/* Mobbex blocks checkout - payment methods & wallet options */
+.mobbex-block-content {
+    margin-top: 8px;
+}
+
+.mobbex-options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+/* Each option renders as a grayscale card/pill that gains color and a
+   colored border once selected. */
+.mobbex-options-grid .mobbex-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    margin: 0;
+    background: #fff;
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.2;
+    color: #4a4a4a;
+    filter: grayscale(1);
+    opacity: 0.6;
+    transition: filter 0.15s ease, opacity 0.15s ease,
+        border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Dynamic padding: a chip with a logo (wallet card) needs less side padding
+   since the logo carries width; a text-only chip gets balanced, centered
+   padding. */
+.mobbex-options-grid .mobbex-option.has-logo {
+    padding: 8px 14px;
+}
+
+.mobbex-options-grid .mobbex-option.no-logo {
+    padding: 10px 20px;
+    justify-content: center;
+}
+
+.mobbex-options-grid .mobbex-option:hover {
+    opacity: 0.85;
+}
+
+/* Avoid the browser's default focus outline, which made the chip look
+   thicker on click and then shrink when focus moved to another field.
+   Selection state is conveyed by the colored border/box-shadow instead. */
+.mobbex-options-grid .mobbex-option:focus {
+    outline: none;
+}
+
+.mobbex-options-grid .mobbex-option:focus-visible {
+    outline: none;
+    border-color: var(--mbbx-color, #7000ff);
+    box-shadow: 0 0 0 2px var(--mbbx-color, #7000ff) inset;
+}
+
+.mobbex-options-grid .mobbex-option.is-selected {
+    filter: none;
+    opacity: 1;
+    border-color: var(--mbbx-color, #7000ff);
+    box-shadow: 0 0 0 1px var(--mbbx-color, #7000ff) inset;
+}
+
+.mobbex-options-grid .mobbex-option-logo {
+    max-height: 28px;
+    max-width: 52px;
+    width: auto;
+    display: block;
+    border-radius: 4px;
+}
+
+.mobbex-options-grid .mobbex-option-text {
+    font-weight: 500;
+}
+
+.mobbex-options-grid .mobbex-option.is-new {
+    border-style: dashed;
+}
+
+.mobbex-options-grid .mobbex-option-plus {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.mobbex-block-content .mobbex-wallet-fields {
+    margin: 16px 0 4px;
+    max-width: 360px;
+}
+
+.mobbex-block-content .mobbex-wallet-fields .mobbex-form-row {
+    margin: 0 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mobbex-block-content .mobbex-wallet-fields label {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Override the theme's generic input styles (which paint a #f2f2f2 background
+   with an inset shadow) so these fields match the white WooCommerce Blocks
+   inputs used by the transparent form. */
+.mobbex-block-content .mobbex-wallet-fields select,
+.mobbex-block-content .mobbex-wallet-fields input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #2b2d2f;
+    box-shadow: none;
+    font-size: 14px;
+    line-height: 1.2;
+    box-sizing: border-box;
+}
+
+.mobbex-block-content .mobbex-wallet-fields select:focus,
+.mobbex-block-content .mobbex-wallet-fields input:focus {
+    outline: none;
+    border-color: var(--mbbx-color, #7000ff);
+    box-shadow: 0 0 0 1px var(--mbbx-color, #7000ff);
+}
