@@ -47,7 +47,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
 
     /**
      * Define form fields of setting page.
-     * 
+     *
      */
     public function init_form_fields()
     {
@@ -66,11 +66,11 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
     }
 
     /**
-     * Process the payment & return the checkout data to mobbex-bootstrap.js 
-     * 
+     * Process the payment & return the checkout data to mobbex-bootstrap.js
+     *
      * @param string $order_id
      * @return array
-     * 
+     *
      */
     public function process_payment($order_id)
     {
@@ -99,6 +99,17 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'return_url'  => $this->helper->get_api_endpoint('mobbex_return_url', $order_id),
             'redirect'    => $this->config->button == 'yes' ? false : $checkout_data['url'],
         ];
+
+        // Provide a string-safe wallet token map for the WooCommerce Blocks checkout.
+        // The Woocmmerce Store API casts payment_details values to string, so the nested `data.wallet` array is not reliably available on the client there.
+        if (!empty($checkout_data['wallet'])) {
+            $result['wallet_tokens'] = json_encode(array_map(function ($card) {
+                return [
+                    'card_number' => isset($card['card']['card_number']) ? $card['card']['card_number'] : null,
+                    'it'          => isset($card['it']) ? $card['it'] : null,
+                ];
+            }, $checkout_data['wallet']));
+        }
 
         // Make sure to use json in pay for order page
         if (isset($_GET['pay_for_order']))

@@ -21,12 +21,20 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public $config;
 
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
+    public $helper;
+
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
+    public $logger;
+
     /**
      * Initializes the payment method type.
      */
     public function initialize()
     {
         $this->config = new Config();
+        $this->helper = new Helper();
+        $this->logger = new Logger();
     }
 
     /**
@@ -73,12 +81,42 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
     {
         $gateway = new \WC_Gateway_Mobbex();
 
-        return [
+        $data = [
             'title'                => $this->config->title,
             'description'          => $this->config->description,
             'supports'             => array_filter($gateway->supports, [$gateway, 'supports']),
             'checkout_banner'      => $this->config->checkout_banner,
             'payment_method_image' => $this->config->payment_method_image,
+            'payment_methods'      => $this->config->payment_methods,
+            'wallet'               => $this->config->wallet,
+            'method_icon'          => $this->config->method_icon,
+            'color'                => $this->config->color,
+            'cards'                => [],
+            'methods'              => [],
         ];
+
+        // Create context chekout only if wallet or payment methods are active (see Init::load_payment_options)
+        if (is_checkout() && ($this->config->payment_methods == 'yes' || $this->config->wallet == 'yes')) {
+            try {
+                $response = $this->helper->get_context_checkout();
+
+                $data['cards']   = isset($response['wallet'])         ? $response['wallet']         : [];
+                $data['methods'] = isset($response['paymentMethods']) ? $response['paymentMethods'] : [];
+
+                $this->logger->log('debug', '[Mobbex Block] Payment options loaded', [
+                    'payment_methods' => $this->config->payment_methods,
+                    'wallet'          => $this->config->wallet,
+                    'methods_count'   => count($data['methods']),
+                    'cards_count'     => count($data['cards']),
+                    'response_keys'   => is_array($response) ? array_keys($response) : gettype($response),
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->log('error', '[Mobbex Block] Error loading payment options', [
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        return $data;
     }
 }
