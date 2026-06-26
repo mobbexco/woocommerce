@@ -111,21 +111,11 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
      */
     protected function create_intent_token()
     {
-        $cart = WC()->cart;
-        if (!$cart) {
-            $this->logger->log(
-                'error',
-                '[Mobbex Transparent] Gateway > create_intent_token > Cart not found',
-                []
-            );
-            return false;
-        }
-
         try {
-            $order_helper = new \Mobbex\WP\Checkout\Helper\Cart($cart);
-            $response     = $order_helper->create_checkout();
+            // Reuse the shared context checkout so the transparent and redirect
+            $response = $this->helper->get_context_checkout();
 
-            if (!$response['intent']['token'])
+            if (empty($response['intent']['token']))
                 throw new \Exception("[Mobbex Transparent] Gateway > create_intent_token Error: couldn't get intent token");
 
             return $response['intent']['token'];
