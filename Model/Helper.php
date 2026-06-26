@@ -301,12 +301,23 @@ class Helper
         // Try to get previous cart checkout data
         if ($helper){
             $cart_checkout = WC()->session->get('mobbex_cart_checkout');
-            $cart_hash     = $cart->get_cart_hash();
 
-            $response = isset($cart_checkout[$cart_hash]) ? $cart_checkout[$cart_hash] : $helper->create_checkout();
+            // Key by cart contents and current settings
+            $cache_key = md5($cart->get_cart_hash() . json_encode($this->config->settings));
 
-            if ($response)
-                WC()->session->set('mobbex_cart_checkout', [$cart_hash => $response]);
+            // Expire the cached checkout after its lifetime
+            $ttl    = (max(1, (int) $this->config->timeout)) * 60;
+            $cached = isset($cart_checkout[$cache_key]) ? $cart_checkout[$cache_key] : null;
+            $valid  = $cached
+                && isset($cached['created_at'], $cached['data'])
+                && (time() - $cached['created_at']) < $ttl;
+
+            $response = $valid ? $cached['data'] : $helper->create_checkout();
+
+            if ($response && !$valid)
+                WC()->session->set('mobbex_cart_checkout', [
+                    $cache_key => ['data' => $response, 'created_at' => time()],
+                ]);
 
             return $response;
         }
