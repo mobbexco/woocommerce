@@ -201,9 +201,10 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
                     '[Mobbex Transparent] Gateway > Error on operation process. Empty response', 0, $res
                 );
 
-            if (!in_array($res['status']['code'], ['3', '100', '200']))
+            // Only reject true failure codes
+            if ($this->is_rejected_op_code((int) $res['status']['code']))
                 throw new \Mobbex\Exception(
-                    '[Mobbex Transparent] Gateway > Operation process with error code', 0, $res
+                    '[Mobbex Transparent] Gateway > Operation process with rejected code', 0, $res
                 );
 
             $status_code = $res['status']['code'];
@@ -246,6 +247,21 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
 
             return $error_result;
         }
+    }
+
+    /**
+     * Determine if a Mobbex operation status code must be treated as rejected.
+     *
+     * Adapted from the logic shared with other Mobbex integrations.
+     *
+     * @param int $status_code
+     *
+     * @return bool
+     */
+    private function is_rejected_op_code($status_code)
+    {
+        return in_array($status_code, [601, 604], true)
+            || ($status_code >= 400 && $status_code < 600);
     }
 
     /**
