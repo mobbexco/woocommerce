@@ -15,10 +15,10 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     protected $name = 'mobbex';
 
-    /** 
+    /**
      * Config model instance.
-     * @var \Mobbex\WP\Checkout\Model\Config 
-    */
+     * @var \Mobbex\WP\Checkout\Model\Config
+     */
     public $config;
 
     /**
@@ -36,7 +36,7 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function is_active()
     {
-        return $this->config->enabled;
+        return $this->config->enabled === 'yes';
     }
 
     /**
