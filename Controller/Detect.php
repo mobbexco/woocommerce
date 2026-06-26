@@ -60,13 +60,10 @@ final class Detect
             $bin   = sanitize_text_field($params['bin']);
             $token = sanitize_text_field($params['token']);
             
-            $source = $this->detect_card($bin, $token);
+            $card = $this->detect_card($bin, $token);
             $this->logger->log('info', 'Transparent Detect | Source detected successfully');
             
-            return new \WP_REST_Response([
-                'result' => true,
-                'data'   => $source
-            ], 200);
+            return new \WP_REST_Response($card, 200);
             
         } catch (\Exception $e) {
             $this->logger->log('error', 'Transparent Detect | Exception', [
@@ -93,6 +90,8 @@ final class Detect
      */
     private function detect_card($bin, $token)
     {
+        $multivendor = $this->config->multivendor == "active" || $this->config->multivendor == "unified";
+
         $response = \Mobbex\Api::request([
             'method' => 'POST',
             'uri'    => "sources/detect/$token",
@@ -102,10 +101,10 @@ final class Detect
                 'data' => ['bin' => $bin],
                 'options' => [
                     'installments' => true,
-                    'multivendor' => $this->config->multivendor ?: null,
-                    'filter' => null,
-                    'brand' => true,
-                    'brands' => true,
+                    'filter'       => null,
+                    'brand'        => true,
+                    'brands'       => true,
+                    'multivendor'  => $multivendor ?: null,
                 ],
             ],
         ]);
@@ -118,6 +117,6 @@ final class Detect
                 isset($response['status_message']) ? $response['status_message'] : 'NOMESSAGE'
             ));
 
-        return $response['data'];
+        return $response;
     }
 }

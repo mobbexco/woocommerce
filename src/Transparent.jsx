@@ -121,21 +121,25 @@ const TransparentContent = ({
               } - ${await res.text()}`,
             );
 
-          const data = await res.json();
+          const card = await res.json();
 
-          if (!data || typeof data !== "object")
-            throw new Error("Empty response data" + JSON.stringify(data));
+          if (!card || typeof card !== "object")
+            throw new Error("Empty response data" + JSON.stringify(card));
 
-          if (data.result && data.data?.source) {
-            setDetectedSource(data.data.source);
-            setInstallments(data.data.source.installments.custom || []);
-
-            // Select first source is there's only one
-            if (data.data.source.installments?.custom?.length === 1) {
-              setSelectedInstallment(
-                data.data.source.installments.custom[0].reference,
+          if (card.data?.installments && card.data.installments.length > 0) {
+            setDetectedSource(card.data.source);
+            setInstallments(card.data.installments);
+            setSelectedInstallment((prev) => {
+              const hasCurrentOption = card.data.installments.some(
+                (installment) => String(installment.reference) === String(prev),
               );
-            }
+
+              if (hasCurrentOption) return prev;
+              if (card.data.installments.length === 1)
+                return String(card.data.installments[0].reference);
+
+              return "";
+            });
 
             clearError("cardNumber");
           } else {
@@ -147,6 +151,8 @@ const TransparentContent = ({
               ),
             }));
             setInstallments([]);
+            setSelectedInstallment("");
+            setDetectedSource(null);
           }
         } catch (error) {
           console.error("[Mobbex Transparent] Error detecting source:", error);
@@ -285,7 +291,13 @@ const TransparentContent = ({
   const formatExpiration = (value) => {
     const cleaned = value.replace(/\D/g, "");
     if (cleaned.length >= 2) {
-      return cleaned.substring(0, 2) + " / " + cleaned.substring(2, 4);
+      const month = cleaned.substring(0, 2);
+      const year =
+        cleaned.length > 4
+          ? cleaned.substring(cleaned.length - 2)
+          : cleaned.substring(2, 4);
+
+      return year ? month + " / " + year : month;
     }
     return cleaned;
   };

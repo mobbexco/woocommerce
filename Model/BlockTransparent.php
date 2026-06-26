@@ -15,16 +15,10 @@ final class BlockTransparent extends AbstractPaymentMethodType
      */
     protected $name = 'mobbex_transparent';
 
-    /** 
-     * Config model instance.
-     * @var \Mobbex\WP\Checkout\Model\Config 
-     */
+    /** @var \Mobbex\WP\Checkout\Model\Config */
     public $config;
 
-    /**
-     * Logger instance
-     * @var \Mobbex\WP\Checkout\Model\Logger
-     */
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
     public $logger;
 
     /**
@@ -115,7 +109,6 @@ final class BlockTransparent extends AbstractPaymentMethodType
             $data = [
                 'supports'     => ['products'],
                 'intent_token' => $intent_token ?: '',
-                'public_key'   => $this->config->api_key,
                 'description'  => $gateway->description ?? '',
                 'title'        => $gateway->config->transparent_title,
                 'sources_url'  => $sources_url,
@@ -133,8 +126,7 @@ final class BlockTransparent extends AbstractPaymentMethodType
             ];
 
             $this->logger->log('debug', '[Mobbex Transparent Block] Payment method data prepared', [
-                'has_intent_token' => !empty($intent_token),
-                'has_public_key' => !empty($this->config->api_key)
+                'has_intent_token' => !empty($intent_token)
             ]);
             return $data;
         } catch (\Exception $e) {
