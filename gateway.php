@@ -103,12 +103,21 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
         // Provide a string-safe wallet token map for the WooCommerce Blocks checkout.
         // The Woocmmerce Store API casts payment_details values to string, so the nested `data.wallet` array is not reliably available on the client there.
         if (!empty($checkout_data['wallet'])) {
-            $result['wallet_tokens'] = json_encode(array_map(function ($card) {
-                return [
-                    'card_number' => isset($card['card']['card_number']) ? $card['card']['card_number'] : null,
-                    'it'          => isset($card['it']) ? $card['it'] : null,
+            $wallet_tokens = [];
+
+            foreach ($checkout_data['wallet'] as $card) {
+                // Skip incomplete cards: the client matches by card_number.
+                if (empty($card['card']['card_number']) || empty($card['it']))
+                    continue;
+
+                $wallet_tokens[] = [
+                    'card_number' => $card['card']['card_number'],
+                    'it'          => $card['it'],
                 ];
-            }, $checkout_data['wallet']));
+            }
+
+            if (!empty($wallet_tokens))
+                $result['wallet_tokens'] = json_encode($wallet_tokens);
         }
 
         // Make sure to use json in pay for order page
