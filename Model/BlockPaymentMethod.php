@@ -15,9 +15,9 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     protected $name = 'mobbex';
 
-    /** 
+    /**
      * Config model instance.
-     * @var \Mobbex\WP\Checkout\Model\Config 
+     * @var \Mobbex\WP\Checkout\Model\Config
      */
     public $config;
 
@@ -44,7 +44,7 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function is_active()
     {
-        return $this->config->enabled;
+        return $this->config->enabled === 'yes';
     }
 
     /**
@@ -54,17 +54,26 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function get_payment_method_script_handles()
     {
-        $script_asset      = file_exists(plugin_dir_url(__FILE__) . '../assets/blocks/frontend/payment-method.asset.php')
-            ? require($script_asset_path)
+        $script_asset_path = plugin_dir_path(__FILE__) . '../assets/blocks/frontend/payment-method.asset.php';
+
+        $script_asset = file_exists($script_asset_path)
+            ? require $script_asset_path
             : array(
                 'dependencies' => array(),
                 'version'      => '1.2.0'
             );
 
+        // The bundle consumes these globals as window.React, window.wp.element,
+        // window.wp.htmlEntities, window.wc.wcBlocksRegistry, window.wc.wcSettings
+        $dependencies = array_values(array_unique(array_merge(
+            $script_asset['dependencies'],
+            ['react', 'wp-element', 'wp-html-entities', 'wp-i18n', 'wc-blocks-registry', 'wc-settings']
+        )));
+
         wp_register_script(
             'wc-mobbex-payments-blocks',
-            plugin_dir_url(__FILE__) . '../assets/blocks/frontend/payment-method.js',
-            $script_asset['dependencies'],
+            plugins_url('../assets/blocks/frontend/payment-method.js', __FILE__),
+            $dependencies,
             $script_asset['version'],
             true
         );

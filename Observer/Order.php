@@ -173,7 +173,7 @@ class Order
 
         //Only displayed if a payment was made with Mobbex.
         if (
-            ($post->post_type == 'shop_order' || $order_util::is_order($id, wc_get_order_types()))
+            (($post && $post->post_type == 'shop_order') || $order_util::is_order($id, wc_get_order_types()))
             && ($method == "mobbex" || $method == "mobbex_transparent")
         ) {
             add_meta_box(
