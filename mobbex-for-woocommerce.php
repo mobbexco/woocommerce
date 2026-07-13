@@ -61,21 +61,19 @@ class MobbexGateway
         self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Model\Registrar();
 
-        //Init de Mobbex php sdk
-        $this->init_sdk();
-
         MobbexGateway::check_dependencies();
         MobbexGateway::load_textdomain();
         MobbexGateway::load_update_checker();
-        MobbexGateway::check_upgrades();
-        
+
         if (MobbexGateway::$errors) {
             foreach (MobbexGateway::$errors as $error)
             self::$logger->notice($error);
-            
+
             return;
         }
 
+        $this->init_sdk();
+        self::check_upgrades();
         self::check_warnings();
 
         // Init controllers
@@ -120,9 +118,9 @@ class MobbexGateway
 
     /**
      * Leaves an error message in admin panel that inform of incorrect module installation.
-     * 
+     *
      * @param bool $autoload
-     * 
+     *
      * return bool
      */
     public static function check_install_dir()
@@ -135,7 +133,7 @@ class MobbexGateway
             'https://github.com/mobbexco/woocommerce/releases/latest'
         );
         $type = 'error';
-        
+
         // Add notice to admin panel
         add_action('admin_notices', function () use ($message, $type){
 ?>
@@ -283,14 +281,14 @@ class MobbexGateway
     public static function add_assets($type, $name, $route)
     {
         $method = "wp_enqueue_$type";
-        
+
         return $method($name, $route, null, MOBBEX_VERSION);
     }
 
-    /** 
+    /**
      * Create Mobbex tables
-     * 
-     * @return bool creation result. 
+     *
+     * @return bool creation result.
      */
     public static function create_mobbex_tables()
     {
@@ -299,7 +297,7 @@ class MobbexGateway
             new \Mobbex\WP\Checkout\Model\Cache(),
             new \Mobbex\WP\Checkout\Model\Db
         );
-        
+
         foreach (['transaction', 'cache', 'log'] as  $tableName) {
             // Create the table or alter table if it exists
             $table = new \Mobbex\Model\Table($tableName);
@@ -307,7 +305,7 @@ class MobbexGateway
             if (!$table->result)
                 return false;
         }
-        
+
         return true;
     }
 }
