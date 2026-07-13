@@ -28,8 +28,6 @@ final class BlockTransparent extends AbstractPaymentMethodType
     {
         $this->config = new \Mobbex\WP\Checkout\Model\Config();
         $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
-
-        $this->logger->log('debug', '[Mobbex Transparent Block] Initialized');
     }
 
     /**
