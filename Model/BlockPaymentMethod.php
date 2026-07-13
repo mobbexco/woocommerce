@@ -21,12 +21,20 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public $config;
 
+    /** @var \Mobbex\WP\Checkout\Model\Helper */
+    public $helper;
+
+    /** @var \Mobbex\WP\Checkout\Model\Logger */
+    public $logger;
+
     /**
      * Initializes the payment method type.
      */
     public function initialize()
     {
-        $this->config = new Config();
+        $this->helper = new Helper();
+        $this->logger = new Logger();
+        $this->config = $this->helper->config;
     }
 
     /**
@@ -46,6 +54,7 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
      */
     public function get_payment_method_script_handles()
     {
+        // Dependencies are auto-extracted by webpack from the ES imports.
         $script_asset_path = plugin_dir_path(__FILE__) . '../assets/blocks/frontend/payment-method.asset.php';
 
         $script_asset = file_exists($script_asset_path)
@@ -55,17 +64,10 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
                 'version'      => '1.2.0'
             );
 
-        // The bundle consumes these globals as window.React, window.wp.element,
-        // window.wp.htmlEntities, window.wc.wcBlocksRegistry, window.wc.wcSettings
-        $dependencies = array_values(array_unique(array_merge(
-            $script_asset['dependencies'],
-            ['react', 'wp-element', 'wp-html-entities', 'wp-i18n', 'wc-blocks-registry', 'wc-settings']
-        )));
-
         wp_register_script(
             'wc-mobbex-payments-blocks',
             plugins_url('../assets/blocks/frontend/payment-method.js', __FILE__),
-            $dependencies,
+            $script_asset['dependencies'],
             $script_asset['version'],
             true
         );
@@ -82,12 +84,42 @@ final class BlockPaymentMethod extends \Automattic\WooCommerce\Blocks\Payments\I
     {
         $gateway = new \WC_Gateway_Mobbex();
 
-        return [
+        $data = [
             'title'                => $this->config->title,
             'description'          => $this->config->description,
             'supports'             => array_filter($gateway->supports, [$gateway, 'supports']),
             'checkout_banner'      => $this->config->checkout_banner,
             'payment_method_image' => $this->config->payment_method_image,
+            'payment_methods'      => $this->config->payment_methods,
+            'wallet'               => $this->config->wallet,
+            'method_icon'          => $this->config->method_icon,
+            'color'                => $this->config->color,
+            'cards'                => [],
+            'methods'              => [],
         ];
+
+        // Only when ready and wallet/payment methods are active (see Init::load_payment_options).
+        if (is_checkout() && $this->helper->isReady() && ($this->config->payment_methods == 'yes' || $this->config->wallet == 'yes')) {
+            try {
+                $response = $this->helper->get_context_checkout();
+
+                $data['cards']   = isset($response['wallet'])         ? $response['wallet']         : [];
+                $data['methods'] = isset($response['paymentMethods']) ? $response['paymentMethods'] : [];
+
+                $this->logger->log('debug', '[Mobbex Block] Payment options loaded', [
+                    'payment_methods' => $this->config->payment_methods,
+                    'wallet'          => $this->config->wallet,
+                    'methods_count'   => count($data['methods']),
+                    'cards_count'     => count($data['cards']),
+                    'response_keys'   => is_array($response) ? array_keys($response) : gettype($response),
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->log('error', '[Mobbex Block] Error loading payment options', [
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        return $data;
     }
 }
