@@ -97,7 +97,7 @@ class WC_Gateway_Mobbex extends WC_Payment_Gateway
             'data'        => $checkout_data,
             'checkout_id' => $checkout_data['id'],
             'return_url'  => $this->helper->get_api_endpoint('mobbex_return_url', $order_id),
-            'redirect'    => $this->config->button == 'yes' ? false : $checkout_data['url'],
+            'redirect'    => $this->config->embed == 'yes' ? false : $checkout_data['url'],
         ];
 
         // Provide a string-safe wallet token map for the WooCommerce Blocks checkout.
