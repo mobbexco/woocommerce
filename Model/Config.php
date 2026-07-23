@@ -11,7 +11,7 @@ class Config
     public $api_key;
     public $access_token;
     public $test;
-    public $button;
+    public $embed;
     public $wallet;
     public $financial_info_active;
     public $own_dni;
@@ -90,6 +90,9 @@ class Config
             $settings['payment_mode'] = 'payment.2-step';
         else
             $settings['payment_mode'] = 'payment.v2';
+
+        // Rename to support sdk implementation
+        $settings['embed'] = $settings['button'];
 
         return $settings;
     }
