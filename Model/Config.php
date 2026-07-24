@@ -11,6 +11,7 @@ class Config
     public $api_key;
     public $access_token;
     public $test;
+    public $button;
     public $embed;
     public $wallet;
     public $financial_info_active;

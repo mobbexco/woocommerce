@@ -66,6 +66,8 @@ class WC_Gateway_Mobbex_Transparent extends WC_Payment_Gateway
             return;
         }
 
+        $this->init_settings();
+
         $this->enabled = $this->config->transparent;
         $this->logo    = $this->config->transparent_logo;
         $this->title   = $this->config->transparent_title;
