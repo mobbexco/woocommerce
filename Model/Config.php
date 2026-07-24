@@ -2,8 +2,11 @@
 
 namespace Mobbex\WP\Checkout\Model;
 
-class Config 
+class Config
 {
+    /** @var Config|null Single shared instance */
+    private static $instance = null;
+
     public $settings = [];
 
     // Settings from config-options.php
@@ -11,6 +14,7 @@ class Config
     public $api_key;
     public $access_token;
     public $test;
+    public $button;
     public $embed;
     public $wallet;
     public $financial_info_active;
@@ -66,6 +70,21 @@ class Config
 
         //Set property for each setting
         $this->setProperties();
+    }
+
+    /**
+     * Get the single shared Config instance.
+     *
+     * Settings are loaded only once, on the first call.
+     *
+     * @return Config
+     */
+    public static function get_instance()
+    {
+        if (self::$instance === null)
+            self::$instance = new self();
+
+        return self::$instance;
     }
 
     /**
