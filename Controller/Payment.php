@@ -15,7 +15,7 @@ final class Payment
 
     public function __construct()
     {
-        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->config = \Mobbex\WP\Checkout\Model\Config::get_instance();
         $this->helper = new \Mobbex\WP\Checkout\Model\Helper();
         $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
 

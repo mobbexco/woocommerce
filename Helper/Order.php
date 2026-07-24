@@ -42,7 +42,7 @@ class Order
     {
         $this->id     = is_int($order) ? $order : $order->get_id();
         $this->order  = is_int($order) ? wc_get_order($order) : $order;
-        $this->config = new \Mobbex\WP\Checkout\Model\Config();
+        $this->config = \Mobbex\WP\Checkout\Model\Config::get_instance();
         $this->helper = $helper ?: new \Mobbex\WP\Checkout\Model\Helper();
         $this->logger = new \Mobbex\WP\Checkout\Model\Logger();
         $this->db     = $GLOBALS['wpdb'];

@@ -56,7 +56,7 @@ class MobbexGateway
             return;
         }
 
-        self::$config    = new \Mobbex\WP\Checkout\Model\Config();
+        self::$config    = \Mobbex\WP\Checkout\Model\Config::get_instance();
         self::$helper    = new \Mobbex\WP\Checkout\Model\Helper();
         self::$logger    = new \Mobbex\WP\Checkout\Model\Logger();
         self::$registrar = new \Mobbex\WP\Checkout\Model\Registrar();

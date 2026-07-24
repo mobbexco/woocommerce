@@ -27,7 +27,7 @@ class Registrar
     public function __construct()
     {
         //Load models
-        $this->config   = new Config(); 
+        $this->config   = Config::get_instance();
         $this->helper   = new Helper(); 
         $this->logger   = new Logger();
         //Load observers
