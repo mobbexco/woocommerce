@@ -19,7 +19,7 @@ define('MOBBEX_WC_GATEWAY_ID', 'mobbex');
 // Must match the Version header of mobbex-for-woocommerce.php and the published
 // release tag: this is the version the integrity attestation sends, and the one
 // the server uses to look up the artifact it compares us against.
-define('MOBBEX_VERSION', '5.0.0');
+define('MOBBEX_VERSION', '5.0.1');
 define('MOBBEX_SDK_VERSION', '1.1.0');
 define('MOBBEX_EMBED_VERSION', '1.2.0');
 
