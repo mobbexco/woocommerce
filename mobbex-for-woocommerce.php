@@ -113,6 +113,17 @@ class MobbexGateway
             new \Mobbex\WP\Checkout\Model\Db
         );
 
+        // Enable integrity attestation
+        // The checkout URL is a callable because init_sdk() runs on every request
+        // while the header only goes out when a checkout is created.
+        \Mobbex\Integrity\Attestation::init('woocommerce', __DIR__, null, function () {
+            // Returning null instead lets the SDK fallback to the shop host
+            if (!function_exists('wc_get_checkout_url'))
+                return null;
+
+            return wc_get_checkout_url();
+        });
+
         // Init api conector
         \Mobbex\Api::init();
     }
