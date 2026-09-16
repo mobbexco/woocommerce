@@ -222,8 +222,8 @@ class Order
             'Status'         => 'status_message'
         ];
 
-        //Create payment info panel 
-        echo self::create_panel($paymentInfo, $parent);
+        //Create payment info panel
+        self::create_panel($paymentInfo, $parent);
 
         echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Method') . "</b></h4></th>";
 
