@@ -203,7 +203,14 @@ class Order
 
         // Get transaction data
         $parent  = $mbbxOrderHelp->get_parent_transaction();
-        $childs  = !empty($mbbxOrderHelp->get_child_transactions()) ? $mbbxOrderHelp->get_child_transactions() : $mbbxOrderHelp->format_childs($mbbxOrderHelp->id, $parent['childs'] ? json_decode($parent['childs'], true) : []);
+
+        // Exit if the order has no payment information yet
+        if (!$parent) {
+            echo "<p>" . __('No payment information available yet.') . "</p>";
+            return;
+        }
+
+        $childs  = $mbbxOrderHelp->get_child_transactions() ?: $mbbxOrderHelp->format_childs($mbbxOrderHelp->id, !empty($parent['childs']) ? json_decode($parent['childs'], true) : []);
 
         echo "<table><th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Information') . "</b></h4></th>";
 
@@ -215,8 +222,8 @@ class Order
             'Status'         => 'status_message'
         ];
 
-        //Create payment info panel 
-        echo self::create_panel($paymentInfo, $parent);
+        //Create payment info panel
+        self::create_panel($paymentInfo, $parent);
 
         echo "<th colspan='2' class = 'mbbx-info-panel-th'><h4><b>" . __('Payment Method') . "</b></h4></th>";
 
@@ -304,8 +311,9 @@ class Order
 
      public static function create_coupon($parent)
      {
-        $mbbxCouponUrl = "https://mobbex.com/console/" . $parent['entity_uid'] . "/operations/?oid=" . $parent['payment_id'];
-        echo "<tr><td>" . __('Coupon:') . "</td><td>" . (isset($parent['entity_uid']) && isset($parent['payment_id']) ? "<a href=" . $mbbxCouponUrl . ">VER</a>" : 'NO COUPON') . "</td></tr>";
+        $hasCoupon     = isset($parent['entity_uid']) && isset($parent['payment_id']);
+        $mbbxCouponUrl = $hasCoupon ? "https://mobbex.com/console/" . $parent['entity_uid'] . "/operations/?oid=" . $parent['payment_id'] : '';
+        echo "<tr><td>" . __('Coupon:') . "</td><td>" . ($hasCoupon ? "<a href=" . $mbbxCouponUrl . ">VER</a>" : 'NO COUPON') . "</td></tr>";
      }
 
     /**
