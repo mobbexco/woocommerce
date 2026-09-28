@@ -2,7 +2,7 @@
 /*
 Plugin Name:  Mobbex for Woocommerce
 Description:  A small plugin that provides Woocommerce <-> Mobbex integration.
-Version:      5.0.0
+Version:      5.0.1
 WC tested up to: 10.2.1
 Author: mobbex.com
 Author URI: https://mobbex.com/
@@ -111,6 +111,17 @@ class MobbexGateway
             new \Mobbex\WP\Checkout\Model\Cache(),
             new \Mobbex\WP\Checkout\Model\Db
         );
+
+        // Enable integrity attestation
+        // The checkout URL is a callable because init_sdk() runs on every request
+        // while the header only goes out when a checkout is created.
+        \Mobbex\Integrity\Attestation::init('woocommerce', __DIR__, null, function () {
+            // Returning null instead lets the SDK fallback to the shop host
+            if (!function_exists('wc_get_checkout_url'))
+                return null;
+
+            return wc_get_checkout_url();
+        });
 
         // Init api conector
         \Mobbex\Api::init();
