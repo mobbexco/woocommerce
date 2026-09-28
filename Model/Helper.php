@@ -292,6 +292,10 @@ class Helper
         $order = wc_get_order(get_query_var('order-pay'));
         $cart  = WC()->cart;
 
+        // Exit if no order or if cart is empty
+        if (!$order && (!$cart || $cart->is_empty()))
+            return null;
+
         $helper = $order ? new \Mobbex\WP\Checkout\Helper\Order($order) : ($cart ? new \Mobbex\WP\Checkout\Helper\Cart($cart) : null);
 
         // If is pending order page create checkout from order and return
