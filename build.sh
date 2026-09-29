@@ -58,6 +58,10 @@ fi
 # Remove temp dir
 rm -r ./woocommerce-mobbex vendor composer.lock
 
+# wc -c instead of stat or du: its flags and block sizes differ between macOS,
+# Linux and Git Bash, while a byte count is the same everywhere.
+SIZE_KB=$(wc -c < "wc-mobbex.$VER.zip" | awk '{ printf "%.1f", $1 / 1024 }')
+
 echo
-echo "Built wc-mobbex.$VER.zip"
+echo "Built wc-mobbex.$VER.zip ($SIZE_KB KB)"
 echo "Publish it as the asset of tag $VER."
