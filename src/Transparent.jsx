@@ -46,9 +46,9 @@ const TransparentContent = ({
   const [availableCardTypes, setAvailableCardTypes] = useState([]);
 
   // constants
-  const restUrl = "/wp-json/mobbex/v1";
   const intentToken = settings.intent_token;
   const sourcesUrl = settings.sources_url;
+  const detectUrl = settings.detect_url;
 
   useEffect(() => {
     const fetchSources = async () => {
@@ -103,7 +103,7 @@ const TransparentContent = ({
 
         try {
           const bin = cleanNumber.substring(0, 6);
-          const res = await fetch(restUrl + "/detect", {
+          const res = await fetch(detectUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -177,7 +177,7 @@ const TransparentContent = ({
     // Debounce to avoid constants calls to Wordpress server
     const timer = setTimeout(detectSource, 500);
     return () => clearTimeout(timer);
-  }, [cardNumber, intentToken, restUrl]);
+  }, [cardNumber, intentToken, detectUrl]);
 
   /**
    * Register handler for payment process.

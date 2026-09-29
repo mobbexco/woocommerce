@@ -110,6 +110,7 @@ final class BlockTransparent extends AbstractPaymentMethodType
                 'description'  => $gateway->description ?? '',
                 'title'        => $gateway->config->transparent_title,
                 'sources_url'  => $sources_url,
+                'detect_url'   => get_rest_url(null, 'mobbex/v1/detect'),
                 'i18n'         => [
                     'cvv_label'                => __('CVV', 'mobbex-for-woocommerce'),
                     'card_dni_label'           => __('DNI', 'mobbex-for-woocommerce'),
