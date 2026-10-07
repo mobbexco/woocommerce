@@ -250,17 +250,21 @@ class Init
      */
     public function register_route() {
         register_rest_route('mobbex/v1', '/download_logs', [
-            'methods' => \WP_REST_Server::CREATABLE,
-            'callback' => [$this, 'init_mobbex_export_data'],
-            'permission_callback' => '__return_true',
-            ]);
-        }
+            'methods'             => \WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'init_mobbex_export_data'],
+            'permission_callback' => function () {
+                return current_user_can('manage_woocommerce');
+            },
+        ]);
+    }
 
     /**
      * Calls mobbex export data method as a callback. Manages download data
+     *
+     * @param \WP_REST_Request $request
      */
-    public function init_mobbex_export_data()
+    public function init_mobbex_export_data($request)
     {
-        (new \Mobbex\WP\Checkout\Controller\LogTable($_POST))->mobbex_export_data();
+        (new \Mobbex\WP\Checkout\Controller\LogTable($request->get_params()))->mobbex_export_data();
     }
 }
