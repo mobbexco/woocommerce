@@ -115,7 +115,6 @@ class Registrar
             ['name' => 'activate_' . plugin_basename('mobbex-for-woocommerce.php'), 'callback' => [$this->init, 'create_mobbex_tables']],
             ['name' => 'woocommerce_admin_status_content_mobbex_slug', 'callback' => [$this->init, 'display_mobbex_log_content'], 'priority' => 40],
             ['name' => 'rest_api_init', 'callback' => [$this->init, 'register_route'], 'priority' => 40],
-            ['name' => 'register_route', 'callback' => [$this->init, 'init_mobbex_export_data'], 'priority' => 40],
             
             //Product observer
             ['name' => 'woocommerce_product_data_tabs', 'callback' => [$this->product, 'add_product_tab']],
